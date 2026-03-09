@@ -76,6 +76,14 @@
   }
 }
 
+/* Force hide all Next.js dev overlays */
+nextjs-portal,
+#__next-build-watcher,
+[data-nextjs-dialog-overlay],
+[data-nextjs-route-announcer] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   padding: 0;

@@ -285,15 +285,20 @@ export default function Hero() {
                                                     <div className="pt-6 sm:pt-8 flex flex-col items-center z-50">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
-                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full text-white text-lg md:text-xl transition-all duration-300 min-w-[200px] md:min-w-[280px] bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] animate-[gradient-flow_2.5s_ease_infinite] shadow-[0_4px_14px_0_rgba(248,106,146,0.39)]"
-                                                            style={{ backgroundSize: "300% 300%" }}
+                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full border border-white/20 hover:border-transparent text-white text-lg md:text-xl transition-all duration-300 min-w-[200px] md:min-w-[280px]"
                                                         >
-                                                            {/* Glowing Gradient Soft Shadow */}
-                                                            <div
-                                                                className="absolute inset-[-2px] -z-10 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] rounded-full blur-[24px] pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-500 animate-[gradient-flow_2.5s_ease_infinite]"
-                                                                style={{ backgroundSize: "300% 300%" }}
-                                                            />
+                                                            {/* Default State Background */}
+                                                            <div className="absolute inset-0 bg-[#0a0a0a] rounded-full group-hover:opacity-0 transition-opacity duration-300 z-0" />
 
+                                                            {/* Hover State Soft Glowing Blob */}
+                                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0 flex items-center justify-center rounded-full">
+                                                                {/* The core bright gradient pill */}
+                                                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] animate-[gradient-flow_2s_ease_infinite]" style={{ backgroundSize: '300% 300%' }} />
+                                                                {/* The extremely soft blooming shadow around it */}
+                                                                <div className="absolute inset-[-12px] rounded-full blur-2xl opacity-70 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] animate-[gradient-flow_2s_ease_infinite]" style={{ backgroundSize: '300% 300%' }} />
+                                                            </div>
+
+                                                            {/* Content */}
                                                             <span className="relative z-10 flex items-center font-semibold tracking-wide">
                                                                 {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="mr-3 text-2xl" />}
                                                                 {osLabel === "Windows" && <FaWindows className="mr-3 text-xl" />}
