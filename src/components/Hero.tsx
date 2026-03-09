@@ -1,81 +1,374 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { E_DOTS } from "./e-dots";
 import { V_DOTS } from "./v-dots";
+import { R_DOTS } from "./r-dots";
+import { Y_DOTS } from "./y-dots";
+import { T_DOTS } from "./t-dots";
+import { H_DOTS } from "./h-dots";
+import { I_DOTS } from "./i-dots";
+import { N_DOTS } from "./n-dots";
+import { G_DOTS } from "./g-dots";
+import { A_DOTS } from "./a-dots";
+import { I2_DOTS } from "./i2-dots";
+import { DynamicWaveCanvas } from "./dynamic-wave-canvas-background";
+import { FaApple, FaWindows, FaAndroid } from "react-icons/fa";
+
+// Geometrical Bounding Box Extractor
+function getPathsBounds(paths: string[]) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    paths.forEach(p => {
+        const coords = p.match(/-?\d+\.?\d*/g);
+        if (!coords) return;
+        for (let i = 0; i < coords.length; i += 2) {
+            const x = parseFloat(coords[i]);
+            const y = parseFloat(coords[i + 1]);
+            if (!isNaN(x)) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+            }
+            if (!isNaN(y)) {
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    });
+    return {
+        cx: (minX + maxX) / 2,
+        cy: (minY + maxY) / 2,
+        width: maxX - minX,
+        height: maxY - minY
+    };
+}
+
+const ALPHABET: Record<string, string[]> = {
+    E: E_DOTS,
+    V: V_DOTS,
+    R: R_DOTS,
+    Y: Y_DOTS,
+    T: T_DOTS,
+    H: H_DOTS,
+    I: I_DOTS,
+    N: N_DOTS,
+    G: G_DOTS,
+    A: A_DOTS,
+    i: I2_DOTS,
+};
+const STENCIL_KEYS = Object.keys(ALPHABET) as Array<keyof typeof ALPHABET>;
+
+// Final Sequential Timeline mapping
+const TIMINGS: Record<string, number> = {
+    E: 0,
+    V: 800,
+    R: 600,
+    Y: 450,
+    T: 350,
+    H: 250,
+    I: 200,
+    N: 150,
+    G: 120,
+    A: 100,
+    i: 600,
+
+    // EVRYTHING Ai End States
+    LOGO_WHITE_BG_1: 500,
+    LOGO_BLACK_BG_2: 500,
+    LOGO_WHITE_BG_3: 1000,
+
+    // Smooth Transition sequence
+    INTRO_TEXT: 2000, // Background blacken instantly, "Introducing" blurs/fades in
+    CANVAS_AND_LOGO: 2000, // Introducing fades out. Wave slides up. Logo anchors center.
+    MOMENTUM_LOCK: 0, // Logo seamlessly floats up. Title fades below.
+};
+
+const STEP_KEYS = [
+    ...STENCIL_KEYS,
+    "LOGO_WHITE_BG_1",
+    "LOGO_BLACK_BG_2",
+    "LOGO_WHITE_BG_3",
+    "INTRO_TEXT",
+    "CANVAS_AND_LOGO",
+    "MOMENTUM_LOCK"
+];
+
+const BOUNDS = Object.fromEntries(
+    Object.entries(ALPHABET).map(([k, paths]) => [k, getPathsBounds(paths)])
+);
+const REF_HEIGHT = BOUNDS['E'].height;
 
 export default function Hero() {
-    const [isComplete, setIsComplete] = useState(false);
+    const [stepIndex, setStepIndex] = useState(0);
+    const [hasVisited, setHasVisited] = useState<boolean | null>(null);
+    const [osLabel, setOsLabel] = useState<"macOS" | "Windows" | "iOS" | "Android">("Windows");
 
-    // Pre-calculate random entry points for the 16 dots so they don't jitter on re-renders
+    useEffect(() => {
+        // Hydrate session routing
+        const visited = sessionStorage.getItem("evrything-visited");
+        if (visited) {
+            setHasVisited(true);
+            setStepIndex(STEP_KEYS.indexOf("LOGO_WHITE_BG_3"));
+        } else {
+            setHasVisited(false);
+            sessionStorage.setItem("evrything-visited", "true");
+        }
+
+        // Hydrate hardware sniffing
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        if (/iphone|ipad|ipod/i.test(userAgent)) {
+            setOsLabel("iOS");
+        } else if (/android/i.test(userAgent)) {
+            setOsLabel("Android");
+        } else if (/macintosh|mac os x/i.test(userAgent)) {
+            setOsLabel("macOS");
+        } else {
+            setOsLabel("Windows");
+        }
+    }, []);
+
+    const step = STEP_KEYS[stepIndex];
+    const isLogoPhase = stepIndex >= STEP_KEYS.indexOf("LOGO_WHITE_BG_1") && stepIndex <= STEP_KEYS.indexOf("LOGO_WHITE_BG_3");
+    const isMomentumPhase = stepIndex >= STEP_KEYS.indexOf("INTRO_TEXT");
+    const isCanvasPhase = stepIndex >= STEP_KEYS.indexOf("CANVAS_AND_LOGO");
+
     const randomStarts = useMemo(() => {
-        return E_DOTS.map(() => {
-            const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-            const distance = 800; // Decreased distance so they don't fly quite as fast
+        return ALPHABET["E"].map(() => {
+            const side = Math.floor(Math.random() * 4);
+            const distance = 800;
             switch (side) {
                 case 0: return { x: (Math.random() - 0.5) * distance, y: -distance };
                 case 1: return { x: distance, y: (Math.random() - 0.5) * distance };
                 case 2: return { x: (Math.random() - 0.5) * distance, y: distance };
-                case 3: return { x: -distance, y: (Math.random() - 0.5) * distance };
+                case 3: return { x: -distance, y: -distance };
                 default: return { x: 0, y: distance };
             }
         });
     }, []);
 
+    // Sequence execution timeline
+    useEffect(() => {
+        if (hasVisited === null) return;
+        if (step === "MOMENTUM_LOCK") return;
+
+        if (step !== "E") {
+            const duration = TIMINGS[step];
+            const timeout = setTimeout(() => {
+                setStepIndex((prev) => prev + 1);
+            }, duration);
+            return () => clearTimeout(timeout);
+        }
+    }, [step, hasVisited]);
+
+    if (hasVisited === null) {
+        return <div className="w-full h-screen bg-black" />; // SSR placeholder preventing hydration flash
+    }
+
+    const isWhiteBG = ["V", "Y", "H", "N", "A", "LOGO_WHITE_BG_1", "LOGO_WHITE_BG_3"].includes(step);
+    const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
+    const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
+
     return (
-        <div
-            className={`w-full h-screen flex items-center justify-center overflow-hidden ${isComplete ? "bg-white" : "bg-black"}`}
-        >
-            {/* Wrap everything in a motion group to scale the SVG to a proper readable size */}
-            <motion.svg
-                viewBox="0 -280 260 280"
-                // w-full with a max width keeps it mobile responsive, and overflow-visible removes the blue clipping boundary
-                className="w-full max-w-[60vw] sm:max-w-[400px] h-auto overflow-visible"
-                initial={{ opacity: 1 }}
-            >
-                <g fill={isComplete ? "#000000" : "#ffffff"}>
-                    {!isComplete && E_DOTS.map((dotPath, i) => {
-                        // Very last dot might be just an 'M...' ending, ignore it if too short
-                        if (dotPath.length < 10) return null;
+        <div className={`relative w-full h-screen overflow-hidden ${bgTransitionClass} ${bgColorClass}`}>
 
-                        const start = randomStarts[i];
+            {/* Phase 3: Dynamic WebGL and OS Layer */}
+            <AnimatePresence>
+                {isMomentumPhase && (
+                    <motion.div
+                        key="momentum-layer"
+                        className="absolute inset-0 z-0 flex flex-col items-center justify-center font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
+                    >
+                        {/* Slide up canvas aggressively from bottom */}
+                        <AnimatePresence>
+                            {isCanvasPhase && (
+                                <motion.div
+                                    className="absolute inset-0 z-0"
+                                    initial={{ y: "100%" }}
+                                    animate={{ y: "0%" }}
+                                    transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                                >
+                                    <DynamicWaveCanvas className="z-0" />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                        return (
-                            <motion.path
-                                key={`e-${i}`}
-                                // Start entirely offscreen from a random edge
-                                initial={{ opacity: 0, x: start.x, y: start.y, scale: 0.2, d: dotPath }}
-                                // Move into their exact predefined native SVG coordinates
-                                animate={{
-                                    opacity: 1,
-                                    x: 0,
-                                    y: 0,
-                                    scale: 1,
-                                    d: dotPath
-                                }}
-                                // Solid, fast snap into place with absolutely zero bounce
-                                transition={{
-                                    type: "tween",
-                                    ease: [0.33, 1, 0.68, 1], // Sturdy easeOutCubic curve
-                                    duration: 0.8, // Slower flight so it's visible
-                                    delay: i * 0.1, // Slower staggered delay
-                                }}
-                                // Wait exactly 0.2 seconds after the E locks into place, then hard cut to V array
-                                onAnimationComplete={() => {
-                                    if (i === E_DOTS.length - 1) {
-                                        setTimeout(() => setIsComplete(true), 200);
+                        <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
+                            <AnimatePresence mode="wait">
+                                {step === "INTRO_TEXT" && (
+                                    <motion.div
+                                        key="intro-text"
+                                        className="absolute text-white text-5xl md:text-7xl lg:text-8xl tracking-tight font-medium"
+                                        initial={{ opacity: 0, filter: "blur(15px)", scale: 0.95 }}
+                                        animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                                        exit={{ opacity: 0, filter: "blur(20px)", scale: 1.05, transition: { duration: 0.6 } }}
+                                        transition={{ duration: 1.2, ease: "easeOut" }}
+                                    >
+                                        {"Introducing".split("").map((char, index) => (
+                                            <motion.span
+                                                key={index}
+                                                className="inline-block"
+                                                initial={{ rotateX: -90, opacity: 0, y: 10 }}
+                                                animate={{ rotateX: 0, opacity: 1, y: 0 }}
+                                                transition={{
+                                                    duration: 0.8,
+                                                    delay: 0.1 + (index * 0.05),
+                                                    type: "spring",
+                                                    stiffness: 150,
+                                                    damping: 20
+                                                }}
+                                            >
+                                                {char}
+                                            </motion.span>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Unified Logo Component to prevent double-mount jump glitch */}
+                            <AnimatePresence>
+                                {isCanvasPhase && (
+                                    <motion.div
+                                        key="unified-momentum-sequence"
+                                        className="absolute flex flex-col items-center justify-center w-full px-4"
+                                    >
+                                        <motion.div
+                                            // 1. Instantly pop dead center (y:0) when `CANVAS_AND_LOGO` fires
+                                            // 2. ONLY move (y:-140) when `MOMENTUM_LOCK` finally fires 2 seconds later
+                                            initial={{ scale: 0.9, opacity: 0, y: 0 }}
+                                            animate={{
+                                                scale: 1,
+                                                opacity: 1,
+                                                y: step === "MOMENTUM_LOCK" ? -140 : 0
+                                            }}
+                                            transition={{
+                                                opacity: { duration: 0.8 },
+                                                scale: { duration: 0.8, ease: "easeOut" },
+                                                y: { duration: 1, ease: [0.16, 1, 0.3, 1] } // Apple spring vertical translation
+                                            }}
+                                            className="mb-6 xl:mb-8"
+                                        >
+                                            <Image
+                                                src="/momentum-logo.svg"
+                                                alt="Momentum OS"
+                                                width={400}
+                                                height={400}
+                                                className="w-full max-w-[60vw] sm:max-w-[300px] xl:max-w-[350px] h-auto drop-shadow-2xl"
+                                                priority
+                                            />
+                                        </motion.div>
+
+                                        {/* Typography cascade triggers conditionally inside the master container */}
+                                        <AnimatePresence>
+                                            {step === "MOMENTUM_LOCK" && (
+                                                <motion.div
+                                                    key="momentum-type"
+                                                    initial={{ opacity: 0, filter: "blur(15px)" }}
+                                                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                                                    transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
+                                                    className="absolute flex flex-col items-center text-center space-y-1 top-1/2 mt-4"
+                                                >
+                                                    <h1 className="text-white text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight drop-shadow-lg leading-tight px-4">
+                                                        Momentum OS
+                                                    </h1>
+                                                    <p className="text-white/70 text-lg sm:text-xl md:text-2xl font-normal tracking-wide max-w-2xl px-6 text-balance bg-clip-text">
+                                                        Turn your computer into an AI growth engine.
+                                                    </p>
+
+                                                    <div className="pt-6 sm:pt-8 flex flex-col items-center z-50">
+                                                        <button
+                                                            onClick={() => alert("Coming soon! Stay tuned!")}
+                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full bg-black border border-white/20 text-white text-lg md:text-xl font-medium hover:text-white transition-all duration-500 overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] min-w-[200px] md:min-w-[240px]"
+                                                        >
+                                                            {/* Dynamic Gradient Flow Background (Revealed on Hover) */}
+                                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x" />
+
+                                                            <span className="relative z-10 flex items-center">
+                                                                Download for
+                                                                {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="ml-3 text-2xl" />}
+                                                                {osLabel === "Windows" && <FaWindows className="ml-3 text-xl" />}
+                                                                {osLabel === "Android" && <FaAndroid className="ml-3 text-2xl" />}
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Phases 1 & 2: Legacy Evrything Stencils */}
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                {!isLogoPhase && !isMomentumPhase && (
+                    <svg
+                        viewBox="0 0 375 375"
+                        className="w-full max-w-[90vw] sm:max-w-[600px] h-auto overflow-visible origin-center"
+                    >
+                        <g transform={`translate(187.5, 187.5) scale(${REF_HEIGHT / (BOUNDS[step]?.height || 1)}) translate(${-(BOUNDS[step]?.cx || 0)}, ${-(BOUNDS[step]?.cy || 0)})`}>
+                            <g fill={["V", "Y", "H", "N", "A"].includes(step) ? "#000000" : (step === "A" || step === "i") ? "#fd5934" : "#ffffff"}>
+                                {step in ALPHABET && ALPHABET[step as string].map((dotPath, i) => {
+                                    if (dotPath.length < 10) return null;
+
+                                    if (step === "E") {
+                                        return (
+                                            <motion.path
+                                                key={`e-${i}`}
+                                                initial={{ opacity: 0, x: randomStarts[i].x, y: randomStarts[i].y, scale: 0.2, d: dotPath }}
+                                                animate={{ opacity: 1, x: 0, y: 0, scale: 1, d: dotPath }}
+                                                transition={{
+                                                    type: "tween",
+                                                    ease: [0.33, 1, 0.68, 1],
+                                                    duration: 0.8,
+                                                    delay: i * 0.1,
+                                                }}
+                                                onAnimationComplete={() => {
+                                                    if (i === ALPHABET["E"].length - 1) {
+                                                        setTimeout(() => {
+                                                            setStepIndex((prev) => prev + 1);
+                                                        }, 600);
+                                                    }
+                                                }}
+                                            />
+                                        );
                                     }
-                                }}
+
+                                    return <path key={`${step}-${i}`} d={dotPath} />;
+                                })}
+                            </g>
+                        </g>
+                    </svg>
+                )}
+
+                {isLogoPhase ? (
+                    <div className="relative w-[90vw] max-w-[800px] flex items-center justify-center flex-shrink-0">
+                        {step === "LOGO_BLACK_BG_2" ? (
+                            <Image
+                                src="/logo-white.svg"
+                                alt="Evrything AI Final Logo"
+                                width={800}
+                                height={800}
+                                className="w-full h-auto max-w-full"
+                                priority
                             />
-                        );
-                    })}
-                    {isComplete && V_DOTS.map((dotPath, i) => {
-                        if (dotPath.length < 10) return null;
-                        return <path key={`v-${i}`} d={dotPath} />;
-                    })}
-                </g>
-            </motion.svg>
+                        ) : (
+                            <Image
+                                src="/logo-black.svg"
+                                alt="Evrything AI Final Logo"
+                                width={800}
+                                height={800}
+                                className="w-full h-auto max-w-full"
+                                priority
+                            />
+                        )}
+                    </div>
+                ) : null}
+            </div>
+
         </div>
     );
 }
