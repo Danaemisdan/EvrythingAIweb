@@ -427,9 +427,13 @@ export default function Hero() {
                                                 </li>
                                             </ul>
 
-                                            <Button onClick={() => setShowPopup(false)} className="w-full h-12 mt-4 text-base font-medium">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => e.preventDefault()}
+                                                className="w-full h-12 mt-4 text-base font-medium rounded-full cursor-not-allowed opacity-50 bg-[#09090b] text-white flex items-center justify-center transition-none"
+                                            >
                                                 Coming soon
-                                            </Button>
+                                            </button>
                                         </CardContent>
                                     </Card>
                                 </ShineBorder>

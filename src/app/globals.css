@@ -121,6 +121,12 @@ body {
   }
 }
 
+.aurora-download-btn {
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+}
+
 .aurora-download-btn:hover .aurora-glow-ring {
   opacity: 1;
 }
