@@ -285,13 +285,12 @@ export default function Hero() {
                                                     <div className="pt-6 sm:pt-8 flex flex-col items-center z-50">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
-                                                            className="aurora-download-btn group relative bg-transparent border border-white/30 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-bold text-base md:text-lg transition-all duration-500 hover:border-transparent flex items-center gap-3 w-fit mx-auto self-center justify-center shrink-0"
+                                                            className="group relative bg-[#0a0a0a] border border-white/20 hover:border-white/50 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-medium text-base md:text-lg transition-all duration-300 flex items-center gap-3 w-fit mx-auto self-center justify-center shrink-0"
                                                         >
                                                             {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="w-5 h-5 shrink-0" />}
                                                             {osLabel === "Windows" && <FaWindows className="w-5 h-5 shrink-0" />}
                                                             {osLabel === "Android" && <FaAndroid className="w-5 h-5 shrink-0" />}
                                                             Download for {osLabel}
-                                                            <span className="aurora-glow-ring"></span>
                                                         </button>
                                                     </div>
                                                 </motion.div>
