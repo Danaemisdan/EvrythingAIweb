@@ -282,10 +282,14 @@ export default function Hero() {
                                                             className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full bg-black border border-white/20 text-white text-lg md:text-xl transition-all duration-500 min-w-[200px] md:min-w-[280px]"
                                                         >
                                                             {/* Glowing Gradient Shadow */}
-                                                            <div className="absolute inset-[-1px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full blur-[15px] pointer-events-none" />
+                                                            <div
+                                                                className="absolute inset-[-1px] -z-10 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] rounded-full blur-[15px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-gradient-flow"
+                                                            />
 
                                                             {/* Dynamic Gradient Flow Background (Revealed on Hover) */}
-                                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full" />
+                                                            <div
+                                                                className="absolute inset-0 z-0 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-gradient-flow"
+                                                            />
 
                                                             <span className="relative z-10 flex items-center font-semibold tracking-wide">
                                                                 {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="mr-3 text-2xl" />}
@@ -383,16 +387,17 @@ export default function Hero() {
                         className="fixed inset-0 z-[100] flex items-center justify-center px-4"
                     >
                         <div
-                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-2xl"
                             onClick={() => setShowPopup(false)}
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="relative bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl flex flex-col items-center text-center overflow-hidden"
+                            initial={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
+                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            className="relative bg-white/5 border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-[0_0_80px_rgba(0,0,0,0.8)] backdrop-blur-3xl flex flex-col items-center text-center overflow-hidden"
                         >
-                            <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500" />
+                            <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C]" />
                             <h3 className="text-2xl font-semibold text-white mb-3 tracking-tight">Coming Soon</h3>
                             <p className="text-white/60 mb-8 max-w-[280px]">
                                 Momentum OS is in active development. Stay tuned for our release!
