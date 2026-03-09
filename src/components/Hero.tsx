@@ -175,7 +175,7 @@ export default function Hero() {
     const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
     return (
-        <div className={`relative w - full h - screen overflow - hidden ${bgTransitionClass} ${bgColorClass} `}>
+        <div className={`relative w-full h-screen overflow-hidden ${bgTransitionClass} ${bgColorClass}`}>
 
             {/* Phase 3: Dynamic WebGL and OS Layer */}
             <AnimatePresence>
@@ -318,7 +318,7 @@ export default function Hero() {
                                     if (step === "E") {
                                         return (
                                             <motion.path
-                                                key={`e - ${i} `}
+                                                key={`e-${i}`}
                                                 initial={{ opacity: 0, x: randomStarts[i].x, y: randomStarts[i].y, scale: 0.2, d: dotPath }}
                                                 animate={{ opacity: 1, x: 0, y: 0, scale: 1, d: dotPath }}
                                                 transition={{
@@ -338,7 +338,7 @@ export default function Hero() {
                                         );
                                     }
 
-                                    return <path key={`${step} -${i} `} d={dotPath} />;
+                                    return <path key={`${step}-${i}`} d={dotPath} />;
                                 })}
                             </g>
                         </g>
