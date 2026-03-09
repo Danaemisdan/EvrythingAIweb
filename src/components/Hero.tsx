@@ -17,7 +17,11 @@ import { I2_DOTS } from "./i2-dots";
 import { DynamicWaveCanvas } from "./dynamic-wave-canvas-background";
 import { FaApple, FaWindows, FaAndroid } from "react-icons/fa";
 import { ShineBorder } from "./ui/shine-border";
-import { Check } from "lucide-react";
+import { Check, Flame } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 // Geometrical Bounding Box Extractor
 function getPathsBounds(paths: string[]) {
@@ -281,16 +285,13 @@ export default function Hero() {
                                                     <div className="pt-6 sm:pt-8 flex flex-col items-center z-50">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
-                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full bg-black border border-white/20 text-white text-lg md:text-xl transition-all duration-500 min-w-[200px] md:min-w-[280px]"
+                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full text-white text-lg md:text-xl transition-all duration-300 min-w-[200px] md:min-w-[280px] bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] animate-[gradient-flow_2.5s_ease_infinite] shadow-[0_4px_14px_0_rgba(248,106,146,0.39)]"
+                                                            style={{ backgroundSize: "300% 300%" }}
                                                         >
-                                                            {/* Glowing Gradient Shadow */}
+                                                            {/* Glowing Gradient Soft Shadow */}
                                                             <div
-                                                                className="absolute inset-[-1px] -z-10 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] rounded-full blur-[15px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-gradient-flow"
-                                                            />
-
-                                                            {/* Dynamic Gradient Flow Background (Revealed on Hover) */}
-                                                            <div
-                                                                className="absolute inset-0 z-0 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-gradient-flow"
+                                                                className="absolute inset-[-2px] -z-10 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] rounded-full blur-[24px] pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity duration-500 animate-[gradient-flow_2.5s_ease_infinite]"
+                                                                style={{ backgroundSize: "300% 300%" }}
                                                             />
 
                                                             <span className="relative z-10 flex items-center font-semibold tracking-wide">
@@ -399,30 +400,48 @@ export default function Hero() {
                             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                             className="w-full max-w-md shadow-[0_0_80px_rgba(0,0,0,0.8)]"
                         >
-                            <ShineBorder borderWidth={1.5} duration={3} className="w-full bg-[#0a0a0a]">
-                                <div className="relative h-full p-8 flex flex-col items-center text-center">
-                                    <h3 className="text-2xl font-semibold text-white mb-3 tracking-tight">Pre-order Momentum OS</h3>
-                                    <p className="text-white/60 mb-6 font-medium">
-                                        Secure your lifetime license today.
-                                    </p>
-                                    <div className="flex items-baseline gap-1 mb-6">
-                                        <span className="text-white text-5xl font-semibold tracking-tight">$30</span>
-                                        <span className="text-white/60 text-lg font-medium">forever</span>
-                                    </div>
-                                    <div className="h-px bg-white/10 w-full mb-6" />
-                                    <ul className="flex flex-col gap-4 w-full mb-8 text-left">
-                                        <li className="flex items-center gap-3 text-base text-white/80 font-medium">
-                                            <Check className="size-5 text-[#F86A92] shrink-0" />
-                                            <span>7 day free trial, cancel anytime</span>
-                                        </li>
-                                    </ul>
-                                    <button
-                                        onClick={() => setShowPopup(false)}
-                                        className="w-full py-4 rounded-full bg-white text-black font-semibold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
-                                    >
-                                        Coming soon
-                                    </button>
-                                </div>
+                            <ShineBorder borderWidth={1.5} duration={3} className="w-full bg-[#0a0a0a] text-white">
+                                <Card className="relative h-full rounded-2xl p-6 sm:p-8 gap-8 border-0 ring-0 bg-[#0a0a0a] text-white shadow-none">
+                                    <CardHeader className="p-0">
+                                        <div className="flex flex-col gap-3 self-stretch text-left">
+                                            <div className="flex items-center justify-between">
+                                                <CardTitle className="text-xl sm:text-2xl font-medium text-white tracking-tight">
+                                                    Pre-order Momentum OS
+                                                </CardTitle>
+                                                <Badge className="py-1 px-3 text-xs sm:text-sm font-medium leading-5 w-fit h-7 flex items-center gap-1.5 [&>svg]:size-4! bg-white text-black hover:bg-white/90 border-0 shrink-0">
+                                                    <Flame size={16} /> Recommend
+                                                </Badge>
+                                            </div>
+                                            <CardDescription className="text-sm sm:text-base font-normal max-w-2xl text-white/60">
+                                                Secure your lifetime license today.
+                                            </CardDescription>
+                                        </div>
+                                    </CardHeader>
+
+                                    <CardContent className="flex flex-col flex-1 gap-6 sm:gap-8 p-0 mt-6 sm:mt-8 text-left">
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-white text-4xl sm:text-5xl font-medium tracking-tight">
+                                                $30
+                                            </span>
+                                            <span className="text-white/60 text-sm sm:text-base font-normal">
+                                                forever
+                                            </span>
+                                        </div>
+
+                                        <Separator className="bg-white/10" />
+
+                                        <ul className="flex flex-col gap-4 flex-1">
+                                            <li className="flex items-center gap-3 text-sm sm:text-base font-normal text-white/70">
+                                                <Check className="size-4 sm:size-5 text-[#F86A92] shrink-0" />
+                                                7 day free trial, cancel anytime
+                                            </li>
+                                        </ul>
+
+                                        <Button onClick={() => setShowPopup(false)} className="w-full h-12 bg-white text-black hover:bg-white/90 font-semibold text-base mt-2 transition-transform active:scale-[0.98]">
+                                            Coming soon
+                                        </Button>
+                                    </CardContent>
+                                </Card>
                             </ShineBorder>
                         </motion.div>
                     </motion.div>
