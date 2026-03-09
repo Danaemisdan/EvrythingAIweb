@@ -103,6 +103,7 @@ export default function Hero() {
     const [stepIndex, setStepIndex] = useState(0);
     const [hasVisited, setHasVisited] = useState<boolean | null>(null);
     const [osLabel, setOsLabel] = useState<"macOS" | "Windows" | "iOS" | "Android">("Windows");
+    const [showPopup, setShowPopup] = useState(false);
 
     useEffect(() => {
         // Hydrate session routing
@@ -277,17 +278,20 @@ export default function Hero() {
 
                                                     <div className="pt-6 sm:pt-8 flex flex-col items-center z-50">
                                                         <button
-                                                            onClick={() => alert("Coming soon! Stay tuned!")}
-                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full bg-black border border-white/20 text-white text-lg md:text-xl font-medium hover:text-white transition-all duration-500 overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] min-w-[200px] md:min-w-[240px]"
+                                                            onClick={() => setShowPopup(true)}
+                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full bg-black border border-white/20 text-white text-lg md:text-xl transition-all duration-500 min-w-[200px] md:min-w-[280px]"
                                                         >
-                                                            {/* Dynamic Gradient Flow Background (Revealed on Hover) */}
-                                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x" />
+                                                            {/* Glowing Gradient Shadow */}
+                                                            <div className="absolute inset-[-1px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full blur-[15px] pointer-events-none" />
 
-                                                            <span className="relative z-10 flex items-center">
-                                                                Download for
-                                                                {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="ml-3 text-2xl" />}
-                                                                {osLabel === "Windows" && <FaWindows className="ml-3 text-xl" />}
-                                                                {osLabel === "Android" && <FaAndroid className="ml-3 text-2xl" />}
+                                                            {/* Dynamic Gradient Flow Background (Revealed on Hover) */}
+                                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full" />
+
+                                                            <span className="relative z-10 flex items-center font-semibold tracking-wide">
+                                                                {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="mr-3 text-2xl" />}
+                                                                {osLabel === "Windows" && <FaWindows className="mr-3 text-xl" />}
+                                                                {osLabel === "Android" && <FaAndroid className="mr-3 text-2xl" />}
+                                                                Download for {osLabel}
                                                             </span>
                                                         </button>
                                                     </div>
@@ -369,6 +373,40 @@ export default function Hero() {
                 ) : null}
             </div>
 
+            {/* Custom Coming Soon Popup */}
+            <AnimatePresence>
+                {showPopup && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+                    >
+                        <div
+                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                            onClick={() => setShowPopup(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="relative bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl flex flex-col items-center text-center overflow-hidden"
+                        >
+                            <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500" />
+                            <h3 className="text-2xl font-semibold text-white mb-3 tracking-tight">Coming Soon</h3>
+                            <p className="text-white/60 mb-8 max-w-[280px]">
+                                Momentum OS is in active development. Stay tuned for our release!
+                            </p>
+                            <button
+                                onClick={() => setShowPopup(false)}
+                                className="w-full py-3.5 rounded-full bg-white text-black font-semibold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                            >
+                                Got it
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
