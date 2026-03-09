@@ -381,8 +381,12 @@ export default function Hero() {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[100] flex items-center justify-center px-4"
                     >
-                        <div
-                            className="absolute inset-0 bg-black/40 backdrop-blur-2xl"
+                        <motion.div
+                            initial={{ backdropFilter: "blur(0px)" }}
+                            animate={{ backdropFilter: "blur(24px)" }}
+                            exit={{ backdropFilter: "blur(0px)" }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute inset-0 bg-black/40"
                             onClick={() => setShowPopup(false)}
                         />
                         <motion.div
@@ -398,7 +402,14 @@ export default function Hero() {
                                         <CardHeader className="p-0">
                                             <div className="flex flex-col gap-3 self-stretch">
                                                 <div className="flex items-center justify-between">
-                                                    <CardTitle className="text-2xl font-medium text-primary">
+                                                    <CardTitle className="text-2xl font-medium text-primary flex items-center gap-2">
+                                                        <Image
+                                                            src="/3.svg"
+                                                            alt="Momentum OS Logo"
+                                                            width={28}
+                                                            height={28}
+                                                            className="w-7 h-7"
+                                                        />
                                                         Pre-order Momentum OS
                                                     </CardTitle>
                                                 </div>
