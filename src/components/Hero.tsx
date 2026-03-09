@@ -382,11 +382,11 @@ export default function Hero() {
                         className="fixed inset-0 z-[100] flex items-center justify-center px-4"
                     >
                         <motion.div
-                            initial={{ backdropFilter: "blur(0px)" }}
-                            animate={{ backdropFilter: "blur(24px)" }}
-                            exit={{ backdropFilter: "blur(0px)" }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute inset-0 bg-black/40"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-2xl"
                             onClick={() => setShowPopup(false)}
                         />
                         <motion.div
@@ -404,7 +404,7 @@ export default function Hero() {
                                                 <div className="flex items-center justify-between">
                                                     <CardTitle className="text-2xl font-medium text-primary flex items-center gap-2">
                                                         <Image
-                                                            src="/3.svg"
+                                                            src="/20.svg"
                                                             alt="Momentum OS Logo"
                                                             width={28}
                                                             height={28}
