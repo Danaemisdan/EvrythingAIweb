@@ -275,22 +275,23 @@ export default function Hero() {
                                                     transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
                                                     className="absolute flex flex-col items-center text-center space-y-1 top-1/2 mt-4"
                                                 >
-                                                    <h1 className="text-white text-3xl md:text-5xl font-medium tracking-tight mb-4 sm:mb-6 max-w-3xl z-10 px-4">
+                                                    <h1 className="text-white text-[3.5rem] sm:text-[4.5rem] md:text-[5.5rem] lg:text-[7rem] leading-none font-normal tracking-tight mb-3 sm:mb-4 max-w-4xl z-10 px-4">
                                                         Momentum OS
                                                     </h1>
-                                                    <p className="text-lg md:text-xl text-zinc-400 max-w-xl font-light leading-relaxed mb-8 z-10 px-6 text-center">
+                                                    <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-xl font-light leading-relaxed mb-8 z-10 px-6 text-center">
                                                         Turn your computer into an AI growth engine.
                                                     </p>
 
-                                                    <div className="pt-6 sm:pt-8 flex flex-col items-center z-50">
+                                                    <div className="pt-4 sm:pt-6 flex flex-col items-center z-50">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
-                                                            className="group relative bg-[#0a0a0a] border border-white/20 hover:border-white/50 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-medium text-base md:text-lg transition-all duration-300 flex items-center gap-3 w-fit mx-auto self-center justify-center shrink-0"
+                                                            className="aurora-download-btn group relative bg-transparent border border-white/30 text-white px-6 md:px-8 py-3 md:py-3.5 rounded-full font-medium text-sm md:text-base transition-all duration-500 hover:border-transparent flex items-center gap-2.5 w-fit mx-auto self-center justify-center shrink-0"
                                                         >
-                                                            {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="w-5 h-5 shrink-0" />}
-                                                            {osLabel === "Windows" && <FaWindows className="w-5 h-5 shrink-0" />}
-                                                            {osLabel === "Android" && <FaAndroid className="w-5 h-5 shrink-0" />}
+                                                            {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="w-4 h-4 shrink-0" />}
+                                                            {osLabel === "Windows" && <FaWindows className="w-4 h-4 shrink-0" />}
+                                                            {osLabel === "Android" && <FaAndroid className="w-4 h-4 shrink-0" />}
                                                             Download for {osLabel}
+                                                            <span className="aurora-glow-ring"></span>
                                                         </button>
                                                     </div>
                                                 </motion.div>
