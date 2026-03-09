@@ -38,6 +38,7 @@ const PulsarGridBackground = ({
     let frameId: number;
     let time = 0;
 
+    // eslint-disable-next-line react-hooks/unsupported-syntax
     class Dot {
       x: number;
       y: number;

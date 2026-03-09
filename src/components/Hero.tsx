@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { E_DOTS } from "./e-dots";
@@ -17,10 +17,8 @@ import { I2_DOTS } from "./i2-dots";
 import { DynamicWaveCanvas } from "./dynamic-wave-canvas-background";
 import { FaApple, FaWindows, FaAndroid } from "react-icons/fa";
 import { ShineBorder } from "./ui/shine-border";
-import { Check, Flame } from "lucide-react";
+import { Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 // Geometrical Bounding Box Extractor
@@ -112,9 +110,9 @@ export default function Hero() {
     const [showPopup, setShowPopup] = useState(false);
 
     useEffect(() => {
-        // Hydrate session routing
         const visited = sessionStorage.getItem("evrything-visited");
         if (visited) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setHasVisited(true);
             setStepIndex(STEP_KEYS.indexOf("LOGO_WHITE_BG_3"));
         } else {
@@ -140,7 +138,7 @@ export default function Hero() {
     const isMomentumPhase = stepIndex >= STEP_KEYS.indexOf("INTRO_TEXT");
     const isCanvasPhase = stepIndex >= STEP_KEYS.indexOf("CANVAS_AND_LOGO");
 
-    const randomStarts = useMemo(() => {
+    const [randomStarts] = useState(() => {
         return ALPHABET["E"].map(() => {
             const side = Math.floor(Math.random() * 4);
             const distance = 800;
@@ -152,7 +150,7 @@ export default function Hero() {
                 default: return { x: 0, y: distance };
             }
         });
-    }, []);
+    });
 
     // Sequence execution timeline
     useEffect(() => {
@@ -177,7 +175,7 @@ export default function Hero() {
     const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
     return (
-        <div className={`relative w-full h-screen overflow-hidden ${bgTransitionClass} ${bgColorClass}`}>
+        <div className={`relative w - full h - screen overflow - hidden ${bgTransitionClass} ${bgColorClass} `}>
 
             {/* Phase 3: Dynamic WebGL and OS Layer */}
             <AnimatePresence>
@@ -312,7 +310,7 @@ export default function Hero() {
                         viewBox="0 0 375 375"
                         className="w-full max-w-[90vw] sm:max-w-[600px] h-auto overflow-visible origin-center"
                     >
-                        <g transform={`translate(187.5, 187.5) scale(${REF_HEIGHT / (BOUNDS[step]?.height || 1)}) translate(${-(BOUNDS[step]?.cx || 0)}, ${-(BOUNDS[step]?.cy || 0)})`}>
+                        <g transform={`translate(187.5, 187.5) scale(${REF_HEIGHT / (BOUNDS[step]?.height || 1)}) translate(${- (BOUNDS[step]?.cx || 0)}, ${- (BOUNDS[step]?.cy || 0)})`}>
                             <g fill={["V", "Y", "H", "N", "A"].includes(step) ? "#000000" : (step === "A" || step === "i") ? "#fd5934" : "#ffffff"}>
                                 {step in ALPHABET && ALPHABET[step as string].map((dotPath, i) => {
                                     if (dotPath.length < 10) return null;
@@ -320,7 +318,7 @@ export default function Hero() {
                                     if (step === "E") {
                                         return (
                                             <motion.path
-                                                key={`e-${i}`}
+                                                key={`e - ${i} `}
                                                 initial={{ opacity: 0, x: randomStarts[i].x, y: randomStarts[i].y, scale: 0.2, d: dotPath }}
                                                 animate={{ opacity: 1, x: 0, y: 0, scale: 1, d: dotPath }}
                                                 transition={{
@@ -340,7 +338,7 @@ export default function Hero() {
                                         );
                                     }
 
-                                    return <path key={`${step}-${i}`} d={dotPath} />;
+                                    return <path key={`${step} -${i} `} d={dotPath} />;
                                 })}
                             </g>
                         </g>
@@ -408,7 +406,7 @@ export default function Hero() {
                                                             alt="Momentum OS Logo"
                                                             width={28}
                                                             height={28}
-                                                            className="w-7 h-7"
+                                                            className="w-7 h-7 shrink-0 object-contain"
                                                         />
                                                         Pre-order Momentum OS
                                                     </CardTitle>

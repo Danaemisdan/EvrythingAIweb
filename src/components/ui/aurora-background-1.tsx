@@ -45,7 +45,7 @@ const AuroraBackground = ({
               "--violet-400": "#a78bfa",
               "--blue-600": "#2563eb",
               "--zinc-900": "#18181b",
-            } as any}
+            } as React.CSSProperties}
           />
         </div>
         {showRadialGradient && (

@@ -27,6 +27,7 @@ const DigitalLoomBackground: React.FC<DigitalLoomBackgroundProps> = ({
     let animId: number;
     let width: number, height: number;
 
+    // eslint-disable-next-line react-hooks/unsupported-syntax
     class Thread {
       x!: number;
       y!: number;

@@ -154,14 +154,16 @@ const SynapseBackground: React.FC<SynapseBackgroundProps> = ({
     }
     animate()
 
+    const currentMount = mountRef.current;
+
     return () => {
-      mountRef.current?.removeEventListener('mousemove', onMouseMove)
+      currentMount?.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('resize', onResize)
 
       if (rendererRef.current) {
         rendererRef.current.dispose()
-        const canvasEl = mountRef.current?.querySelector('canvas')
-        if (canvasEl) mountRef.current!.removeChild(canvasEl)
+        const canvasEl = currentMount?.querySelector('canvas')
+        if (canvasEl) currentMount!.removeChild(canvasEl)
         rendererRef.current = null
       }
     }
