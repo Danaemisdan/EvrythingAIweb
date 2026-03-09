@@ -275,36 +275,23 @@ export default function Hero() {
                                                     transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
                                                     className="absolute flex flex-col items-center text-center space-y-1 top-1/2 mt-4"
                                                 >
-                                                    <h1 className="text-white text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight drop-shadow-lg leading-tight px-4">
+                                                    <h1 className="text-white text-3xl md:text-5xl font-medium tracking-tight mb-4 sm:mb-6 max-w-3xl z-10 px-4">
                                                         Momentum OS
                                                     </h1>
-                                                    <p className="text-white/70 text-lg sm:text-xl md:text-2xl font-normal tracking-wide max-w-2xl px-6 text-balance bg-clip-text">
+                                                    <p className="text-lg md:text-xl text-zinc-400 max-w-xl font-light leading-relaxed mb-8 z-10 px-6 text-center">
                                                         Turn your computer into an AI growth engine.
                                                     </p>
 
                                                     <div className="pt-6 sm:pt-8 flex flex-col items-center z-50">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
-                                                            className="group relative flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-full border border-white/20 hover:border-transparent text-white text-lg md:text-xl transition-all duration-300 min-w-[200px] md:min-w-[280px]"
+                                                            className="aurora-download-btn group relative bg-transparent border border-white/30 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-bold text-base md:text-lg transition-all duration-500 hover:border-transparent flex items-center gap-3 w-fit mx-auto self-center justify-center shrink-0"
                                                         >
-                                                            {/* Default State Background */}
-                                                            <div className="absolute inset-0 bg-[#0a0a0a] rounded-full group-hover:opacity-0 transition-opacity duration-300 z-0" />
-
-                                                            {/* Hover State Soft Glowing Blob */}
-                                                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0 flex items-center justify-center rounded-full">
-                                                                {/* The core bright gradient pill */}
-                                                                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] animate-[gradient-flow_2s_ease_infinite]" style={{ backgroundSize: '300% 300%' }} />
-                                                                {/* The extremely soft blooming shadow around it */}
-                                                                <div className="absolute inset-[-12px] rounded-full blur-2xl opacity-70 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C] animate-[gradient-flow_2s_ease_infinite]" style={{ backgroundSize: '300% 300%' }} />
-                                                            </div>
-
-                                                            {/* Content */}
-                                                            <span className="relative z-10 flex items-center font-semibold tracking-wide">
-                                                                {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="mr-3 text-2xl" />}
-                                                                {osLabel === "Windows" && <FaWindows className="mr-3 text-xl" />}
-                                                                {osLabel === "Android" && <FaAndroid className="mr-3 text-2xl" />}
-                                                                Download for {osLabel}
-                                                            </span>
+                                                            {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="w-5 h-5 shrink-0" />}
+                                                            {osLabel === "Windows" && <FaWindows className="w-5 h-5 shrink-0" />}
+                                                            {osLabel === "Android" && <FaAndroid className="w-5 h-5 shrink-0" />}
+                                                            Download for {osLabel}
+                                                            <span className="aurora-glow-ring"></span>
                                                         </button>
                                                     </div>
                                                 </motion.div>
@@ -405,49 +392,48 @@ export default function Hero() {
                             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                             className="w-full max-w-md shadow-[0_0_80px_rgba(0,0,0,0.8)]"
                         >
-                            <ShineBorder borderWidth={1.5} duration={3} className="w-full bg-[#0a0a0a] text-white">
-                                <Card className="relative h-full rounded-2xl p-6 sm:p-8 gap-8 border-0 ring-0 bg-[#0a0a0a] text-white shadow-none">
-                                    <CardHeader className="p-0">
-                                        <div className="flex flex-col gap-3 self-stretch text-left">
-                                            <div className="flex items-center justify-between">
-                                                <CardTitle className="text-xl sm:text-2xl font-medium text-white tracking-tight">
-                                                    Pre-order Momentum OS
-                                                </CardTitle>
-                                                <Badge className="py-1 px-3 text-xs sm:text-sm font-medium leading-5 w-fit h-7 flex items-center gap-1.5 [&>svg]:size-4! bg-white text-black hover:bg-white/90 border-0 shrink-0">
-                                                    <Flame size={16} /> Recommend
-                                                </Badge>
+                            <div className="w-full max-w-md shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+                                <ShineBorder borderWidth={2} duration={4} gradient="from-blue-500 via-red-500 to-teal-400" className="w-full">
+                                    <Card className="relative h-full rounded-2xl p-8 gap-8 border-0 ring-0 text-left">
+                                        <CardHeader className="p-0">
+                                            <div className="flex flex-col gap-3 self-stretch">
+                                                <div className="flex items-center justify-between">
+                                                    <CardTitle className="text-2xl font-medium text-primary">
+                                                        Pre-order Momentum OS
+                                                    </CardTitle>
+                                                </div>
+                                                <CardDescription className="text-base font-normal max-w-2xl text-muted-foreground">
+                                                    Secure your lifetime license today.
+                                                </CardDescription>
                                             </div>
-                                            <CardDescription className="text-sm sm:text-base font-normal max-w-2xl text-white/60">
-                                                Secure your lifetime license today.
-                                            </CardDescription>
-                                        </div>
-                                    </CardHeader>
+                                        </CardHeader>
 
-                                    <CardContent className="flex flex-col flex-1 gap-6 sm:gap-8 p-0 mt-6 sm:mt-8 text-left">
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-white text-4xl sm:text-5xl font-medium tracking-tight">
-                                                $30
-                                            </span>
-                                            <span className="text-white/60 text-sm sm:text-base font-normal">
-                                                forever
-                                            </span>
-                                        </div>
+                                        <CardContent className="flex flex-col flex-1 gap-8 p-0 mt-8">
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-foreground text-4xl sm:text-5xl font-medium">
+                                                    $30
+                                                </span>
+                                                <span className="text-muted-foreground text-base font-normal">
+                                                    forever
+                                                </span>
+                                            </div>
 
-                                        <Separator className="bg-white/10" />
+                                            <Separator />
 
-                                        <ul className="flex flex-col gap-4 flex-1">
-                                            <li className="flex items-center gap-3 text-sm sm:text-base font-normal text-white/70">
-                                                <Check className="size-4 sm:size-5 text-[#F86A92] shrink-0" />
-                                                7 day free trial, cancel anytime
-                                            </li>
-                                        </ul>
+                                            <ul className="flex flex-col gap-4 flex-1 mt-4">
+                                                <li className="flex items-center gap-3 text-base font-normal text-muted-foreground">
+                                                    <Check className="size-4 text-primary shrink-0" />
+                                                    7 day free trial, cancel anytime
+                                                </li>
+                                            </ul>
 
-                                        <Button onClick={() => setShowPopup(false)} className="w-full h-12 bg-white text-black hover:bg-white/90 font-semibold text-base mt-2 transition-transform active:scale-[0.98]">
-                                            Coming soon
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            </ShineBorder>
+                                            <Button onClick={() => setShowPopup(false)} className="w-full h-12 mt-4 text-base font-medium">
+                                                Coming soon
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                </ShineBorder>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

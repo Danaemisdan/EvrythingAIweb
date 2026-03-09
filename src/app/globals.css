@@ -92,6 +92,44 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ══ Download button glow ring on hover ══ */
+.aurora-download-btn {
+  position: relative;
+  overflow: visible;
+}
+
+.aurora-glow-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  background: linear-gradient(110deg, #8b5cf6, #c850c0, #ff6b35, #f7c59f, #8b5cf6);
+  background-size: 300% 100%;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.4s ease;
+  filter: blur(4px);
+  animation: aurora-flow-linear 2.5s linear infinite;
+}
+
+@keyframes aurora-flow-linear {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 300% 50%;
+  }
+}
+
+.aurora-download-btn:hover .aurora-glow-ring {
+  opacity: 1;
+}
+
+.aurora-download-btn:hover {
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
 /*
   ---break---
 */
