@@ -16,6 +16,8 @@ import { A_DOTS } from "./a-dots";
 import { I2_DOTS } from "./i2-dots";
 import { DynamicWaveCanvas } from "./dynamic-wave-canvas-background";
 import { FaApple, FaWindows, FaAndroid } from "react-icons/fa";
+import { ShineBorder } from "./ui/shine-border";
+import { Check } from "lucide-react";
 
 // Geometrical Bounding Box Extractor
 function getPathsBounds(paths: string[]) {
@@ -395,19 +397,33 @@ export default function Hero() {
                             animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
                             exit={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
                             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                            className="relative bg-white/5 border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-[0_0_80px_rgba(0,0,0,0.8)] backdrop-blur-3xl flex flex-col items-center text-center overflow-hidden"
+                            className="w-full max-w-md shadow-[0_0_80px_rgba(0,0,0,0.8)]"
                         >
-                            <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-[#A98BFE] via-[#F86A92] to-[#FB923C]" />
-                            <h3 className="text-2xl font-semibold text-white mb-3 tracking-tight">Coming Soon</h3>
-                            <p className="text-white/60 mb-8 max-w-[280px]">
-                                Momentum OS is in active development. Stay tuned for our release!
-                            </p>
-                            <button
-                                onClick={() => setShowPopup(false)}
-                                className="w-full py-3.5 rounded-full bg-white text-black font-semibold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
-                            >
-                                Got it
-                            </button>
+                            <ShineBorder borderWidth={1.5} duration={3} className="w-full bg-[#0a0a0a]">
+                                <div className="relative h-full p-8 flex flex-col items-center text-center">
+                                    <h3 className="text-2xl font-semibold text-white mb-3 tracking-tight">Pre-order Momentum OS</h3>
+                                    <p className="text-white/60 mb-6 font-medium">
+                                        Secure your lifetime license today.
+                                    </p>
+                                    <div className="flex items-baseline gap-1 mb-6">
+                                        <span className="text-white text-5xl font-semibold tracking-tight">$30</span>
+                                        <span className="text-white/60 text-lg font-medium">forever</span>
+                                    </div>
+                                    <div className="h-px bg-white/10 w-full mb-6" />
+                                    <ul className="flex flex-col gap-4 w-full mb-8 text-left">
+                                        <li className="flex items-center gap-3 text-base text-white/80 font-medium">
+                                            <Check className="size-5 text-[#F86A92] shrink-0" />
+                                            <span>7 day free trial, cancel anytime</span>
+                                        </li>
+                                    </ul>
+                                    <button
+                                        onClick={() => setShowPopup(false)}
+                                        className="w-full py-4 rounded-full bg-white text-black font-semibold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                                    >
+                                        Coming soon
+                                    </button>
+                                </div>
+                            </ShineBorder>
                         </motion.div>
                     </motion.div>
                 )}
