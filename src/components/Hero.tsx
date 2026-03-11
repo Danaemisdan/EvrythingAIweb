@@ -493,6 +493,12 @@ export default function Hero() {
                                     >
                                         {/* ── Top Half: Text (Left) & CTA (Right) ── */}
                                         <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-start justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-16 lg:gap-12">
+
+                                            {/* Absolute Top Right Edge Arrow */}
+                                            <div className="hidden lg:block absolute top-4 right-6 sm:right-12 lg:right-24 text-white/40 animate-bounce">
+                                                <ArrowDown size={48} strokeWidth={1} />
+                                            </div>
+
                                             {/* Left: Bold headline */}
                                             <div className="flex flex-col items-start text-left max-w-[800px]">
                                                 <h3
@@ -503,18 +509,13 @@ export default function Hero() {
                                                 </h3>
                                             </div>
 
-                                            {/* Right: Context Text, Action Button & Arrow */}
-                                            <div className="flex flex-col items-center lg:items-end shrink-0 pointer-events-auto pt-8 lg:pt-0 relative w-full lg:w-auto lg:mt-3">
-                                                {/* Top Right Sleek Arrow Indicator */}
-                                                <div className="absolute top-0 right-0 lg:-right-16 text-white/50 animate-bounce">
-                                                    <ArrowDown size={28} strokeWidth={1} />
-                                                </div>
-
-                                                <div className="flex flex-col items-center gap-10 max-w-[460px]">
-                                                    <p className="text-[#a0a0a0] text-[17px] sm:text-[19px] font-medium leading-relaxed text-center w-full inline-block mt-2" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                            {/* Right: Context Text & Action Button */}
+                                            <div className="flex flex-col items-center lg:items-end shrink-0 pointer-events-auto pt-8 lg:pt-0 relative w-full lg:w-auto lg:mt-3 lg:pr-10">
+                                                <div className="flex flex-col items-end gap-10 max-w-[460px]">
+                                                    <p className="text-[#a0a0a0] text-[17px] sm:text-[19px] font-medium leading-relaxed text-right w-full inline-block mt-2" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                         Momentum OS is built into your OS layer — it<br className="hidden md:block" /> replaces every AI subscription you&apos;re paying for.
                                                     </p>
-                                                    <div className="flex justify-center w-full">
+                                                    <div className="flex justify-end w-full">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
                                                             className="aurora-download-btn group relative bg-transparent border border-[#555] text-white px-10 py-3.5 lg:px-12 lg:py-4 rounded-full font-semibold text-[17px] sm:text-[18px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
