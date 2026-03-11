@@ -3,19 +3,20 @@ import React from "react";
 export default function Footer() {
     return (
         <footer className="relative w-full h-screen bg-black flex items-center justify-center overflow-hidden">
-            {/* Background Video Layer */}
-            <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover z-0"
-            >
-                <source
-                    src="https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4"
-                    type="video/mp4"
-                />
-            </video>
+            {/* Background Media Layer (Sits at the very back) */}
+            <div className="absolute inset-0 z-0">
+                {/* Fallback solid color ensuring mask is visible if video unloads */}
+                <div className="absolute inset-0 w-full h-full bg-[#112233]" />
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
+                >
+                    <source src="/waves.mp4" type="video/mp4" />
+                </video>
+            </div>
 
             {/* Multiply Mask Layer: Everything white becomes transparent (shows video), everything black stays black */}
             <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center mix-blend-multiply pointer-events-none">
