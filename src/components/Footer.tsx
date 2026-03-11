@@ -2,53 +2,64 @@ import React from "react";
 
 export default function Footer() {
     return (
-        <footer className="relative w-full h-screen bg-black flex items-center justify-center overflow-hidden">
-            {/* Background Media Layer (Sits at the very back) */}
-            <div className="absolute inset-0 z-0">
-                {/* Fallback solid color ensuring mask is visible if video unloads */}
-                <div className="absolute inset-0 w-full h-full bg-[#112233]" />
+        <footer className="relative w-full min-h-[140vh] bg-black flex flex-col items-center justify-center overflow-hidden py-32">
+
+            {/* 1. The SVG Logo Stencil */}
+            {/* We render a video and perfectly mask it using the user's SVG so ONLY the SVG shape shows the video. */}
+            <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 mb-8">
                 <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
+                    autoPlay loop muted playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{
+                        WebkitMaskImage: "url('/2.svg')",
+                        WebkitMaskSize: "contain",
+                        WebkitMaskRepeat: "no-repeat",
+                        WebkitMaskPosition: "center",
+                        maskImage: "url('/2.svg')",
+                        maskSize: "contain",
+                        maskRepeat: "no-repeat",
+                        maskPosition: "center",
+                    }}
                 >
                     <source src="/waves.mp4" type="video/mp4" />
                 </video>
             </div>
 
-            {/* Multiply Mask Layer: Everything white becomes transparent (shows video), everything black stays black */}
-            <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center mix-blend-multiply pointer-events-none">
+            {/* 2. The Text Stencil */}
+            {/* We use an oversized background video and overlay it with a pure black div that has white text punched out via multiply. */}
+            <div className="relative w-full max-w-[1400px] flex items-center justify-center">
 
-                {/* SVG Stencil */}
-                <img
-                    src="/2.svg"
-                    alt="Evrything AI Symbol Stencil"
-                    className="w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 object-contain mb-8 md:mb-12"
-                />
-
-                {/* Big Bold EVRYTHING AI Stencil */}
-                <h1
-                    className="text-white text-[14vw] md:text-[10rem] lg:text-[12rem] font-black leading-[0.9] tracking-tighter text-center uppercase"
-                    style={{ fontFamily: "BlinkMacSystemFont, -apple-system, 'SF Pro Display', sans-serif" }}
+                {/* The Video Layer */}
+                <video
+                    autoPlay loop muted playsInline
+                    className="absolute z-0 w-[120%] h-[120%] object-cover object-center"
                 >
-                    EVRYTHING<br />AI
-                </h1>
+                    <source src="/waves.mp4" type="video/mp4" />
+                </video>
+
+                {/* The Solid Black Punch-Out Mask */}
+                {/* White text inside a Black container + mix-blend-multiply = Black stays black, White becomes 100% transparent opening a hole to the video below. */}
+                <div className="relative z-10 w-full h-full bg-black flex items-center justify-center mix-blend-multiply py-4 md:py-8 lg:py-16">
+                    <h1
+                        className="text-white text-[18vw] md:text-[14rem] lg:text-[18rem] font-black leading-[0.8] tracking-tighter text-center uppercase"
+                        style={{ fontFamily: "BlinkMacSystemFont, -apple-system, 'SF Pro Display', sans-serif" }}
+                    >
+                        EVRYTHING<br />AI
+                    </h1>
+                </div>
+
             </div>
 
-            {/* Foreground text tagging layer (sits above the stencil mask) */}
-            <div className="absolute bottom-16 md:bottom-24 w-full z-20 flex justify-center pointer-events-none px-6">
+            {/* 3. The Tagline */}
+            <div className="relative z-20 mt-16 md:mt-32">
                 <p
-                    className="text-white/90 text-xl md:text-2xl lg:text-3xl font-medium tracking-wide text-center"
-                    style={{
-                        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-                        textShadow: "0px 4px 12px rgba(0,0,0,0.8), 0px 2px 4px rgba(0,0,0,0.6)"
-                    }}
+                    className="text-white/80 text-xl md:text-2xl lg:text-3xl font-medium tracking-tight text-center"
+                    style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" }}
                 >
                     the only AI startup that actually gives a f***
                 </p>
             </div>
+
         </footer>
     );
 }
