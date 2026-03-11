@@ -17,7 +17,7 @@ import { I2_DOTS } from "./i2-dots";
 import { DynamicWaveCanvas } from "./dynamic-wave-canvas-background";
 import { FaApple, FaWindows, FaAndroid } from "react-icons/fa";
 import { ShineBorder } from "./ui/shine-border";
-import { Check } from "lucide-react";
+import { Check, ArrowDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -493,7 +493,7 @@ export default function Hero() {
                                         className="relative z-10 w-full h-full flex flex-col justify-center gap-16 overflow-hidden pt-12"
                                     >
                                         {/* ── Top Half: Text (Left) & CTA (Right) ── */}
-                                        <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-center justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-12">
+                                        <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-end justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-16 lg:gap-12">
                                             {/* Left: Bold headline */}
                                             <div className="flex flex-col items-start text-left max-w-[800px]">
                                                 <h3
@@ -502,13 +502,13 @@ export default function Hero() {
                                                 >
                                                     Don&apos;t F***ing pay subscriptions to AI agents to grow your business.
                                                 </h3>
-                                                <p className="mt-6 text-white/70 text-lg sm:text-xl lg:text-2xl font-medium leading-relaxed max-w-2xl" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
-                                                    Momentum OS is built into your OS layer — it replaces every AI subscription you&apos;re paying for.
-                                                </p>
                                             </div>
 
-                                            {/* Right: Action Buttons (Restored & Clickable) */}
-                                            <div className="flex flex-col items-center gap-5 shrink-0 pointer-events-auto">
+                                            {/* Right: Context Text, Action Button & Arrow */}
+                                            <div className="flex flex-col items-start lg:items-end text-left lg:text-right gap-6 shrink-0 pointer-events-auto max-w-[420px] pt-4 lg:pt-0">
+                                                <p className="text-white/80 text-lg sm:text-xl font-medium leading-relaxed" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif", textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
+                                                    Momentum OS is built into your OS layer — it replaces every AI subscription you&apos;re paying for.
+                                                </p>
                                                 <button
                                                     onClick={() => setShowPopup(true)}
                                                     className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-9 py-3.5 rounded-full font-semibold text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
@@ -516,14 +516,18 @@ export default function Hero() {
                                                     Pre-order
                                                     <span className="aurora-glow-ring"></span>
                                                 </button>
+                                                {/* Animated Arrow Down pointing to the tape */}
+                                                <div className="w-full sm:w-auto flex justify-center lg:justify-end text-white/50 animate-bounce mt-4 lg:pr-8">
+                                                    <ArrowDown size={32} strokeWidth={2} />
+                                                </div>
                                             </div>
                                         </div>
 
                                         {/* ── Bottom Half: Foreground Horizontal Ticker Tape ── */}
                                         <div className="relative w-full z-20 flex flex-col items-center mt-12 mb-4">
                                             {/* Label Text */}
-                                            <p className="text-[#a0a0a0] text-[13px] sm:text-[15px] tracking-[0.3em] uppercase font-bold mb-8 text-center px-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
-                                                Momentum OS&apos;s Agents replace all these, saving you tons of time and money
+                                            <p className="text-white/60 text-lg sm:text-xl font-medium tracking-tight mb-8 text-center px-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                                Evrything AI is democratizing AI so you don&apos;t need subscriptions to gain momentum.
                                             </p>
                                             <div
                                                 className="flex w-max"
