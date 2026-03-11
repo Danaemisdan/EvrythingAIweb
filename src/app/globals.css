@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,700;0,6..96,900&family=Inter:wght@400;500;600&family=Lora:wght@500;600&family=Nunito:wght@600;700&family=Raleway:wght@500;600&family=Outfit:wght@500;600&family=Plus+Jakarta+Sans:wght@500;600&family=Space+Grotesk:wght@400;500&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -73,6 +74,28 @@
   .animate-gradient-flow {
     background-size: 300% 300%;
     animation: gradient-flow 4s ease infinite;
+  }
+}
+
+/* Marquee keyframe must be at top-level (not inside @layer) for animation to work */
+@keyframes marquee-up {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+/* Two-track seamless ticker: each track goes from below→above, Track B is offset -7s */
+@keyframes ticker-up {
+  0% {
+    transform: translateY(100%);
+  }
+
+  100% {
+    transform: translateY(-100%);
   }
 }
 
@@ -257,4 +280,24 @@ body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@keyframes rainbow-border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.rainbow-gradient-border {
+  background: linear-gradient(90deg, #ff0f7b, #f89b29, #ffd700, #00ff87, #00b8ff, #6b21a8, #ff0f7b);
+  background-size: 200% auto;
+  animation: rainbow-border-flow 4s linear infinite;
 }

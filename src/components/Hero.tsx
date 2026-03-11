@@ -103,12 +103,50 @@ const BOUNDS = Object.fromEntries(
 );
 const REF_HEIGHT = BOUNDS['E'].height;
 
+/* ── Pre-order countdown clock ── */
+function PreorderCountdown() {
+    const DEADLINE = new Date("2026-03-31T23:59:59+05:30").getTime();
+    const [timeLeft, setTimeLeft] = useState(() => Math.max(0, DEADLINE - Date.now()));
+
+    useEffect(() => {
+        const id = setInterval(() => setTimeLeft(Math.max(0, DEADLINE - Date.now())), 1000);
+        return () => clearInterval(id);
+    }, [DEADLINE]);
+
+    const d = Math.floor(timeLeft / 86400000);
+    const h = Math.floor((timeLeft % 86400000) / 3600000);
+    const m = Math.floor((timeLeft % 3600000) / 60000);
+    const s = Math.floor((timeLeft % 60000) / 1000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+
+    return (
+        <div className="flex items-center gap-3">
+            <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-black/40">
+                Presale Ends In
+            </span>
+            <div className="flex items-center gap-1.5 text-sm font-medium tracking-tight text-black flex-1 min-w-0">
+                <div className="flex items-baseline gap-px">
+                    <span>{d}</span><span className="text-[10px] text-black/50 ml-0.5 mr-1">D</span>
+                    <span>{pad(h)}</span><span className="text-[10px] text-black/50 ml-0.5 mr-1">H</span>
+                    <span>{pad(m)}</span><span className="text-[10px] text-black/50 ml-0.5 mr-1">M</span>
+                    <span>{pad(s)}</span><span className="text-[10px] text-black/50 ml-0.5">S</span>
+                </div>
+                <div className="h-px bg-black/10 flex-1 ml-2"></div>
+            </div>
+        </div>
+    );
+}
+
+
 export default function Hero() {
     const containerRef = useRef<HTMLDivElement>(null);
+    const logoRef = useRef<SVGSVGElement>(null);
     const [stepIndex, setStepIndex] = useState(0);
     const [hasVisited, setHasVisited] = useState<boolean | null>(null);
     const [osLabel, setOsLabel] = useState<"macOS" | "Windows" | "iOS" | "Android">("Windows");
     const [showPopup, setShowPopup] = useState(false);
+    const [isHeroReady, setIsHeroReady] = useState(false);
+    const [logoRect, setLogoRect] = useState({ cx: 0, cy: 0, size: 300 });
 
     useEffect(() => {
         const visited = sessionStorage.getItem("evrything-visited");
@@ -156,7 +194,31 @@ export default function Hero() {
     // Sequence execution timeline
     useEffect(() => {
         if (hasVisited === null) return;
-        if (step === "MOMENTUM_LOCK") return;
+
+        if (step === "MOMENTUM_LOCK") {
+            const updateRect = () => {
+                if (logoRef.current) {
+                    const rect = logoRef.current.getBoundingClientRect();
+                    setLogoRect({
+                        cx: rect.left + rect.width / 2,
+                        cy: rect.top + rect.height / 2,
+                        size: rect.width
+                    });
+                }
+            };
+
+            // Wait 2 seconds for the y:-140 spring animation to settle securely
+            const t = setTimeout(() => {
+                updateRect();
+                setIsHeroReady(true);
+            }, 2000);
+
+            window.addEventListener('resize', updateRect);
+            return () => {
+                clearTimeout(t);
+                window.removeEventListener('resize', updateRect);
+            };
+        }
 
         if (step !== "E") {
             const duration = TIMINGS[step];
@@ -174,47 +236,44 @@ export default function Hero() {
     });
 
     // ── Hero text/button: blur + fade OUT on early scroll ──────────────────────
-    const blurOutOpacity = useTransform(scrollYProgress, [0, 0.22], [1, 0]);
-    const blurOutRaw = useTransform(scrollYProgress, [0, 0.22], [0, 20]);
+    // NOTE: blurOut is applied ONLY to text + buttons. The logo NEVER blurs.
+    const blurOutOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+    const blurOutRaw = useTransform(scrollYProgress, [0, 0.15], [0, 20]);
     const blurOutFilter = useMotionTemplate`blur(${blurOutRaw}px)`;
-    const blurOutY = useTransform(scrollYProgress, [0, 0.22], [0, -30]);
+    const blurOutY = useTransform(scrollYProgress, [0, 0.15], [0, -30]);
 
-    // ── Stencil clip-path: TRUE LOGO TRIANGLE → FULL VIEWPORT ────────────────
-    // The logo is a triangle with points roughly at:
-    // Top: 50% X, 20% Y
-    // Bottom Right: 80% X, 80% Y
-    // Bottom Center (inner point): 50% X, 65% Y
-    // Bottom Left: 20% X, 80% Y
+    // ── Minimalist Scroll Prompt: blurs & fades OUT immediately on scroll ──
+    const scrollPromptOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0]);
+    const scrollPromptBlur = useTransform(scrollYProgress, [0, 0.05], [0, 10]);
+    const scrollPromptFilter = useMotionTemplate`blur(${scrollPromptBlur}px)`;
 
-    // We animate these 4 points outwards to the 4 corners of the screen.
-    // Progress: 0.15 (start expanding) to 0.75 (fully expanded)
+    // ── Logo fade: static SVG fades out as the expanding copy takes over ──
+    const logoFadeOpacity = useTransform(scrollYProgress, [0.03, 0.12], [1, 0]);
 
-    // Top Point: (50%, 17%) -> (50%, 0%) -> (0%, 0%) and (100%, 0%) to form the top edge
-    // Since polygon only has 4 points to transition cleanly, we map:
-    // P1 (Top/Left edge):   Starts at 50% 17%   -> Ends at 0% 0%
-    // P2 (Top/Right edge):  Starts at 50% 17%   -> Ends at 100% 0%
-    // P3 (Bottom Right):    Starts at 88% 83%   -> Ends at 100% 100%
-    // P4 (Bottom Left):     Starts at 12% 83%   -> Ends at 0% 100%
-    // *We omit the inner bottom point to allow a smooth 4-point polygon transition to a rectangle
+    // ── Logo scale + blur: the actual white logo SVG grows first, then blurs into black ──
+    const logoScaleUp = useTransform(scrollYProgress, [0.05, 0.50], [1, 35]);
+    const logoBlurRaw = useTransform(scrollYProgress, [0.45, 0.55], [0, 90]); // stays sharp, only blurs at the very end
+    const logoBlurFilter = useMotionTemplate`blur(${logoBlurRaw}px)`;
 
-    const p1X = useTransform(scrollYProgress, [0.15, 0.75], [50, 0]);
-    const p1Y = useTransform(scrollYProgress, [0.15, 0.75], [17, 0]);
+    // ── Black overlay: fades in over the blurring logo to complete the dissolve ──
+    const blackOverlayOpacity = useTransform(scrollYProgress, [0.30, 0.55], [0, 1]);
 
-    const p2X = useTransform(scrollYProgress, [0.15, 0.75], [50, 100]);
-    const p2Y = useTransform(scrollYProgress, [0.15, 0.75], [17, 0]);
+    // ── Second section content: blurs + fades IN as black overlay arrives ──
+    const contentOpacity = useTransform(scrollYProgress, [0.50, 0.65], [0, 1]);
+    const contentY = useTransform(scrollYProgress, [0.50, 0.65], [20, 0]);
+    const contentBlurRaw = useTransform(scrollYProgress, [0.50, 0.65], [16, 0]);
+    const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
 
-    const p3X = useTransform(scrollYProgress, [0.15, 0.75], [88, 100]);
-    const p3Y = useTransform(scrollYProgress, [0.15, 0.75], [83, 100]);
+    const enableScroll = isMomentumPhase && step === "MOMENTUM_LOCK" && isHeroReady;
 
-    const p4X = useTransform(scrollYProgress, [0.15, 0.75], [12, 0]);
-    const p4Y = useTransform(scrollYProgress, [0.15, 0.75], [83, 100]);
-
-    const stencilClipPath = useMotionTemplate`polygon(${p1X}% ${p1Y}%, ${p2X}% ${p2Y}%, ${p3X}% ${p3Y}%, ${p4X}% ${p4Y}%)`;
-
-    // ── Feature content: fades in once stencil is mostly open ──────────────────
-    const stencilOpacity = useTransform(scrollYProgress, [0.15, 0.2], [0, 1]); // Stencil layer appears behind logo
-    const contentOpacity = useTransform(scrollYProgress, [0.5, 0.9], [0, 1]); // Text fades in later
-    const contentY = useTransform(scrollYProgress, [0.5, 0.9], [40, 0]);
+    useEffect(() => {
+        if (!enableScroll) {
+            document.body.style.overflow = 'hidden';
+            return () => { document.body.style.overflow = ''; };
+        } else {
+            document.body.style.overflow = '';
+        }
+    }, [enableScroll]);
 
     if (hasVisited === null) {
         return <div ref={containerRef} className="w-full h-screen bg-black" />; // SSR placeholder preventing hydration flash
@@ -224,9 +283,7 @@ export default function Hero() {
     const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
     const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
-    // Determine the wrapper height. We lock scroll during the intro sequence.
-    const enableScroll = isMomentumPhase && step === "MOMENTUM_LOCK";
-    const containerHeightClass = enableScroll ? "h-[250vh]" : "h-screen overflow-hidden";
+    const containerHeightClass = "h-[300vh]"; // Fixed tall height, body lock prevents early scrolling
 
     return (
         <div ref={containerRef} className={`relative w-full ${containerHeightClass} ${bgTransitionClass} ${bgColorClass}`}>
@@ -308,9 +365,10 @@ export default function Hero() {
                                                 }}
                                                 className="mb-6 xl:mb-8 relative flex justify-center w-full"
                                             >
-                                                <motion.div style={{ opacity: blurOutOpacity, filter: blurOutFilter, y: blurOutY }}>
-                                                    {/* The stationary logo that fades out as the stencil takes over its EXACT shape */}
+                                                <motion.div style={{ opacity: logoFadeOpacity }}>
+                                                    {/* The stationary logo — fades out as the stencil takes over its EXACT shape */}
                                                     <svg
+                                                        ref={logoRef}
                                                         viewBox="0 0 375 375"
                                                         className="w-[60vw] sm:w-[300px] xl:w-[350px] h-auto drop-shadow-2xl opacity-100 transition-opacity"
                                                         style={{ filter: "drop-shadow(0px 0px 40px rgba(255,255,255,0.15))" }}
@@ -331,90 +389,168 @@ export default function Hero() {
                                                         className="absolute flex flex-col items-center text-center space-y-1 top-1/2 mt-4"
                                                     >
                                                         <motion.div style={{ opacity: blurOutOpacity, filter: blurOutFilter, y: blurOutY }} className="flex flex-col items-center">
-                                                            <h1 className="text-white text-[3.5rem] sm:text-[4.5rem] md:text-[5.5rem] lg:text-[7rem] leading-none font-normal tracking-tight mb-3 sm:mb-4 max-w-4xl z-10 px-4">
+                                                            <h1
+                                                                className="text-white text-[3.5rem] sm:text-[5.5rem] md:text-[7.5rem] lg:text-[9.5rem] leading-[0.9] font-medium tracking-tighter mb-4 sm:mb-6 max-w-[1200px] z-10 px-4"
+                                                                style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif", transform: "scaleX(0.94)" }}
+                                                            >
                                                                 Momentum OS
                                                             </h1>
-                                                            <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-xl font-light leading-relaxed mb-8 z-10 px-6 text-center">
+                                                            <p className="text-xl sm:text-[28px] text-white font-medium tracking-tight mb-12 z-10 px-6 text-center" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                                 Turn your computer into an AI growth engine.
                                                             </p>
 
-                                                            <div className="pt-4 sm:pt-6 flex flex-col items-center z-50">
+                                                            <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-center gap-7 z-50" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
+                                                                {/* Pre-order — transparent with white border, Aurora on hover */}
                                                                 <button
                                                                     onClick={() => setShowPopup(true)}
-                                                                    className="aurora-download-btn group relative bg-transparent border border-white/30 text-white px-6 md:px-8 py-3 md:py-3.5 rounded-full font-medium text-sm md:text-base transition-all duration-500 hover:border-transparent flex items-center gap-2.5 w-fit mx-auto self-center justify-center shrink-0"
+                                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-9 py-3.5 rounded-full font-semibold text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
                                                                 >
-                                                                    {(osLabel === "macOS" || osLabel === "iOS") && <FaApple className="w-4 h-4 shrink-0" />}
-                                                                    {osLabel === "Windows" && <FaWindows className="w-4 h-4 shrink-0" />}
-                                                                    {osLabel === "Android" && <FaAndroid className="w-4 h-4 shrink-0" />}
-                                                                    Download for {osLabel}
+                                                                    Pre-order
                                                                     <span className="aurora-glow-ring"></span>
                                                                 </button>
+
+                                                                {/* Learn More — bare text link (Apple secondary style) */}
+                                                                <a
+                                                                    href="#learn-more"
+                                                                    className="text-white hover:text-white/70 font-medium text-[17px] tracking-normal transition-colors duration-200 flex items-center justify-center gap-1.5 group w-full sm:w-auto"
+                                                                    onClick={(e) => { e.preventDefault(); document.getElementById("learn-more")?.scrollIntoView({ behavior: "smooth" }); }}
+                                                                >
+                                                                    Learn More
+                                                                    <span className="inline-block transition-transform duration-200 group-hover:translate-x-1 font-normal opacity-80 mt-[1px]">›</span>
+                                                                </a>
                                                             </div>
                                                         </motion.div>
                                                     </motion.div>
                                                 )}
                                             </AnimatePresence>
+
+                                            {/* Minimal Scroll Prompt - Fades & Blurs OUT on Scroll */}
+                                            {step === "E" && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, filter: "blur(10px)" }}
+                                                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                                                    transition={{ delay: 1, duration: 1.5 }}
+                                                    className="absolute bottom-10 left-1/2 -translate-x-1/2 pointer-events-none z-50 flex flex-col items-center"
+                                                >
+                                                    <motion.div
+                                                        style={{ opacity: scrollPromptOpacity, filter: scrollPromptFilter }}
+                                                        className="flex flex-col items-center gap-4"
+                                                    >
+                                                        <div className="w-[1px] h-[50px] bg-white/10 relative overflow-hidden rounded-full">
+                                                            <motion.div
+                                                                animate={{ y: ["-100%", "200%"] }}
+                                                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                                                className="w-full h-1/2 bg-white/70 absolute top-0 left-0 rounded-full"
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] font-medium tracking-[0.25em] uppercase text-white/30" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                                            Scroll
+                                                        </span>
+                                                    </motion.div>
+                                                </motion.div>
+                                            )}
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
                             </div>
 
-                            {/* ── Expanding Stencil Section (scroll triggered) ── */}
+                            {/* ── Logo Scale + Blur → Black Transition ── */}
                             {enableScroll && (
-                                <motion.div
-                                    style={{ clipPath: stencilClipPath, opacity: stencilOpacity }}
-                                    className="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center px-4"
-                                >
-                                    <motion.div
-                                        style={{ opacity: contentOpacity, y: contentY }}
-                                        className="w-full h-full flex flex-col items-center justify-center"
-                                    >
-                                        <p className="text-white/30 text-xs sm:text-sm font-medium tracking-[0.25em] uppercase mb-4 sm:mb-6">
-                                            How It Works
-                                        </p>
-                                        <h3 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight leading-tight mb-4 sm:mb-6 text-center max-w-4xl">
-                                            Your computer,{" "}
-                                            <span className="text-white/40">supercharged by AI.</span>
-                                        </h3>
-                                        <p className="text-white/40 text-sm sm:text-base md:text-lg max-w-2xl font-light leading-relaxed mb-10 sm:mb-16 text-center">
-                                            Momentum OS sits at the OS layer — not a browser extension, not an
-                                            app. It sees everything, learns everything, and acts on your behalf.
-                                        </p>
+                                <div className="absolute inset-0 z-40 overflow-hidden pointer-events-none">
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl">
-                                            {[
-                                                {
-                                                    icon: "⚡",
-                                                    title: "Always On, Always Learning",
-                                                    desc: "Momentum OS runs quietly in the background, learning your habits and adapting to your workflow in real time.",
-                                                },
-                                                {
-                                                    icon: "🧠",
-                                                    title: "Context-Aware AI",
-                                                    desc: "Every action is understood in context. No setup, no prompts — it just knows what you need before you ask.",
-                                                },
-                                                {
-                                                    icon: "🎯",
-                                                    title: "Built for Deep Focus",
-                                                    desc: "Distraction blocking, session planning, and flow-state detection — all wired directly into the OS layer.",
-                                                },
-                                            ].map((f) => (
-                                                <div
-                                                    key={f.title}
-                                                    className="flex flex-col items-center sm:items-start text-center sm:text-left bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 md:p-8"
-                                                >
-                                                    <span className="text-3xl mb-4">{f.icon}</span>
-                                                    <h4 className="text-white text-base md:text-lg font-medium mb-3">
-                                                        {f.title}
-                                                    </h4>
-                                                    <p className="text-white/40 text-sm font-light leading-relaxed">
-                                                        {f.desc}
-                                                    </p>
-                                                </div>
-                                            ))}
+                                    {/* The white logo that physically grows and blurs as you scroll */}
+                                    <motion.div
+                                        className="absolute"
+                                        style={{
+                                            left: logoRect.cx - (logoRect.size / 2),
+                                            top: logoRect.cy - (logoRect.size / 2),
+                                            width: logoRect.size,
+                                            height: logoRect.size,
+                                            scale: logoScaleUp,
+                                            filter: logoBlurFilter,
+                                            transformOrigin: "center center",
+                                        }}
+                                    >
+                                        <svg
+                                            viewBox="0 0 375 375"
+                                            style={{ width: "100%", height: "100%" }}
+                                        >
+                                            <path fill="white" d="M 187.53125 64.34375 L 329.738281 310.652344 L 187.53125 239.414062 L 45.320312 310.652344 Z" />
+                                        </svg>
+                                    </motion.div>
+
+                                    {/* Black overlay fades in over the blurring logo — dissolves to solid black */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-black"
+                                        style={{ opacity: blackOverlayOpacity }}
+                                    />
+
+                                    {/* Second section content — blurs into place as black arrives */}
+                                    <motion.div
+                                        style={{ opacity: contentOpacity, y: contentY, filter: contentBlurFilter }}
+                                        className="relative z-10 w-full h-full flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 px-6 sm:px-10 lg:px-16"
+                                    >
+                                        {/* ── LEFT: Brand ticker — floating pills, no card bg ── */}
+                                        <div className="relative h-[480px] w-[160px] flex-shrink-0 overflow-hidden">
+                                            {/* Track A */}
+                                            <div
+                                                className="absolute w-full flex flex-col items-center gap-4 pb-6"
+                                                style={{ animation: "ticker-up 28s linear infinite" }}
+                                            >
+                                                {[
+                                                    { name: "ChatGPT", bg: "#10A37F", font: "'Inter', sans-serif" },
+                                                    { name: "Claude", bg: "#C96442", font: "'Lora', Georgia, serif" },
+                                                    { name: "Gemini", bg: "#1A73E8", font: "'Nunito', sans-serif" },
+                                                    { name: "n8n", bg: "#EA4B71", font: "'Raleway', sans-serif" },
+                                                    { name: "Zapier", bg: "#FF4A00", font: "'Outfit', sans-serif" },
+                                                    { name: "Make.com", bg: "#6D3BDB", font: "'Plus Jakarta Sans', sans-serif" },
+                                                    { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
+                                                    { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
+                                                ].map((b, i) => (
+                                                    <div key={`a-${i}`} className="w-full py-5 rounded-2xl flex items-center justify-center" style={{ background: b.bg }}>
+                                                        <span className="text-white font-semibold text-sm tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {/* Track B — half-cycle offset for seamless loop */}
+                                            <div
+                                                className="absolute w-full flex flex-col items-center gap-4 pb-6"
+                                                style={{ animation: "ticker-up 28s linear infinite", animationDelay: "-14s" }}
+                                            >
+                                                {[
+                                                    { name: "ChatGPT", bg: "#10A37F", font: "'Inter', sans-serif" },
+                                                    { name: "Claude", bg: "#C96442", font: "'Lora', Georgia, serif" },
+                                                    { name: "Gemini", bg: "#1A73E8", font: "'Nunito', sans-serif" },
+                                                    { name: "n8n", bg: "#EA4B71", font: "'Raleway', sans-serif" },
+                                                    { name: "Zapier", bg: "#FF4A00", font: "'Outfit', sans-serif" },
+                                                    { name: "Make.com", bg: "#6D3BDB", font: "'Plus Jakarta Sans', sans-serif" },
+                                                    { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
+                                                    { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
+                                                ].map((b, i) => (
+                                                    <div key={`b-${i}`} className="w-full py-5 rounded-2xl flex items-center justify-center" style={{ background: b.bg }}>
+                                                        <span className="text-white font-semibold text-sm tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {/* Fade masks so pills dissolve into black at top/bottom */}
+                                            <div className="absolute inset-x-0 top-0 h-20 z-10 bg-gradient-to-b from-black to-transparent pointer-events-none" />
+                                            <div className="absolute inset-x-0 bottom-0 h-20 z-10 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+                                        </div>
+
+                                        {/* ── RIGHT: Bold headline ── */}
+                                        <div className="flex flex-col items-start justify-center max-w-[560px] lg:flex-1">
+                                            <h3
+                                                className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1] font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
+                                                style={{ textShadow: "0 0 60px rgba(255,255,255,0.1)" }}
+                                            >
+                                                Don&apos;t F***ing pay subscriptions to AI agents to grow your business.
+                                            </h3>
+                                            <p className="mt-5 text-white/50 text-base sm:text-lg font-light leading-relaxed">
+                                                Momentum OS is built into your OS layer — it replaces every AI subscription you&apos;re paying for.
+                                            </p>
                                         </div>
                                     </motion.div>
-                                </motion.div>
+                                </div>
                             )}
                         </motion.div>
                     )}
@@ -487,7 +623,7 @@ export default function Hero() {
                     ) : null}
                 </div>
 
-                {/* Custom Coming Soon Popup */}
+                {/* Pre-order Popup */}
                 <AnimatePresence>
                     {showPopup && (
                         <motion.div
@@ -496,73 +632,104 @@ export default function Hero() {
                             exit={{ opacity: 0 }}
                             className="fixed inset-0 z-[100] flex items-center justify-center px-4"
                         >
+                            {/* Backdrop */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.15 }}
-                                className="absolute inset-0 bg-black/40 backdrop-blur-2xl"
+                                className="absolute inset-0 bg-black/70 backdrop-blur-2xl"
                                 onClick={() => setShowPopup(false)}
                             />
+
+                            {/* Modal card */}
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
+                                initial={{ opacity: 0, scale: 0.95, y: 16, filter: "blur(8px)" }}
                                 animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-                                exit={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
+                                exit={{ opacity: 0, scale: 0.95, y: 16, filter: "blur(8px)" }}
                                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                                className="w-full max-w-md shadow-[0_0_80px_rgba(0,0,0,0.8)]"
+                                className="relative w-full max-w-md z-10"
                             >
-                                <div className="w-full max-w-md shadow-[0_0_80px_rgba(0,0,0,0.8)]">
-                                    <ShineBorder borderWidth={2} duration={4} gradient="from-blue-500 via-red-500 to-teal-400" className="w-full">
-                                        <Card className="relative h-full rounded-2xl p-8 gap-8 border-0 ring-0 text-left">
-                                            <CardHeader className="p-0">
-                                                <div className="flex flex-col gap-3 self-stretch">
-                                                    <div className="flex items-center justify-between">
-                                                        <CardTitle className="text-2xl font-medium text-primary flex items-center gap-2">
-                                                            <Image
-                                                                src="/20.svg"
-                                                                alt="Momentum OS Logo"
-                                                                width={28}
-                                                                height={28}
-                                                                className="w-7 h-7 shrink-0 object-contain"
-                                                            />
-                                                            Pre-order Momentum OS
-                                                        </CardTitle>
-                                                    </div>
-                                                    <CardDescription className="text-base font-normal max-w-2xl text-muted-foreground">
-                                                        Secure your lifetime license today.
-                                                    </CardDescription>
+                                {/* Gradient Border Wrapper */}
+                                <div className="rainbow-gradient-border rounded-3xl p-[2px] shadow-2xl relative">
+                                    <div
+                                        className="relative rounded-[calc(1.5rem-2px)] bg-white p-8 sm:p-10 overflow-hidden w-full h-full"
+                                        style={{ fontFamily: "-apple-system, 'SF Pro Display', 'SF Pro Text', BlinkMacSystemFont, 'Helvetica Neue', sans-serif" }}
+                                    >
+                                        {/* Subtle noise texture or gradient on light theme to make it premium could go here, but keeping pure white for now */}
+
+                                        {/* Close */}
+                                        <button
+                                            onClick={() => setShowPopup(false)}
+                                            className="absolute top-6 right-6 text-black/30 hover:text-black transition-colors"
+                                        >
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                                        </button>
+
+                                        {/* Header & Meta */}
+                                        <div className="mb-8">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <Image src="/20.svg" alt="Momentum OS" width={24} height={24} className="w-6 h-6 object-contain" />
+                                                <span className="text-black font-semibold text-lg tracking-tight">Pre-order Momentum OS</span>
+                                            </div>
+                                            <p className="text-black/50 text-[13px] tracking-tight flex items-center gap-2">
+                                                <span>Ships March 31</span>
+                                                <span className="w-1 h-1 rounded-full bg-black/20"></span>
+                                                <span>Lifetime Access</span>
+                                            </p>
+                                        </div>
+
+                                        {/* Premium Seats & Timeline Typographic Layout */}
+                                        <div className="mb-10 flex flex-col gap-4 border-y border-black/5 py-5">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-black/40">
+                                                    Availability
+                                                </span>
+                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                    <span className="text-sm font-medium text-black">137 <span className="text-black/40">of 1,000 seats reserved</span></span>
+                                                    <div className="h-px bg-black/10 flex-1 ml-2"></div>
                                                 </div>
-                                            </CardHeader>
+                                            </div>
+                                            <PreorderCountdown />
+                                        </div>
 
-                                            <CardContent className="flex flex-col flex-1 gap-8 p-0 mt-8">
-                                                <div className="flex items-baseline gap-1">
-                                                    <span className="text-foreground text-4xl sm:text-5xl font-medium">
-                                                        $30
-                                                    </span>
-                                                    <span className="text-muted-foreground text-base font-normal">
-                                                        forever
-                                                    </span>
-                                                </div>
+                                        {/* Price — Perandory Condensed explicitly requested */}
+                                        <div className="flex items-end gap-3 mb-8 px-1">
+                                            <span
+                                                className="text-black font-normal leading-none inline-block origin-bottom-left"
+                                                style={{ fontFamily: "'Perandory Condensed', 'Bodoni Moda', 'Didot', 'Cormorant Garamond', serif", fontSize: "5rem", transform: "scaleY(1.2) translateY(5px)" }}
+                                            >$30</span>
+                                            <div className="flex flex-col pb-1">
+                                                <span className="text-black font-medium text-sm tracking-tight leading-tight">One-time payment</span>
+                                                <span className="text-black/40 text-[13px] tracking-tight leading-tight">Yours forever</span>
+                                            </div>
+                                        </div>
 
-                                                <Separator />
+                                        {/* Features */}
+                                        <ul className="flex flex-col gap-3 mb-10 pl-1">
+                                            {[
+                                                "Lifetime license — pay once, own it forever",
+                                                "All future updates included",
+                                                "Replaces every AI subscription you pay for"
+                                            ].map((f) => (
+                                                <li key={f} className="flex items-start gap-3 text-[14px] text-black/60 tracking-tight">
+                                                    <svg className="w-4 h-4 mt-0.5 text-black/40 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                    {f}
+                                                </li>
+                                            ))}
+                                        </ul>
 
-                                                <ul className="flex flex-col gap-4 flex-1 mt-4">
-                                                    <li className="flex items-center gap-3 text-base font-normal text-muted-foreground">
-                                                        <Check className="size-4 text-primary shrink-0" />
-                                                        7 day free trial, cancel anytime
-                                                    </li>
-                                                </ul>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => e.preventDefault()}
-                                                    className="w-full h-12 mt-4 text-base font-medium rounded-full cursor-not-allowed opacity-50 bg-[#09090b] text-white flex items-center justify-center transition-none"
-                                                >
-                                                    Coming soon
-                                                </button>
-                                            </CardContent>
-                                        </Card>
-                                    </ShineBorder>
+                                        {/* CTA - Ultra Premium Black Button */}
+                                        <button
+                                            type="button"
+                                            className="w-full h-[56px] rounded-full bg-black text-white font-medium text-[15px] tracking-tight transition-all duration-300 hover:bg-black/80 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,0,0,0.12)]"
+                                            onClick={() => window.open("https://buy.stripe.com/test_placeholder", "_blank")}
+                                        >
+                                            Proceed to Checkout
+                                            <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                                        </button>
+                                        <p className="text-black/30 text-[11px] font-medium text-center mt-4 tracking-tight uppercase">Secure Stripe Checkout</p>
+                                    </div>
                                 </div>
                             </motion.div>
                         </motion.div>
