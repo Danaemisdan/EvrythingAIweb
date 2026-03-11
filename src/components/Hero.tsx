@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from "framer-motion";
 import Image from "next/image";
 import { E_DOTS } from "./e-dots";
@@ -488,66 +488,64 @@ export default function Hero() {
                                     {/* Second section content — blurs into place as black arrives */}
                                     <motion.div
                                         style={{ opacity: contentOpacity, y: contentY, filter: contentBlurFilter }}
-                                        className="relative z-10 w-full h-full flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 px-6 sm:px-10 lg:px-16"
+                                        className="relative z-10 w-full h-full flex flex-col items-center justify-center overflow-hidden"
                                     >
-                                        {/* ── LEFT: Brand ticker — floating pills, no card bg ── */}
-                                        <div className="relative h-[480px] w-[160px] flex-shrink-0 overflow-hidden">
-                                            {/* Track A */}
+                                        {/* ── Background: Full-width Horizontal Ticker Tape ── */}
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 mix-blend-screen">
                                             <div
-                                                className="absolute w-full flex flex-col items-center gap-4 pb-6"
-                                                style={{ animation: "ticker-up 28s linear infinite" }}
+                                                className="flex w-max"
+                                                style={{ animation: "ticker-left 30s linear infinite" }}
                                             >
-                                                {[
-                                                    { name: "ChatGPT", bg: "#10A37F", font: "'Inter', sans-serif" },
-                                                    { name: "Claude", bg: "#C96442", font: "'Lora', Georgia, serif" },
-                                                    { name: "Gemini", bg: "#1A73E8", font: "'Nunito', sans-serif" },
-                                                    { name: "n8n", bg: "#EA4B71", font: "'Raleway', sans-serif" },
-                                                    { name: "Zapier", bg: "#FF4A00", font: "'Outfit', sans-serif" },
-                                                    { name: "Make.com", bg: "#6D3BDB", font: "'Plus Jakarta Sans', sans-serif" },
-                                                    { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
-                                                    { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
-                                                ].map((b, i) => (
-                                                    <div key={`a-${i}`} className="w-full py-5 rounded-2xl flex items-center justify-center" style={{ background: b.bg }}>
-                                                        <span className="text-white font-semibold text-sm tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
-                                                    </div>
+                                                {/* Duplicate exactly 2 times for a seamless -50% translation loop */}
+                                                {[...Array(2)].map((_, trackIndex) => (
+                                                    <React.Fragment key={`track-${trackIndex}`}>
+                                                        {[
+                                                            { name: "ChatGPT", bg: "#10A37F", font: "'Inter', sans-serif" },
+                                                            { name: "Claude", bg: "#C96442", font: "'Lora', Georgia, serif" },
+                                                            { name: "Gemini", bg: "#1A73E8", font: "'Nunito', sans-serif" },
+                                                            { name: "n8n", bg: "#EA4B71", font: "'Raleway', sans-serif" },
+                                                            { name: "Zapier", bg: "#FF4A00", font: "'Outfit', sans-serif" },
+                                                            { name: "Make.com", bg: "#6D3BDB", font: "'Plus Jakarta Sans', sans-serif" },
+                                                            { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
+                                                            { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
+                                                        ].map((b, i) => (
+                                                            <div key={`pill-${trackIndex}-${i}`} className="w-[180px] sm:w-[240px] shrink-0 py-8 sm:py-10 mx-3 rounded-[32px] flex items-center justify-center shadow-2xl" style={{ background: b.bg }}>
+                                                                <span className="text-white font-semibold text-xl sm:text-2xl tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
+                                                            </div>
+                                                        ))}
+                                                    </React.Fragment>
                                                 ))}
                                             </div>
-                                            {/* Track B — half-cycle offset for seamless loop */}
-                                            <div
-                                                className="absolute w-full flex flex-col items-center gap-4 pb-6"
-                                                style={{ animation: "ticker-up 28s linear infinite", animationDelay: "-14s" }}
-                                            >
-                                                {[
-                                                    { name: "ChatGPT", bg: "#10A37F", font: "'Inter', sans-serif" },
-                                                    { name: "Claude", bg: "#C96442", font: "'Lora', Georgia, serif" },
-                                                    { name: "Gemini", bg: "#1A73E8", font: "'Nunito', sans-serif" },
-                                                    { name: "n8n", bg: "#EA4B71", font: "'Raleway', sans-serif" },
-                                                    { name: "Zapier", bg: "#FF4A00", font: "'Outfit', sans-serif" },
-                                                    { name: "Make.com", bg: "#6D3BDB", font: "'Plus Jakarta Sans', sans-serif" },
-                                                    { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
-                                                    { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
-                                                ].map((b, i) => (
-                                                    <div key={`b-${i}`} className="w-full py-5 rounded-2xl flex items-center justify-center" style={{ background: b.bg }}>
-                                                        <span className="text-white font-semibold text-sm tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            {/* Fade masks so pills dissolve into black at top/bottom */}
-                                            <div className="absolute inset-x-0 top-0 h-20 z-10 bg-gradient-to-b from-black to-transparent pointer-events-none" />
-                                            <div className="absolute inset-x-0 bottom-0 h-20 z-10 bg-gradient-to-t from-black to-transparent pointer-events-none" />
                                         </div>
 
-                                        {/* ── RIGHT: Bold headline ── */}
-                                        <div className="flex flex-col items-start justify-center max-w-[560px] lg:flex-1">
+                                        {/* Fade masks for the left/right edges of the screen to blend the tape smoothly */}
+                                        <div className="absolute inset-y-0 left-0 w-32 sm:w-64 z-10 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
+                                        <div className="absolute inset-y-0 right-0 w-32 sm:w-64 z-10 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none" />
+                                        <div className="absolute inset-x-0 top-0 h-40 z-10 bg-gradient-to-b from-black via-black/80 to-transparent pointer-events-none" />
+                                        <div className="absolute inset-x-0 bottom-0 h-40 z-10 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none" />
+
+                                        {/* ── Foreground: Bold headline overlay ── */}
+                                        <div className="relative z-20 flex flex-col items-center text-center max-w-[900px] px-6 mt-10">
                                             <h3
-                                                className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1] font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
-                                                style={{ textShadow: "0 0 60px rgba(255,255,255,0.1)" }}
+                                                className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-[4.8rem] font-bold tracking-tight leading-[1.05] font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
+                                                style={{ textShadow: "0 4px 60px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.8)" }}
                                             >
                                                 Don&apos;t F***ing pay subscriptions to AI agents to grow your business.
                                             </h3>
-                                            <p className="mt-5 text-white/50 text-base sm:text-lg font-light leading-relaxed">
+                                            <p className="mt-8 text-white/70 text-lg sm:text-xl lg:text-2xl font-medium leading-relaxed max-w-2xl px-4" style={{ textShadow: "0 2px 20px rgba(0,0,0,1)" }}>
                                                 Momentum OS is built into your OS layer — it replaces every AI subscription you&apos;re paying for.
                                             </p>
+
+                                            {/* Pre-order Now Button */}
+                                            <div className="mt-12">
+                                                <button
+                                                    onClick={() => setShowPopup(true)}
+                                                    className="aurora-download-btn group relative bg-white text-black px-12 py-4 sm:py-5 rounded-full font-bold text-[18px] sm:text-[20px] tracking-tight transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_40px_rgba(255,255,255,0.15)] overflow-hidden"
+                                                >
+                                                    <span className="relative z-10">Pre-order Now</span>
+                                                    <span className="aurora-glow-ring"></span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 </div>

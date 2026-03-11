@@ -99,6 +99,16 @@
   }
 }
 
+@keyframes ticker-left {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 /* Force hide all Next.js dev overlays */
 nextjs-portal,
 #__next-build-watcher,
