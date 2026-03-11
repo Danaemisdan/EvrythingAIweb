@@ -386,11 +386,11 @@ export default function Hero() {
                                                         initial={{ opacity: 0, filter: "blur(15px)" }}
                                                         animate={{ opacity: 1, filter: "blur(0px)" }}
                                                         transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
-                                                        className="absolute flex flex-col items-center text-center space-y-1 top-1/2 mt-4"
+                                                        className="absolute flex flex-col items-center text-center space-y-1 top-[42%] mt-0"
                                                     >
                                                         <motion.div style={{ opacity: blurOutOpacity, filter: blurOutFilter, y: blurOutY }} className="flex flex-col items-center">
                                                             <h1
-                                                                className="text-white text-[3.5rem] sm:text-[5.5rem] md:text-[7.5rem] lg:text-[9.5rem] leading-[0.9] font-medium tracking-tighter mb-4 sm:mb-6 max-w-[1200px] z-10 px-4"
+                                                                className="text-white text-[3.5rem] sm:text-[5.5rem] md:text-[7.5rem] lg:text-[9.5rem] leading-[0.9] font-medium tracking-tighter mb-0 sm:-mb-2 max-w-[1200px] z-10 px-4"
                                                                 style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif", transform: "scaleX(0.94)" }}
                                                             >
                                                                 Momentum OS
@@ -510,7 +510,7 @@ export default function Hero() {
                                             <div className="flex flex-col items-center gap-5 shrink-0">
                                                 <button
                                                     onClick={() => setShowPopup(true)}
-                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-8 py-4 rounded-full font-semibold text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
+                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-9 py-3.5 rounded-full font-semibold text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
                                                 >
                                                     Pre-order
                                                     <span className="aurora-glow-ring"></span>
