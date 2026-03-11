@@ -411,14 +411,13 @@ export default function Hero() {
                                                                 </button>
 
                                                                 {/* Learn More — bare text link (Apple secondary style) */}
-                                                                <a
-                                                                    href="#learn-more"
+                                                                <button
                                                                     className="text-white hover:text-white/70 font-medium text-[17px] tracking-normal transition-colors duration-200 flex items-center justify-center gap-1.5 group w-full sm:w-auto"
-                                                                    onClick={(e) => { e.preventDefault(); document.getElementById("learn-more")?.scrollIntoView({ behavior: "smooth" }); }}
+                                                                    onClick={() => { window.scrollTo({ top: window.innerHeight * 1.5, behavior: "smooth" }); }}
                                                                 >
                                                                     Learn More
                                                                     <span className="inline-block transition-transform duration-200 group-hover:translate-x-1 font-normal opacity-80 mt-[1px]">›</span>
-                                                                </a>
+                                                                </button>
                                                             </div>
                                                         </motion.div>
                                                     </motion.div>
@@ -505,12 +504,17 @@ export default function Hero() {
                                             </div>
 
                                             {/* Right: Context Text, Action Button & Arrow */}
-                                            <div className="flex flex-col items-center lg:items-end shrink-0 pointer-events-auto pt-8 lg:pt-0">
+                                            <div className="flex flex-col items-center lg:items-end shrink-0 pointer-events-auto pt-8 lg:pt-0 relative w-full lg:w-auto">
+                                                {/* Top Right Arrow Indicator */}
+                                                <div className="absolute -top-[140px] lg:-top-[180px] right-0 lg:-right-4 text-white/50 animate-bounce">
+                                                    <ArrowDown size={32} strokeWidth={1.5} />
+                                                </div>
+
                                                 <div className="flex flex-col items-center gap-8 max-w-[460px]">
-                                                    <p className="text-[#a0a0a0] text-[17px] sm:text-[19px] font-medium leading-relaxed text-center lg:text-right w-full" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                                    <p className="text-[#a0a0a0] text-[17px] sm:text-[19px] font-medium leading-relaxed text-center w-full inline-block" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                         Momentum OS is built into your OS layer — it<br className="hidden md:block" /> replaces every AI subscription you&apos;re paying for.
                                                     </p>
-                                                    <div className="flex flex-col items-center gap-5 w-full sm:w-auto">
+                                                    <div className="flex justify-center w-full">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
                                                             className="aurora-download-btn group relative bg-transparent border border-[#555] text-white px-8 py-3 rounded-full font-medium text-[16px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
@@ -518,10 +522,6 @@ export default function Hero() {
                                                             Pre-order
                                                             <span className="aurora-glow-ring"></span>
                                                         </button>
-                                                        {/* Animated Arrow Down pointing to the tape */}
-                                                        <div className="text-white/40 animate-bounce mt-1">
-                                                            <ArrowDown size={20} strokeWidth={1.5} />
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
