@@ -505,20 +505,24 @@ export default function Hero() {
                                             </div>
 
                                             {/* Right: Context Text, Action Button & Arrow */}
-                                            <div className="flex flex-col items-start lg:items-end text-left lg:text-right gap-6 shrink-0 pointer-events-auto max-w-[420px] pt-4 lg:pt-0">
-                                                <p className="text-white/80 text-lg sm:text-xl font-medium leading-relaxed" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif", textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
-                                                    Momentum OS is built into your OS layer — it replaces every AI subscription you&apos;re paying for.
-                                                </p>
-                                                <button
-                                                    onClick={() => setShowPopup(true)}
-                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-9 py-3.5 rounded-full font-semibold text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
-                                                >
-                                                    Pre-order
-                                                    <span className="aurora-glow-ring"></span>
-                                                </button>
-                                                {/* Animated Arrow Down pointing to the tape */}
-                                                <div className="w-full sm:w-auto flex justify-center lg:justify-end text-white/50 animate-bounce mt-4 lg:pr-8">
-                                                    <ArrowDown size={32} strokeWidth={2} />
+                                            <div className="flex flex-col items-center lg:items-end shrink-0 pointer-events-auto pt-8 lg:pt-0">
+                                                <div className="flex flex-col items-center gap-8 max-w-[460px]">
+                                                    <p className="text-[#a0a0a0] text-[17px] sm:text-[19px] font-medium leading-relaxed text-center lg:text-right w-full" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                                        Momentum OS is built into your OS layer — it<br className="hidden md:block" /> replaces every AI subscription you&apos;re paying for.
+                                                    </p>
+                                                    <div className="flex flex-col items-center gap-5 w-full sm:w-auto">
+                                                        <button
+                                                            onClick={() => setShowPopup(true)}
+                                                            className="aurora-download-btn group relative bg-transparent border border-[#555] text-white px-8 py-3 rounded-full font-medium text-[16px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
+                                                        >
+                                                            Pre-order
+                                                            <span className="aurora-glow-ring"></span>
+                                                        </button>
+                                                        {/* Animated Arrow Down pointing to the tape */}
+                                                        <div className="text-white/40 animate-bounce mt-1">
+                                                            <ArrowDown size={20} strokeWidth={1.5} />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -526,7 +530,7 @@ export default function Hero() {
                                         {/* ── Bottom Half: Foreground Horizontal Ticker Tape ── */}
                                         <div className="relative w-full z-20 flex flex-col items-center mt-12 mb-4">
                                             {/* Label Text */}
-                                            <p className="text-white/60 text-lg sm:text-xl font-medium tracking-tight mb-8 text-center px-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                            <p className="text-[#888888] text-[15px] sm:text-[16px] tracking-normal mb-6 text-center px-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                 Evrything AI is democratizing AI so you don&apos;t need subscriptions to gain momentum.
                                             </p>
                                             <div
