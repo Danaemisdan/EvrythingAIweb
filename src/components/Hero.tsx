@@ -167,15 +167,7 @@ export default function Hero() {
         }
     }, [step, hasVisited]);
 
-    if (hasVisited === null) {
-        return <div className="w-full h-screen bg-black" />; // SSR placeholder preventing hydration flash
-    }
-
-    const isWhiteBG = ["V", "Y", "H", "N", "A", "LOGO_WHITE_BG_1", "LOGO_WHITE_BG_3"].includes(step);
-    const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
-    const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
-
-    // --- Scroll Physics (only active during Momentum phase) ---
+    // --- Scroll Physics (hooks must be called before conditional returns) ---
     const { scrollYProgress } = useScroll({
         target: containerRef,
         offset: ["start start", "end end"],
@@ -197,6 +189,14 @@ export default function Hero() {
     const stencilOpacity = useTransform(scrollYProgress, [0.15, 0.2], [0, 1]); // Stencil layer appears
     const contentOpacity = useTransform(scrollYProgress, [0.5, 0.9], [0, 1]); // Text fades in later
     const contentY = useTransform(scrollYProgress, [0.5, 0.9], [40, 0]);
+
+    if (hasVisited === null) {
+        return <div className="w-full h-screen bg-black" />; // SSR placeholder preventing hydration flash
+    }
+
+    const isWhiteBG = ["V", "Y", "H", "N", "A", "LOGO_WHITE_BG_1", "LOGO_WHITE_BG_3"].includes(step);
+    const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
+    const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
     // Determine the wrapper height. We lock scroll during the intro sequence.
     const enableScroll = isMomentumPhase && step === "MOMENTUM_LOCK";
