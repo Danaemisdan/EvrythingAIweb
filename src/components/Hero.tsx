@@ -241,6 +241,7 @@ export default function Hero() {
     const blurOutRaw = useTransform(scrollYProgress, [0, 0.15], [0, 20]);
     const blurOutFilter = useMotionTemplate`blur(${blurOutRaw}px)`;
     const blurOutY = useTransform(scrollYProgress, [0, 0.15], [0, -30]);
+    const heroPointerEvents = useTransform(scrollYProgress, [0, 0.1, 0.15], ["auto", "auto", "none"]);
 
     // ── Minimalist Scroll Prompt: blurs & fades OUT immediately on scroll ──
     const scrollPromptOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0]);
@@ -388,7 +389,7 @@ export default function Hero() {
                                                         transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
                                                         className="absolute flex flex-col items-center text-center space-y-1 top-[42%] mt-0"
                                                     >
-                                                        <motion.div style={{ opacity: blurOutOpacity, filter: blurOutFilter, y: blurOutY }} className="flex flex-col items-center">
+                                                        <motion.div style={{ opacity: blurOutOpacity, filter: blurOutFilter, y: blurOutY, pointerEvents: heroPointerEvents as any }} className="flex flex-col items-center">
                                                             <h1
                                                                 className="text-white text-[3.5rem] sm:text-[5.5rem] md:text-[7.5rem] lg:text-[9.5rem] leading-[0.9] font-medium tracking-tighter mb-2 sm:mb-3 max-w-[1200px] z-10 px-4"
                                                                 style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif", transform: "scaleX(0.94)" }}
@@ -506,14 +507,23 @@ export default function Hero() {
                                                 </p>
                                             </div>
 
-                                            {/* Right: Action Buttons (Removed per feedback) */}
+                                            {/* Right: Action Buttons (Restored & Clickable) */}
+                                            <div className="flex flex-col items-center gap-5 shrink-0 pointer-events-auto">
+                                                <button
+                                                    onClick={() => setShowPopup(true)}
+                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-9 py-3.5 rounded-full font-semibold text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
+                                                >
+                                                    Pre-order
+                                                    <span className="aurora-glow-ring"></span>
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {/* ── Bottom Half: Foreground Horizontal Ticker Tape ── */}
                                         <div className="relative w-full z-20 flex flex-col items-center mt-12 mb-4">
                                             {/* Label Text */}
-                                            <p className="text-white/50 text-sm tracking-[0.2em] uppercase font-semibold mb-6 text-center" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
-                                                Momentum OS&apos;s Agents replaces all these
+                                            <p className="text-[#a0a0a0] text-[13px] sm:text-[15px] tracking-[0.3em] uppercase font-bold mb-8 text-center px-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                                Momentum OS&apos;s Agents replace all these, saving you tons of time and money
                                             </p>
                                             <div
                                                 className="flex w-max"
