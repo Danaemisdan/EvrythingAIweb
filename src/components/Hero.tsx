@@ -399,7 +399,7 @@ export default function Hero() {
                                                                 Turn your computer into an AI growth engine.
                                                             </p>
 
-                                                            <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-center gap-7 z-50" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
+                                                            <div className="pt-0 sm:pt-2 flex flex-col sm:flex-row items-center justify-center gap-7 z-50" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
                                                                 {/* Pre-order — transparent with white border, Aurora on hover */}
                                                                 <button
                                                                     onClick={() => setShowPopup(true)}
@@ -719,14 +719,17 @@ export default function Hero() {
                                             ))}
                                         </ul>
 
-                                        {/* CTA - Ultra Premium Black Button */}
+                                        {/* CTA - Ultra Premium Black Button with Aurora Hover */}
                                         <button
                                             type="button"
-                                            className="w-full h-[56px] rounded-full bg-black text-white font-medium text-[15px] tracking-tight transition-all duration-300 hover:bg-black/80 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,0,0,0.12)]"
+                                            className="aurora-download-btn group relative w-full h-[56px] rounded-full bg-black text-white font-medium text-[15px] tracking-tight transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,0,0,0.12)] overflow-hidden"
                                             onClick={() => window.open("https://buy.stripe.com/test_placeholder", "_blank")}
                                         >
-                                            Proceed to Checkout
-                                            <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                                            <span className="relative z-10 flex items-center justify-center gap-2">
+                                                Proceed to Checkout
+                                                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                                            </span>
+                                            <span className="aurora-glow-ring"></span>
                                         </button>
                                         <p className="text-black/30 text-[11px] font-medium text-center mt-4 tracking-tight uppercase">Secure Stripe Checkout</p>
                                     </div>
