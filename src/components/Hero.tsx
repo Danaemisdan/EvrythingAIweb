@@ -179,19 +179,45 @@ export default function Hero() {
     const blurOutFilter = useMotionTemplate`blur(${blurOutRaw}px)`;
     const blurOutY = useTransform(scrollYProgress, [0, 0.22], [0, -30]);
 
-    // ── Stencil clip-path: logo-sized pill → full viewport ─────────────────────
-    const insetY = useTransform(scrollYProgress, [0.15, 0.75], [44, 0]);
-    const insetX = useTransform(scrollYProgress, [0.15, 0.75], [47, 0]);
-    const roundedness = useTransform(scrollYProgress, [0.15, 0.65], [400, 0]);
-    const stencilClipPath = useMotionTemplate`inset(${insetY}% ${insetX}% ${insetY}% ${insetX}% round ${roundedness}px)`;
+    // ── Stencil clip-path: TRUE LOGO TRIANGLE → FULL VIEWPORT ────────────────
+    // The logo is a triangle with points roughly at:
+    // Top: 50% X, 20% Y
+    // Bottom Right: 80% X, 80% Y
+    // Bottom Center (inner point): 50% X, 65% Y
+    // Bottom Left: 20% X, 80% Y
+
+    // We animate these 4 points outwards to the 4 corners of the screen.
+    // Progress: 0.15 (start expanding) to 0.75 (fully expanded)
+
+    // Top Point: (50%, 17%) -> (50%, 0%) -> (0%, 0%) and (100%, 0%) to form the top edge
+    // Since polygon only has 4 points to transition cleanly, we map:
+    // P1 (Top/Left edge):   Starts at 50% 17%   -> Ends at 0% 0%
+    // P2 (Top/Right edge):  Starts at 50% 17%   -> Ends at 100% 0%
+    // P3 (Bottom Right):    Starts at 88% 83%   -> Ends at 100% 100%
+    // P4 (Bottom Left):     Starts at 12% 83%   -> Ends at 0% 100%
+    // *We omit the inner bottom point to allow a smooth 4-point polygon transition to a rectangle
+
+    const p1X = useTransform(scrollYProgress, [0.15, 0.75], [50, 0]);
+    const p1Y = useTransform(scrollYProgress, [0.15, 0.75], [17, 0]);
+
+    const p2X = useTransform(scrollYProgress, [0.15, 0.75], [50, 100]);
+    const p2Y = useTransform(scrollYProgress, [0.15, 0.75], [17, 0]);
+
+    const p3X = useTransform(scrollYProgress, [0.15, 0.75], [88, 100]);
+    const p3Y = useTransform(scrollYProgress, [0.15, 0.75], [83, 100]);
+
+    const p4X = useTransform(scrollYProgress, [0.15, 0.75], [12, 0]);
+    const p4Y = useTransform(scrollYProgress, [0.15, 0.75], [83, 100]);
+
+    const stencilClipPath = useMotionTemplate`polygon(${p1X}% ${p1Y}%, ${p2X}% ${p2Y}%, ${p3X}% ${p3Y}%, ${p4X}% ${p4Y}%)`;
 
     // ── Feature content: fades in once stencil is mostly open ──────────────────
-    const stencilOpacity = useTransform(scrollYProgress, [0.15, 0.2], [0, 1]); // Stencil layer appears
+    const stencilOpacity = useTransform(scrollYProgress, [0.15, 0.2], [0, 1]); // Stencil layer appears behind logo
     const contentOpacity = useTransform(scrollYProgress, [0.5, 0.9], [0, 1]); // Text fades in later
     const contentY = useTransform(scrollYProgress, [0.5, 0.9], [40, 0]);
 
     if (hasVisited === null) {
-        return <div className="w-full h-screen bg-black" />; // SSR placeholder preventing hydration flash
+        return <div ref={containerRef} className="w-full h-screen bg-black" />; // SSR placeholder preventing hydration flash
     }
 
     const isWhiteBG = ["V", "Y", "H", "N", "A", "LOGO_WHITE_BG_1", "LOGO_WHITE_BG_3"].includes(step);
@@ -280,17 +306,17 @@ export default function Hero() {
                                                     scale: { duration: 0.8, ease: "easeOut" },
                                                     y: { duration: 1, ease: [0.16, 1, 0.3, 1] } // Apple spring vertical translation
                                                 }}
-                                                className="mb-6 xl:mb-8"
+                                                className="mb-6 xl:mb-8 relative flex justify-center w-full"
                                             >
                                                 <motion.div style={{ opacity: blurOutOpacity, filter: blurOutFilter, y: blurOutY }}>
-                                                    <Image
-                                                        src="/momentum-logo.svg"
-                                                        alt="Momentum OS"
-                                                        width={400}
-                                                        height={400}
-                                                        className="w-full max-w-[60vw] sm:max-w-[300px] xl:max-w-[350px] h-auto drop-shadow-2xl"
-                                                        priority
-                                                    />
+                                                    {/* The stationary logo that fades out as the stencil takes over its EXACT shape */}
+                                                    <svg
+                                                        viewBox="0 0 375 375"
+                                                        className="w-[60vw] sm:w-[300px] xl:w-[350px] h-auto drop-shadow-2xl opacity-100 transition-opacity"
+                                                        style={{ filter: "drop-shadow(0px 0px 40px rgba(255,255,255,0.15))" }}
+                                                    >
+                                                        <path fill="#ffffff" d="M 187.53125 64.34375 L 329.738281 310.652344 L 187.53125 239.414062 L 45.320312 310.652344 Z" />
+                                                    </svg>
                                                 </motion.div>
                                             </motion.div>
 
