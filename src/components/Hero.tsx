@@ -491,13 +491,13 @@ export default function Hero() {
                                         style={{ opacity: contentOpacity, y: contentY, filter: contentBlurFilter }}
                                         className="relative z-10 w-full h-full flex flex-col justify-center gap-16 overflow-hidden pt-12"
                                     >
+                                        {/* Absolute Top Right Edge Arrow (Moved outside max-width container to hug true viewport boundary) */}
+                                        <div className="hidden lg:block absolute top-[10%] xl:top-[12%] right-4 sm:right-8 xl:right-12 text-white/40 animate-bounce z-40">
+                                            <ArrowDown size={64} strokeWidth={1.5} />
+                                        </div>
+
                                         {/* ── Top Half: Text (Left) & CTA (Right) ── */}
                                         <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-start justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-16 lg:gap-12">
-
-                                            {/* Absolute Top Right Edge Arrow */}
-                                            <div className="hidden lg:block absolute top-4 right-6 sm:right-12 lg:right-24 text-white/40 animate-bounce">
-                                                <ArrowDown size={48} strokeWidth={1} />
-                                            </div>
 
                                             {/* Left: Bold headline */}
                                             <div className="flex flex-col items-start text-left max-w-[800px]">
