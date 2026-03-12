@@ -20,6 +20,7 @@ import { ShineBorder } from "./ui/shine-border";
 import { Check, ArrowDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { AnimatedTextCycle } from "./ui/animated-text-cycle";
 
 // Geometrical Bounding Box Extractor
 function getPathsBounds(paths: string[]) {
@@ -251,18 +252,22 @@ export default function Hero() {
     // ── Logo fade: static SVG fades out as the expanding copy takes over ──
     const logoFadeOpacity = useTransform(scrollYProgress, [0.03, 0.12], [1, 0]);
 
-    // ── Logo scale + blur: the actual white logo SVG grows first, then blurs into black ──
-    const logoScaleUp = useTransform(scrollYProgress, [0.05, 0.50], [1, 35]);
-    const logoBlurRaw = useTransform(scrollYProgress, [0.45, 0.55], [0, 90]); // stays sharp, only blurs at the very end
+    // ── Logo scale: the white logo SVG grows exponentially to fill the screen with white ──
+    const logoScaleUp = useTransform(scrollYProgress, [0.05, 0.35], [1, 65]);
+    const logoBlurRaw = useTransform(scrollYProgress, [0.35, 0.45], [0, 0]); // Never blur the logo to keep the core white pure, or blur later
     const logoBlurFilter = useMotionTemplate`blur(${logoBlurRaw}px)`;
 
-    // ── Black overlay: fades in over the blurring logo to complete the dissolve ──
-    const blackOverlayOpacity = useTransform(scrollYProgress, [0.30, 0.55], [0, 1]);
+    // ── Second section (White Background): the Animated Text Cycle fades IN over the white logo ──
+    const textCycleOpacity = useTransform(scrollYProgress, [0.25, 0.35, 0.55, 0.65], [0, 1, 1, 0]);
+    const textCycleY = useTransform(scrollYProgress, [0.25, 0.35, 0.55, 0.65], [20, 0, 0, -20]);
+    
+    // ── Black overlay fades in over the white logo/text strictly to transition to the final black section ──
+    const blackOverlayOpacity = useTransform(scrollYProgress, [0.55, 0.70], [0, 1]);
 
-    // ── Second section content: blurs + fades IN as black overlay arrives ──
-    const contentOpacity = useTransform(scrollYProgress, [0.50, 0.65], [0, 1]);
-    const contentY = useTransform(scrollYProgress, [0.50, 0.65], [20, 0]);
-    const contentBlurRaw = useTransform(scrollYProgress, [0.50, 0.65], [16, 0]);
+    // ── Third section content (Ticker Tape): blurs + fades IN as black overlay arrives ──
+    const contentOpacity = useTransform(scrollYProgress, [0.65, 0.80], [0, 1]);
+    const contentY = useTransform(scrollYProgress, [0.65, 0.80], [20, 0]);
+    const contentBlurRaw = useTransform(scrollYProgress, [0.65, 0.80], [16, 0]);
     const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
 
     const enableScroll = isMomentumPhase && step === "MOMENTUM_LOCK" && isHeroReady;
@@ -284,7 +289,7 @@ export default function Hero() {
     const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
     const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
-    const containerHeightClass = "h-[300vh]"; // Fixed tall height, body lock prevents early scrolling
+    const containerHeightClass = "h-[400vh]"; // Fixed tall height, extended for the 3 distinct scrolling sections
 
     return (
         <div ref={containerRef} className={`relative w-full ${containerHeightClass} ${bgTransitionClass} ${bgColorClass}`}>
@@ -458,7 +463,7 @@ export default function Hero() {
                             {enableScroll && (
                                 <div className="absolute inset-0 z-40 overflow-hidden pointer-events-none">
 
-                                    {/* The white logo that physically grows and blurs as you scroll */}
+                                    {/* The white logo that physically grows exponentially to fill bounds */}
                                     <motion.div
                                         className="absolute"
                                         style={{
@@ -479,17 +484,36 @@ export default function Hero() {
                                         </svg>
                                     </motion.div>
 
-                                    {/* Black overlay fades in over the blurring logo — dissolves to solid black */}
+                                    {/* MIDDLE SECTION: White Background with Animated Text Cycle */}
                                     <motion.div
-                                        className="absolute inset-0 bg-black"
+                                        style={{ opacity: textCycleOpacity, y: textCycleY }}
+                                        className="absolute inset-0 z-20 w-full h-full flex flex-col items-center justify-center pointer-events-none px-6 sm:px-12"
+                                    >
+                                        <h3
+                                            className="text-black text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tight leading-[1.05] text-center max-w-[1000px] font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
+                                        >
+                                            You deserve{" "}
+                                            <AnimatedTextCycle
+                                                words={["better", "faster", "smoother", "more accurate"]}
+                                                interval={2500}
+                                                className="text-[#fd5934]"
+                                            />{" "}
+                                            <br className="hidden md:block" />
+                                            automation setups.
+                                        </h3>
+                                    </motion.div>
+
+                                    {/* Black overlay fades in over the white sequence — dissolves to solid black for final section */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-black z-30 pointer-events-none"
                                         style={{ opacity: blackOverlayOpacity }}
                                     />
 
-                                    {/* Second section content — blurs into place as black arrives */}
+                                    {/* FINAL SECTION content — blurs into place as black arrives */}
                                     <motion.div
                                         id="learn-more"
                                         style={{ opacity: contentOpacity, y: contentY, filter: contentBlurFilter }}
-                                        className="relative z-10 w-full h-full flex flex-col justify-center gap-6 sm:gap-10 lg:gap-16 overflow-hidden pt-8 lg:pt-12"
+                                        className="relative z-40 w-full h-full flex flex-col justify-center gap-6 sm:gap-10 lg:gap-16 overflow-hidden pt-8 lg:pt-12"
                                     >
                                         {/* Absolute Top Right Edge Arrow (Moved outside max-width container to hug true viewport boundary) */}
                                         <div className="absolute top-[5%] lg:top-[12%] right-4 lg:right-0 text-white/40 animate-bounce z-40">
