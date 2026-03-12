@@ -66,25 +66,25 @@ const STENCIL_KEYS = Object.keys(ALPHABET) as Array<keyof typeof ALPHABET>;
 // Final Sequential Timeline mapping
 const TIMINGS: Record<string, number> = {
     E: 0,
-    V: 300,
-    R: 200,
-    Y: 150,
-    T: 100,
-    H: 80,
-    I: 60,
-    N: 50,
-    G: 50,
-    A: 40,
-    i: 300,
+    V: 800,
+    R: 600,
+    Y: 450,
+    T: 350,
+    H: 250,
+    I: 200,
+    N: 150,
+    G: 120,
+    A: 100,
+    i: 600,
 
     // EVRYTHING Ai End States
-    LOGO_WHITE_BG_1: 250,
-    LOGO_BLACK_BG_2: 250,
-    LOGO_WHITE_BG_3: 500,
+    LOGO_WHITE_BG_1: 500,
+    LOGO_BLACK_BG_2: 500,
+    LOGO_WHITE_BG_3: 1000,
 
     // Smooth Transition sequence
-    INTRO_TEXT: 800, // Background blacken instantly, "Introducing" blurs/fades in
-    CANVAS_AND_LOGO: 800, // Introducing fades out. Wave slides up. Logo anchors center.
+    INTRO_TEXT: 2000, // Background blacken instantly, "Introducing" blurs/fades in
+    CANVAS_AND_LOGO: 2000, // Introducing fades out. Wave slides up. Logo anchors center.
     MOMENTUM_LOCK: 0, // Logo seamlessly floats up. Title fades below.
 };
 
@@ -207,11 +207,11 @@ export default function Hero() {
                 }
             };
 
-            // Wait 0.8 seconds for the y:-140 spring animation to settle securely
+            // Wait 2 seconds for the y:-140 spring animation to settle securely
             const t = setTimeout(() => {
                 updateRect();
                 setIsHeroReady(true);
-            }, 800);
+            }, 2000);
 
             window.addEventListener('resize', updateRect);
             return () => {
@@ -282,9 +282,9 @@ export default function Hero() {
 
     const isWhiteBG = ["V", "Y", "H", "N", "A", "LOGO_WHITE_BG_1", "LOGO_WHITE_BG_3"].includes(step);
     const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
-    const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1000ms] ease-in-out" : "transition-none duration-0";
+    const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
-    const containerHeightClass = "h-[180vh] md:h-[300vh]"; // Fixed tall height, body lock prevents early scrolling
+    const containerHeightClass = "h-[300vh]"; // Fixed tall height, body lock prevents early scrolling
 
     return (
         <div ref={containerRef} className={`relative w-full ${containerHeightClass} ${bgTransitionClass} ${bgColorClass}`}>
@@ -371,7 +371,7 @@ export default function Hero() {
                                                     <svg
                                                         ref={logoRef}
                                                         viewBox="0 0 375 375"
-                                                        className="w-[45vw] sm:w-[300px] xl:w-[350px] h-auto drop-shadow-2xl opacity-100 transition-opacity"
+                                                        className="w-[60vw] sm:w-[300px] xl:w-[350px] h-auto drop-shadow-2xl opacity-100 transition-opacity"
                                                         style={{ filter: "drop-shadow(0px 0px 40px rgba(255,255,255,0.15))" }}
                                                     >
                                                         <path fill="#ffffff" d="M 187.53125 64.34375 L 329.738281 310.652344 L 187.53125 239.414062 L 45.320312 310.652344 Z" />
@@ -396,15 +396,15 @@ export default function Hero() {
                                                             >
                                                                 Momentum OS
                                                             </h1>
-                                                            <p className="text-[19px] sm:text-[28px] text-white font-medium tracking-tight mb-6 z-10 px-6 text-center" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                                            <p className="text-xl sm:text-[28px] text-white font-medium tracking-tight mb-5 z-10 px-6 text-center" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                                 Turn your computer into an AI growth engine.
                                                             </p>
 
-                                                            <div className="pt-0 flex flex-row items-center justify-center gap-5 sm:gap-7 z-50 px-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
+                                                            <div className="pt-0 flex flex-row items-center justify-center gap-4 sm:gap-7 z-50 w-full px-2" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
                                                                 {/* Pre-order — transparent with white border, Aurora on hover */}
                                                                 <button
                                                                     onClick={() => setShowPopup(true)}
-                                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-7 py-2.5 sm:px-9 sm:py-3.5 rounded-full font-semibold text-[15px] sm:text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-auto shadow-sm"
+                                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-6 sm:px-9 py-2.5 sm:py-3.5 rounded-full font-semibold text-[15px] sm:text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-auto shadow-sm"
                                                                 >
                                                                     Pre-order
                                                                     <span className="aurora-glow-ring"></span>
@@ -502,7 +502,7 @@ export default function Hero() {
                                             {/* Left: Bold headline */}
                                             <div className="flex flex-col items-start text-left max-w-[800px]">
                                                 <h3
-                                                    className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tight leading-[1.05] font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
+                                                    className="text-white text-[32px] xs:text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tight leading-[1.05] break-words font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
                                                     style={{ textShadow: "0 4px 60px rgba(0,0,0,0.4)" }}
                                                 >
                                                     Don&apos;t F***ing pay subscriptions to AI agents to grow your business.
@@ -510,15 +510,15 @@ export default function Hero() {
                                             </div>
 
                                             {/* Right: Context Text & Action Button */}
-                                            <div className="flex flex-col items-start lg:items-end shrink-0 pointer-events-auto pt-8 lg:pt-0 relative w-full lg:w-auto lg:mt-3 lg:pr-10">
-                                                <div className="flex flex-col items-start lg:items-end gap-6 lg:gap-10 max-w-[460px]">
-                                                    <p className="text-[#a0a0a0] text-[17px] sm:text-[19px] font-medium leading-relaxed text-left lg:text-right w-full inline-block mt-2" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                            <div className="flex flex-col items-center lg:items-end shrink-0 pointer-events-auto pt-8 lg:pt-0 relative w-full lg:w-auto lg:mt-3 lg:pr-10">
+                                                <div className="flex flex-col items-end gap-10 max-w-[460px]">
+                                                    <p className="text-[#a0a0a0] text-[17px] sm:text-[19px] font-medium leading-relaxed text-right w-full inline-block mt-2" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                         Momentum OS is built into your OS layer — it<br className="hidden md:block" /> replaces every AI subscription you&apos;re paying for.
                                                     </p>
-                                                    <div className="flex justify-start lg:justify-end w-full">
+                                                    <div className="flex justify-end w-full">
                                                         <button
                                                             onClick={() => setShowPopup(true)}
-                                                            className="aurora-download-btn group relative bg-transparent border border-[#555] text-white px-8 py-3.5 lg:px-12 lg:py-4 rounded-full font-semibold text-[16px] xl:text-[18px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full xs:w-auto shadow-sm"
+                                                            className="aurora-download-btn group relative bg-transparent border border-[#555] text-white px-10 py-3.5 lg:px-12 lg:py-4 rounded-full font-semibold text-[17px] sm:text-[18px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
                                                         >
                                                             Pre-order
                                                             <span className="aurora-glow-ring"></span>
@@ -531,7 +531,7 @@ export default function Hero() {
                                         {/* ── Bottom Half: Foreground Horizontal Ticker Tape ── */}
                                         <div className="relative w-full z-20 flex flex-col items-center mt-12 mb-4">
                                             {/* Label Text */}
-                                            <p className="text-[#888888] text-[15px] sm:text-[16px] tracking-normal mb-6 text-center px-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
+                                            <p className="text-[#888888] text-[15px] sm:text-[16px] tracking-normal mb-6 text-center px-8" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                 Evrything AI is democratizing AI so you don&apos;t need subscriptions to gain momentum.
                                             </p>
                                             <div
@@ -560,8 +560,8 @@ export default function Hero() {
                                             </div>
 
                                             {/* Fade masks for the left/right edges of the screen to blend the tape smoothly */}
-                                            <div className="absolute inset-y-0 left-0 w-32 sm:w-64 z-30 bg-gradient-to-r from-black to-transparent pointer-events-none" />
-                                            <div className="absolute inset-y-0 right-0 w-32 sm:w-64 z-30 bg-gradient-to-l from-black to-transparent pointer-events-none" />
+                                            <div className="absolute inset-y-0 left-0 w-8 sm:w-64 z-30 bg-gradient-to-r from-black to-transparent pointer-events-none" />
+                                            <div className="absolute inset-y-0 right-0 w-8 sm:w-64 z-30 bg-gradient-to-l from-black to-transparent pointer-events-none" />
                                         </div>
                                     </motion.div>
                                 </div>
