@@ -500,9 +500,9 @@ export default function Hero() {
                                         <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-start justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-16 lg:gap-12">
 
                                             {/* Left: Bold headline */}
-                                            <div className="flex flex-col items-start text-left max-w-[800px]">
+                                            <div className="flex flex-col items-start text-left max-w-[100vw] sm:max-w-[800px] px-2 sm:px-0">
                                                 <h3
-                                                    className="text-white text-[32px] xs:text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tight leading-[1.05] break-words font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
+                                                    className="text-white text-[8.5vw] xs:text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tight leading-[1.1] break-words font-[-apple-system,BlinkMacSystemFont,'SF_Pro',sans-serif]"
                                                     style={{ textShadow: "0 4px 60px rgba(0,0,0,0.4)" }}
                                                 >
                                                     Don&apos;t F***ing pay subscriptions to AI agents to grow your business.
@@ -529,39 +529,41 @@ export default function Hero() {
                                         </div>
 
                                         {/* ── Bottom Half: Foreground Horizontal Ticker Tape ── */}
-                                        <div className="relative w-full z-20 flex flex-col items-center mt-12 mb-4">
+                                        <div className="relative w-full max-w-[100vw] overflow-hidden z-20 flex flex-col items-center mt-12 mb-4">
                                             {/* Label Text */}
                                             <p className="text-[#888888] text-[15px] sm:text-[16px] tracking-normal mb-6 text-center px-8" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                 Evrything AI is democratizing AI so you don&apos;t need subscriptions to gain momentum.
                                             </p>
-                                            <div
-                                                className="flex w-max"
-                                                style={{ animation: "ticker-left 40s linear infinite" }}
-                                            >
-                                                {/* Duplicate exactly 2 times for a seamless -50% translation loop */}
-                                                {[...Array(2)].map((_, trackIndex) => (
-                                                    <React.Fragment key={`track-${trackIndex}`}>
-                                                        {[
-                                                            { name: "ChatGPT", bg: "#10A37F", font: "'Inter', sans-serif" },
-                                                            { name: "Claude", bg: "#C96442", font: "'Lora', Georgia, serif" },
-                                                            { name: "Gemini", bg: "#1A73E8", font: "'Nunito', sans-serif" },
-                                                            { name: "n8n", bg: "#EA4B71", font: "'Raleway', sans-serif" },
-                                                            { name: "Zapier", bg: "#FF4A00", font: "'Outfit', sans-serif" },
-                                                            { name: "Make.com", bg: "#6D3BDB", font: "'Plus Jakarta Sans', sans-serif" },
-                                                            { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
-                                                            { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
-                                                        ].map((b, i) => (
-                                                            <div key={`pill-${trackIndex}-${i}`} className="w-[200px] sm:w-[280px] shrink-0 py-10 sm:py-12 mx-4 rounded-[40px] flex items-center justify-center shadow-xl" style={{ background: b.bg }}>
-                                                                <span className="text-white font-bold text-2xl sm:text-3xl tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
-                                                            </div>
-                                                        ))}
-                                                    </React.Fragment>
-                                                ))}
-                                            </div>
+                                            <div className="relative w-full max-w-[100vw] overflow-hidden">
+                                                <div
+                                                    className="flex w-max"
+                                                    style={{ animation: "ticker-left 40s linear infinite" }}
+                                                >
+                                                    {/* Duplicate exactly 2 times for a seamless -50% translation loop */}
+                                                    {[...Array(2)].map((_, trackIndex) => (
+                                                        <React.Fragment key={`track-${trackIndex}`}>
+                                                            {[
+                                                                { name: "ChatGPT", bg: "#10A37F", font: "'Inter', sans-serif" },
+                                                                { name: "Claude", bg: "#C96442", font: "'Lora', Georgia, serif" },
+                                                                { name: "Gemini", bg: "#1A73E8", font: "'Nunito', sans-serif" },
+                                                                { name: "n8n", bg: "#EA4B71", font: "'Raleway', sans-serif" },
+                                                                { name: "Zapier", bg: "#FF4A00", font: "'Outfit', sans-serif" },
+                                                                { name: "Make.com", bg: "#6D3BDB", font: "'Plus Jakarta Sans', sans-serif" },
+                                                                { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
+                                                                { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
+                                                            ].map((b, i) => (
+                                                                <div key={`pill-${trackIndex}-${i}`} className="w-[200px] sm:w-[280px] shrink-0 py-10 sm:py-12 mx-4 rounded-[40px] flex items-center justify-center shadow-xl" style={{ background: b.bg }}>
+                                                                    <span className="text-white font-bold text-2xl sm:text-3xl tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
+                                                                </div>
+                                                            ))}
+                                                        </React.Fragment>
+                                                    ))}
+                                                </div>
 
-                                            {/* Fade masks for the left/right edges of the screen to blend the tape smoothly */}
-                                            <div className="absolute inset-y-0 left-0 w-8 sm:w-64 z-30 bg-gradient-to-r from-black to-transparent pointer-events-none" />
-                                            <div className="absolute inset-y-0 right-0 w-8 sm:w-64 z-30 bg-gradient-to-l from-black to-transparent pointer-events-none" />
+                                                {/* Fade masks for the left/right edges of the screen to blend the tape smoothly */}
+                                                <div className="absolute inset-y-0 left-0 w-8 sm:w-64 z-30 bg-gradient-to-r from-black to-transparent pointer-events-none" />
+                                                <div className="absolute inset-y-0 right-0 w-8 sm:w-64 z-30 bg-gradient-to-l from-black to-transparent pointer-events-none" />
+                                            </div>
                                         </div>
                                     </motion.div>
                                 </div>
