@@ -489,15 +489,15 @@ export default function Hero() {
                                     <motion.div
                                         id="learn-more"
                                         style={{ opacity: contentOpacity, y: contentY, filter: contentBlurFilter }}
-                                        className="relative z-10 w-full h-full flex flex-col justify-center gap-16 overflow-hidden pt-12"
+                                        className="relative z-10 w-full h-full flex flex-col justify-center gap-6 sm:gap-10 lg:gap-16 overflow-hidden pt-8 lg:pt-12"
                                     >
                                         {/* Absolute Top Right Edge Arrow (Moved outside max-width container to hug true viewport boundary) */}
-                                        <div className="hidden lg:block absolute top-[10%] xl:top-[12%] right-0 text-white/40 animate-bounce z-40">
-                                            <ArrowDown size={90} strokeWidth={1} />
+                                        <div className="absolute top-[5%] lg:top-[12%] right-4 lg:right-0 text-white/40 animate-bounce z-40">
+                                            <ArrowDown size={50} className="w-[50px] lg:w-[90px] h-[50px] lg:h-[90px]" strokeWidth={1} />
                                         </div>
 
                                         {/* ── Top Half: Text (Left) & CTA (Right) ── */}
-                                        <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-start justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-16 lg:gap-12">
+                                        <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-start justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-8 lg:gap-12 mt-6 lg:mt-0">
 
                                             {/* Left: Bold headline */}
                                             <div className="flex flex-col items-start text-left max-w-[100vw] sm:max-w-[800px] px-2 sm:px-0">
@@ -529,7 +529,7 @@ export default function Hero() {
                                         </div>
 
                                         {/* ── Bottom Half: Foreground Horizontal Ticker Tape ── */}
-                                        <div className="relative w-full max-w-[100vw] overflow-hidden z-20 flex flex-col items-center mt-12 mb-4">
+                                        <div className="relative w-full max-w-[100vw] overflow-hidden z-20 flex flex-col items-center mt-6 lg:mt-12 mb-0 lg:mb-4">
                                             {/* Label Text */}
                                             <p className="text-[#888888] text-[15px] sm:text-[16px] tracking-normal mb-6 text-center px-8" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif" }}>
                                                 Evrything AI is democratizing AI so you don&apos;t need subscriptions to gain momentum.
