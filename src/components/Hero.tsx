@@ -580,7 +580,7 @@ export default function Hero() {
                             className="w-full max-w-[90vw] sm:max-w-[600px] h-auto overflow-visible origin-center"
                         >
                             <g transform={`translate(187.5, 187.5) scale(${REF_HEIGHT / (BOUNDS[step]?.height || 1)}) translate(${- (BOUNDS[step]?.cx || 0)}, ${- (BOUNDS[step]?.cy || 0)})`}>
-                                <g fill={["V", "Y", "H", "N", "A"].includes(step) ? "#000000" : (step === "A" || step === "i") ? "#fd5934" : "#ffffff"}>
+                                <g fill={(step === "A" || step === "i") ? "#fd5934" : (["V", "Y", "H", "N"].includes(step) ? "#000000" : "#ffffff")}>
                                     {step in ALPHABET && ALPHABET[step as string].map((dotPath, i) => {
                                         if (dotPath.length < 10) return null;
 
