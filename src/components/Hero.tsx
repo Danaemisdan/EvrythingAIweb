@@ -20,7 +20,7 @@ import { ShineBorder } from "./ui/shine-border";
 import { Check, ArrowDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { AnimatedTextCycle } from "./ui/animated-text-cycle";
+import AnimatedTextCycle from "./ui/animated-text-cycle";
 
 // Geometrical Bounding Box Extractor
 function getPathsBounds(paths: string[]) {
