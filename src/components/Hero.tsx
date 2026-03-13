@@ -271,15 +271,13 @@ export default function Hero() {
     const socialBlurRaw = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [20, 0, 0, 20]);
     const socialBlurFilter = useMotionTemplate`blur(${socialBlurRaw}px)`;
 
-    // ── Pre-Meeting: Lead Generation (Dark Mode) ──
+    // ── Pre-Meeting: Lead Generation (Light Theme) ──
     const leadGenOpacity = useTransform(scrollYProgress, [0.48, 0.51, 0.55, 0.58], [0, 1, 1, 0]);
-    const leadGenRotateX = useTransform(scrollYProgress, [0.55, 0.58], [0, 90]);
     const leadGenBlurRaw = useTransform(scrollYProgress, [0.48, 0.51, 0.55, 0.58], [20, 0, 0, 20]);
     const leadGenBlurFilter = useMotionTemplate`blur(${leadGenBlurRaw}px)`;
 
-    // ── Meeting Closer (Dark Mode) ──
+    // ── Meeting Closer (Light Theme) ──
     const meetingOpacity = useTransform(scrollYProgress, [0.57, 0.60, 0.65, 0.70], [0, 1, 1, 0]);
-    const meetingRotateX = useTransform(scrollYProgress, [0.57, 0.60], [-90, 0]);
     const meetingBlurRaw = useTransform(scrollYProgress, [0.57, 0.60, 0.65, 0.70], [20, 0, 0, 20]);
     const meetingBlurFilter = useMotionTemplate`blur(${meetingBlurRaw}px)`;
     
@@ -294,6 +292,9 @@ export default function Hero() {
     
     // ── Black overlay fades in RIGHT BEFORE Social Showcase begins (transition to dark theme) ──
     const blackOverlayOpacity = useTransform(scrollYProgress, [0.28, 0.32], [0, 1]);
+
+    // ── White overlay for Light Theme sections (Lead Gen & Meeting Closer) ──
+    const whiteOverlayOpacity = useTransform(scrollYProgress, [0.45, 0.48, 0.70, 0.75], [0, 1, 1, 0]);
 
     // ── Third section content (Ticker Tape): blurs + fades IN ──
     const contentOpacity = useTransform(scrollYProgress, [0.88, 0.95], [0, 1]);
@@ -539,8 +540,14 @@ export default function Hero() {
 
                                     {/* Black overlay fades in immediately after White Animated Text to serve as Dark Theme Canvas */}
                                     <motion.div
-                                        className="absolute inset-0 bg-black z-25 pointer-events-none"
+                                        className="absolute inset-0 bg-black z-20 pointer-events-none"
                                         style={{ opacity: blackOverlayOpacity }}
+                                    />
+
+                                    {/* White overlay fades in specifically for Lead Gen & Meeting Closer */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-white z-30 pointer-events-none"
+                                        style={{ opacity: whiteOverlayOpacity }}
                                     />
 
                                     {/* SECTION 2.5a: Social Showcase */}
@@ -555,20 +562,20 @@ export default function Hero() {
 
                                     {/* SECTION 2.5b: Lead Generation */}
                                     <motion.div
-                                        style={{ opacity: leadGenOpacity, y: sequenceY, filter: leadGenBlurFilter, rotateX: leadGenRotateX, transformOrigin: "center center" }}
+                                        style={{ opacity: leadGenOpacity, y: sequenceY, filter: leadGenBlurFilter }}
                                         className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
                                     >
-                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center" style={{ perspective: 1200 }}>
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
                                             <LeadGeneration />
                                         </div>
                                     </motion.div>
 
                                     {/* SECTION 2.5c: Meeting Closer */}
                                     <motion.div
-                                        style={{ opacity: meetingOpacity, y: sequenceY, filter: meetingBlurFilter, rotateX: meetingRotateX, transformOrigin: "center center" }}
+                                        style={{ opacity: meetingOpacity, y: sequenceY, filter: meetingBlurFilter }}
                                         className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
                                     >
-                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center" style={{ perspective: 1200 }}>
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
                                             <MeetingCloser />
                                         </div>
                                     </motion.div>
@@ -647,9 +654,15 @@ export default function Hero() {
                                                                 { name: "Perplexity", bg: "#1FB8CD", font: "'Space Grotesk', sans-serif" },
                                                                 { name: "Copilot", bg: "#0078D4", font: "'Inter', sans-serif" },
                                                             ].map((b, i) => (
-                                                                <div key={`pill-${trackIndex}-${i}`} className="w-[200px] sm:w-[280px] shrink-0 py-10 sm:py-12 mx-4 rounded-[40px] flex items-center justify-center shadow-xl" style={{ background: b.bg }}>
+                                                                <motion.div 
+                                                                    whileHover={{ y: -20, scale: 1.05, boxShadow: "0 30px 60px -12px rgba(0,0,0,0.3)" }}
+                                                                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                                                    key={`pill-${trackIndex}-${i}`} 
+                                                                    className="w-[200px] sm:w-[280px] shrink-0 py-10 sm:py-12 mx-4 rounded-[40px] flex items-center justify-center shadow-xl cursor-default" 
+                                                                    style={{ background: b.bg }}
+                                                                >
                                                                     <span className="text-white font-bold text-2xl sm:text-3xl tracking-tight" style={{ fontFamily: b.font }}>{b.name}</span>
-                                                                </div>
+                                                                </motion.div>
                                                             ))}
                                                         </React.Fragment>
                                                     ))}
