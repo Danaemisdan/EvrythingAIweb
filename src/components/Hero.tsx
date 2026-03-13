@@ -21,6 +21,9 @@ import { Check, ArrowDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import AnimatedTextCycle from "./ui/animated-text-cycle";
+import { SocialShowcase } from "./ui/social-showcase";
+import { MeetingCloser } from "./ui/meeting-closer";
+import { FeaturesBento } from "./ui/features-bento";
 
 // Geometrical Bounding Box Extractor
 function getPathsBounds(paths: string[]) {
@@ -253,21 +256,33 @@ export default function Hero() {
     const logoFadeOpacity = useTransform(scrollYProgress, [0.03, 0.12], [1, 0]);
 
     // ── Logo scale: the white logo SVG grows exponentially to fill the screen with white ──
-    const logoScaleUp = useTransform(scrollYProgress, [0.05, 0.35], [1, 65]);
-    const logoBlurRaw = useTransform(scrollYProgress, [0.35, 0.45], [0, 0]); // Never blur the logo to keep the core white pure, or blur later
+    const logoScaleUp = useTransform(scrollYProgress, [0.05, 0.15], [1, 65]);
+    const logoBlurRaw = useTransform(scrollYProgress, [0.15, 0.20], [0, 0]);
     const logoBlurFilter = useMotionTemplate`blur(${logoBlurRaw}px)`;
 
     // ── Second section (White Background): the Animated Text Cycle fades IN over the white logo ──
-    const textCycleOpacity = useTransform(scrollYProgress, [0.25, 0.35, 0.55, 0.65], [0, 1, 1, 0]);
-    const textCycleY = useTransform(scrollYProgress, [0.25, 0.35, 0.55, 0.65], [20, 0, 0, -20]);
+    const textCycleOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [0, 1, 1, 0]);
+    const textCycleY = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [20, 0, 0, -20]);
+
+    // ── Social Showcase ──
+    const socialOpacity = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [0, 1, 1, 0]);
+    const socialY = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [20, 0, 0, -20]);
+
+    // ── Meeting Closer ──
+    const meetingOpacity = useTransform(scrollYProgress, [0.50, 0.55, 0.65, 0.70], [0, 1, 1, 0]);
+    const meetingY = useTransform(scrollYProgress, [0.50, 0.55, 0.65, 0.70], [20, 0, 0, -20]);
+
+    // ── Features Bento ──
+    const bentoOpacity = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [0, 1, 1, 0]);
+    const bentoY = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [20, 0, 0, -20]);
     
     // ── Black overlay fades in over the white logo/text strictly to transition to the final black section ──
-    const blackOverlayOpacity = useTransform(scrollYProgress, [0.55, 0.70], [0, 1]);
+    const blackOverlayOpacity = useTransform(scrollYProgress, [0.82, 0.88], [0, 1]);
 
     // ── Third section content (Ticker Tape): blurs + fades IN as black overlay arrives ──
-    const contentOpacity = useTransform(scrollYProgress, [0.65, 0.80], [0, 1]);
-    const contentY = useTransform(scrollYProgress, [0.65, 0.80], [20, 0]);
-    const contentBlurRaw = useTransform(scrollYProgress, [0.65, 0.80], [16, 0]);
+    const contentOpacity = useTransform(scrollYProgress, [0.88, 0.95], [0, 1]);
+    const contentY = useTransform(scrollYProgress, [0.88, 0.95], [20, 0]);
+    const contentBlurRaw = useTransform(scrollYProgress, [0.88, 0.95], [16, 0]);
     const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
 
     const enableScroll = isMomentumPhase && step === "MOMENTUM_LOCK" && isHeroReady;
@@ -289,7 +304,7 @@ export default function Hero() {
     const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
     const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
-    const containerHeightClass = "h-[400vh]"; // Fixed tall height, extended for the 3 distinct scrolling sections
+    const containerHeightClass = "h-[700vh]"; // Fixed tall height, extended for the 3 distinct scrolling sections plus feature pages
 
     return (
         <div ref={containerRef} className={`relative w-full ${containerHeightClass} ${bgTransitionClass} ${bgColorClass}`}>
@@ -501,6 +516,36 @@ export default function Hero() {
                                             <br className="hidden md:block" />
                                             automation setups.
                                         </h3>
+                                    </motion.div>
+
+                                    {/* SECTION 2.5a: Social Showcase */}
+                                    <motion.div
+                                        style={{ opacity: socialOpacity, y: socialY }}
+                                        className="absolute inset-0 z-20 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                    >
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
+                                            <SocialShowcase />
+                                        </div>
+                                    </motion.div>
+
+                                    {/* SECTION 2.5b: Meeting Closer */}
+                                    <motion.div
+                                        style={{ opacity: meetingOpacity, y: meetingY }}
+                                        className="absolute inset-0 z-20 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                    >
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
+                                            <MeetingCloser />
+                                        </div>
+                                    </motion.div>
+
+                                    {/* SECTION 2.5c: Features Bento */}
+                                    <motion.div
+                                        style={{ opacity: bentoOpacity, y: bentoY }}
+                                        className="absolute inset-0 z-20 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                    >
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
+                                            <FeaturesBento />
+                                        </div>
                                     </motion.div>
 
                                     {/* Black overlay fades in over the white sequence — dissolves to solid black for final section */}
