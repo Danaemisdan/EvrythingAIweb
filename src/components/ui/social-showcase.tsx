@@ -143,9 +143,9 @@ function FloatingNode({ node, mouseX, mouseY, containerRef }: FloatingNodeProps)
                 style={{ left: `calc(50% + ${baseX}px)`, top: `calc(50% + ${baseY}px)` }}
                 className="absolute z-30 flex items-center justify-center -ml-[40px] -mt-[40px]"
             >
-                <div className="w-20 h-20 bg-black rounded-[1.8rem] shadow-2xl flex items-center justify-center overflow-hidden border border-white/10">
-                    <svg viewBox="0 0 375 375" className="w-14 h-14 drop-shadow-lg">
-                        <path fill="#ffffff" d="M 187.53125 64.34375 L 329.738281 310.652344 L 187.53125 239.414062 L 45.320312 310.652344 Z" />
+                <div className="w-20 h-20 bg-white rounded-[1.8rem] shadow-[0_0_40px_rgba(255,255,255,0.15)] flex items-center justify-center overflow-hidden border border-white/20">
+                    <svg viewBox="0 0 375 375" className="w-14 h-14 drop-shadow-sm">
+                        <path fill="#000000" d="M 187.53125 64.34375 L 329.738281 310.652344 L 187.53125 239.414062 L 45.320312 310.652344 Z" />
                     </svg>
                 </div>
             </motion.div>
@@ -160,7 +160,7 @@ function FloatingNode({ node, mouseX, mouseY, containerRef }: FloatingNodeProps)
             <motion.div 
                 animate={{ y: [0, -floatDistance, 0] }}
                 transition={{ duration: randomDuration, repeat: Infinity, ease: "easeInOut", delay: randomDelay }}
-                className="w-16 h-16 bg-white border border-gray-100/80 rounded-[1.25rem] shadow-[0_4px_12px_rgba(0,0,0,0.06)] flex items-center justify-center"
+                className="w-16 h-16 bg-white border border-white/20 rounded-[1.25rem] shadow-[0_8px_30px_rgba(255,255,255,0.1)] flex items-center justify-center transition-transform hover:scale-110"
                 style={{ color }}
             >
                 <Icon className="w-8 h-8 drop-shadow-sm" />
@@ -203,7 +203,7 @@ export function SocialShowcase() {
 
     return (
         <div 
-            className="flex flex-col items-center justify-center w-full h-full text-black px-4 overflow-hidden relative bg-white"
+            className="flex flex-col items-center justify-center w-full h-full text-white px-4 overflow-hidden relative bg-black"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
         >
@@ -231,9 +231,10 @@ export function SocialShowcase() {
             </div>
             
             {/* Subtle Gradient Fades on edges to hide the hard cutoff on panning bounds */}
-            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white to-transparent pointer-events-none z-30" />
-            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white to-transparent pointer-events-none z-30" />
-            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-white to-transparent pointer-events-none z-30" />
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none z-30" />
+            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black via-black/80 to-transparent pointer-events-none z-30" />
+            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black via-black/80 to-transparent pointer-events-none z-30" />
+            <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-30" />
         </div>
     );
 }

@@ -22,7 +22,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import AnimatedTextCycle from "./ui/animated-text-cycle";
 import { SocialShowcase } from "./ui/social-showcase";
-import { MeetingCloser } from "./ui/meeting-closer";
+import { MeetingCloser } from "@/components/ui/meeting-closer";
+import { LeadGeneration } from "@/components/ui/lead-generation";
 import { FeaturesBento } from "./ui/features-bento";
 
 // Geometrical Bounding Box Extractor
@@ -264,26 +265,44 @@ export default function Hero() {
     const textCycleOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [0, 1, 1, 0]);
     const textCycleY = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [20, 0, 0, -20]);
 
-    // ── Social Showcase ──
+    // ── Social Showcase (Now Dark Mode, blurs in) ──
     const socialOpacity = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [0, 1, 1, 0]);
-    const socialY = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [20, 0, 0, -20]);
+    const socialY = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [40, 0, 0, -40]);
+    const socialBlurRaw = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [20, 0, 0, 20]);
+    const socialBlurFilter = useMotionTemplate`blur(${socialBlurRaw}px)`;
 
-    // ── Meeting Closer ──
-    const meetingOpacity = useTransform(scrollYProgress, [0.50, 0.55, 0.65, 0.70], [0, 1, 1, 0]);
-    const meetingY = useTransform(scrollYProgress, [0.50, 0.55, 0.65, 0.70], [20, 0, 0, -20]);
+    // ── Pre-Meeting: Lead Generation (Dark Mode) ──
+    const leadGenOpacity = useTransform(scrollYProgress, [0.48, 0.51, 0.55, 0.58], [0, 1, 1, 0]);
+    const leadGenRotateX = useTransform(scrollYProgress, [0.55, 0.58], [0, 90]);
+    const leadGenBlurRaw = useTransform(scrollYProgress, [0.48, 0.51, 0.55, 0.58], [20, 0, 0, 20]);
+    const leadGenBlurFilter = useMotionTemplate`blur(${leadGenBlurRaw}px)`;
 
-    // ── Features Bento ──
-    const bentoOpacity = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [0, 1, 1, 0]);
-    const bentoY = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [20, 0, 0, -20]);
+    // ── Meeting Closer (Dark Mode) ──
+    const meetingOpacity = useTransform(scrollYProgress, [0.57, 0.60, 0.65, 0.70], [0, 1, 1, 0]);
+    const meetingRotateX = useTransform(scrollYProgress, [0.57, 0.60], [-90, 0]);
+    const meetingBlurRaw = useTransform(scrollYProgress, [0.57, 0.60, 0.65, 0.70], [20, 0, 0, 20]);
+    const meetingBlurFilter = useMotionTemplate`blur(${meetingBlurRaw}px)`;
     
-    // ── Black overlay fades in over the white logo/text strictly to transition to the final black section ──
-    const blackOverlayOpacity = useTransform(scrollYProgress, [0.82, 0.88], [0, 1]);
+    // Y-axis translates for both combined
+    const sequenceY = useTransform(scrollYProgress, [0.48, 0.51, 0.65, 0.70], [60, 0, 0, -60]);
 
-    // ── Third section content (Ticker Tape): blurs + fades IN as black overlay arrives ──
+    // ── Features Bento (Dark Mode) ──
+    const bentoOpacity = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [0, 1, 1, 0]);
+    const bentoY = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [40, 0, 0, -40]);
+    const bentoBlurRaw = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [20, 0, 0, 20]);
+    const bentoBlurFilter = useMotionTemplate`blur(${bentoBlurRaw}px)`;
+    
+    // ── Black overlay fades in RIGHT BEFORE Social Showcase begins (transition to dark theme) ──
+    const blackOverlayOpacity = useTransform(scrollYProgress, [0.28, 0.32], [0, 1]);
+
+    // ── Third section content (Ticker Tape): blurs + fades IN ──
     const contentOpacity = useTransform(scrollYProgress, [0.88, 0.95], [0, 1]);
-    const contentY = useTransform(scrollYProgress, [0.88, 0.95], [20, 0]);
+    const contentY = useTransform(scrollYProgress, [0.88, 0.95], [40, 0]);
     const contentBlurRaw = useTransform(scrollYProgress, [0.88, 0.95], [16, 0]);
     const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
+
+    // ── Global Scroll Arrow Opacity (fades out at the very end only) ──
+    const globalArrowOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.90, 0.95], [0, 1, 1, 0]);
 
     const enableScroll = isMomentumPhase && step === "MOMENTUM_LOCK" && isHeroReady;
 
@@ -518,41 +537,51 @@ export default function Hero() {
                                         </h3>
                                     </motion.div>
 
+                                    {/* Black overlay fades in immediately after White Animated Text to serve as Dark Theme Canvas */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-black z-25 pointer-events-none"
+                                        style={{ opacity: blackOverlayOpacity }}
+                                    />
+
                                     {/* SECTION 2.5a: Social Showcase */}
                                     <motion.div
-                                        style={{ opacity: socialOpacity, y: socialY }}
-                                        className="absolute inset-0 z-20 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                        style={{ opacity: socialOpacity, y: socialY, filter: socialBlurFilter }}
+                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
                                     >
                                         <div className="pointer-events-auto w-full h-full flex items-center justify-center">
                                             <SocialShowcase />
                                         </div>
                                     </motion.div>
 
-                                    {/* SECTION 2.5b: Meeting Closer */}
+                                    {/* SECTION 2.5b: Lead Generation */}
                                     <motion.div
-                                        style={{ opacity: meetingOpacity, y: meetingY }}
-                                        className="absolute inset-0 z-20 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                        style={{ opacity: leadGenOpacity, y: sequenceY, filter: leadGenBlurFilter, rotateX: leadGenRotateX, transformOrigin: "center center" }}
+                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
                                     >
-                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center" style={{ perspective: 1200 }}>
+                                            <LeadGeneration />
+                                        </div>
+                                    </motion.div>
+
+                                    {/* SECTION 2.5c: Meeting Closer */}
+                                    <motion.div
+                                        style={{ opacity: meetingOpacity, y: sequenceY, filter: meetingBlurFilter, rotateX: meetingRotateX, transformOrigin: "center center" }}
+                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                    >
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center" style={{ perspective: 1200 }}>
                                             <MeetingCloser />
                                         </div>
                                     </motion.div>
 
                                     {/* SECTION 2.5c: Features Bento */}
                                     <motion.div
-                                        style={{ opacity: bentoOpacity, y: bentoY }}
-                                        className="absolute inset-0 z-20 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                        style={{ opacity: bentoOpacity, y: bentoY, filter: bentoBlurFilter }}
+                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
                                     >
                                         <div className="pointer-events-auto w-full h-full flex items-center justify-center">
                                             <FeaturesBento />
                                         </div>
                                     </motion.div>
-
-                                    {/* Black overlay fades in over the white sequence — dissolves to solid black for final section */}
-                                    <motion.div
-                                        className="absolute inset-0 bg-black z-30 pointer-events-none"
-                                        style={{ opacity: blackOverlayOpacity }}
-                                    />
 
                                     {/* FINAL SECTION content — blurs into place as black arrives */}
                                     <motion.div
@@ -560,10 +589,7 @@ export default function Hero() {
                                         style={{ opacity: contentOpacity, y: contentY, filter: contentBlurFilter }}
                                         className="relative z-40 w-full h-full flex flex-col justify-center gap-6 sm:gap-10 lg:gap-16 overflow-hidden pt-8 lg:pt-12"
                                     >
-                                        {/* Absolute Top Right Edge Arrow (Moved outside max-width container to hug true viewport boundary) */}
-                                        <div className="absolute top-[5%] lg:top-[12%] right-4 lg:right-0 text-white/40 animate-bounce z-40">
-                                            <ArrowDown size={50} className="w-[50px] lg:w-[90px] h-[50px] lg:h-[90px]" strokeWidth={1} />
-                                        </div>
+                                        {/* Keep as empty placeholder. Global arrow handled below. */}
 
                                         {/* ── Top Half: Text (Left) & CTA (Right) ── */}
                                         <div className="relative z-20 flex flex-col lg:flex-row items-start lg:items-start justify-between w-full max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-24 gap-8 lg:gap-12 mt-6 lg:mt-0">
@@ -636,6 +662,22 @@ export default function Hero() {
                                         </div>
                                     </motion.div>
                                 </div>
+                            )}
+
+                            {/* Global Sticky Scroll Indicator Arrow */}
+                            {enableScroll && (
+                                <motion.div 
+                                    style={{ opacity: globalArrowOpacity }}
+                                    className="fixed bottom-10 right-10 z-50 pointer-events-none mix-blend-difference"
+                                >
+                                    <motion.div 
+                                        animate={{ y: [0, 10, 0] }} 
+                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                        className="text-white opacity-40 hover:opacity-100 transition-opacity"
+                                    >
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+                                    </motion.div>
+                                </motion.div>
                             )}
                         </motion.div>
                     )}
