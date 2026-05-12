@@ -21,10 +21,7 @@ import { Check, ArrowDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import AnimatedTextCycle from "./ui/animated-text-cycle";
-import { SocialShowcase } from "./ui/social-showcase";
-import { MeetingCloser } from "@/components/ui/meeting-closer";
-import { LeadGeneration } from "@/components/ui/lead-generation";
-import { FeaturesBento } from "./ui/features-bento";
+
 
 // Geometrical Bounding Box Extractor
 function getPathsBounds(paths: string[]) {
@@ -265,42 +262,14 @@ export default function Hero() {
     const textCycleOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [0, 1, 1, 0]);
     const textCycleY = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [20, 0, 0, -20]);
 
-    // ── Social Showcase (Now Dark Mode, blurs in) ──
-    const socialOpacity = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [0, 1, 1, 0]);
-    const socialY = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [40, 0, 0, -40]);
-    const socialBlurRaw = useTransform(scrollYProgress, [0.30, 0.35, 0.45, 0.50], [20, 0, 0, 20]);
-    const socialBlurFilter = useMotionTemplate`blur(${socialBlurRaw}px)`;
-
-    // ── Pre-Meeting: Lead Generation (Light Theme) ──
-    const leadGenOpacity = useTransform(scrollYProgress, [0.48, 0.51, 0.55, 0.58], [0, 1, 1, 0]);
-    const leadGenBlurRaw = useTransform(scrollYProgress, [0.48, 0.51, 0.55, 0.58], [20, 0, 0, 20]);
-    const leadGenBlurFilter = useMotionTemplate`blur(${leadGenBlurRaw}px)`;
-
-    // ── Meeting Closer (Light Theme) ──
-    const meetingOpacity = useTransform(scrollYProgress, [0.57, 0.60, 0.65, 0.70], [0, 1, 1, 0]);
-    const meetingBlurRaw = useTransform(scrollYProgress, [0.57, 0.60, 0.65, 0.70], [20, 0, 0, 20]);
-    const meetingBlurFilter = useMotionTemplate`blur(${meetingBlurRaw}px)`;
-    
-    // Y-axis translates for both combined
-    const sequenceY = useTransform(scrollYProgress, [0.48, 0.51, 0.65, 0.70], [60, 0, 0, -60]);
-
-    // ── Features Bento (Dark Mode) ──
-    const bentoOpacity = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [0, 1, 1, 0]);
-    const bentoY = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [40, 0, 0, -40]);
-    const bentoBlurRaw = useTransform(scrollYProgress, [0.70, 0.75, 0.82, 0.85], [20, 0, 0, 20]);
-    const bentoBlurFilter = useMotionTemplate`blur(${bentoBlurRaw}px)`;
-    
-    // ── Black overlay fades in RIGHT BEFORE Social Showcase begins (transition to dark theme) ──
-    const blackOverlayOpacity = useTransform(scrollYProgress, [0.28, 0.32], [0, 1]);
-
-    // ── White overlay for Light Theme sections (Lead Gen & Meeting Closer) ──
-    const whiteOverlayOpacity = useTransform(scrollYProgress, [0.45, 0.48, 0.70, 0.75], [0, 1, 1, 0]);
-
     // ── Third section content (Ticker Tape): blurs + fades IN ──
-    const contentOpacity = useTransform(scrollYProgress, [0.88, 0.95], [0, 1]);
-    const contentY = useTransform(scrollYProgress, [0.88, 0.95], [40, 0]);
-    const contentBlurRaw = useTransform(scrollYProgress, [0.88, 0.95], [16, 0]);
+    const contentOpacity = useTransform(scrollYProgress, [0.38, 0.48], [0, 1]);
+    const contentY = useTransform(scrollYProgress, [0.38, 0.48], [40, 0]);
+    const contentBlurRaw = useTransform(scrollYProgress, [0.38, 0.48], [16, 0]);
     const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
+
+    // ── Black overlay fades in after AnimatedText ──
+    const blackOverlayOpacity = useTransform(scrollYProgress, [0.28, 0.32], [0, 1]);
 
     // ── Global Scroll Arrow Opacity (fades out at the very end only) ──
     const globalArrowOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.90, 0.95], [0, 1, 1, 0]);
@@ -543,52 +512,6 @@ export default function Hero() {
                                         className="absolute inset-0 bg-black z-20 pointer-events-none"
                                         style={{ opacity: blackOverlayOpacity }}
                                     />
-
-                                    {/* White overlay fades in specifically for Lead Gen & Meeting Closer */}
-                                    <motion.div
-                                        className="absolute inset-0 bg-white z-30 pointer-events-none"
-                                        style={{ opacity: whiteOverlayOpacity }}
-                                    />
-
-                                    {/* SECTION 2.5a: Social Showcase */}
-                                    <motion.div
-                                        style={{ opacity: socialOpacity, y: socialY, filter: socialBlurFilter }}
-                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
-                                    >
-                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
-                                            <SocialShowcase />
-                                        </div>
-                                    </motion.div>
-
-                                    {/* SECTION 2.5b: Lead Generation */}
-                                    <motion.div
-                                        style={{ opacity: leadGenOpacity, y: sequenceY, filter: leadGenBlurFilter }}
-                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
-                                    >
-                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
-                                            <LeadGeneration />
-                                        </div>
-                                    </motion.div>
-
-                                    {/* SECTION 2.5c: Meeting Closer */}
-                                    <motion.div
-                                        style={{ opacity: meetingOpacity, y: sequenceY, filter: meetingBlurFilter }}
-                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
-                                    >
-                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
-                                            <MeetingCloser />
-                                        </div>
-                                    </motion.div>
-
-                                    {/* SECTION 2.5c: Features Bento */}
-                                    <motion.div
-                                        style={{ opacity: bentoOpacity, y: bentoY, filter: bentoBlurFilter }}
-                                        className="absolute inset-0 z-40 w-full h-full flex flex-col items-center justify-center pointer-events-none"
-                                    >
-                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
-                                            <FeaturesBento />
-                                        </div>
-                                    </motion.div>
 
                                     {/* FINAL SECTION content — blurs into place as black arrives */}
                                     <motion.div
