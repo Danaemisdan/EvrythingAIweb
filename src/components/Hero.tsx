@@ -263,17 +263,17 @@ export default function Hero() {
     const textCycleOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [0, 1, 1, 0]);
     const textCycleY = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [20, 0, 0, -20]);
 
-    // ── Third section content (Ticker Tape): blurs + fades IN, then fades OUT before agent ──
-    const contentOpacity = useTransform(scrollYProgress, [0.38, 0.48, 0.52, 0.55], [0, 1, 1, 0]);
-    const contentY = useTransform(scrollYProgress, [0.38, 0.48], [40, 0]);
-    const contentBlurRaw = useTransform(scrollYProgress, [0.38, 0.48], [16, 0]);
-    const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
-
-    // ── Agent Showcase: fades in after ticker tape ──
-    const agentOpacity = useTransform(scrollYProgress, [0.55, 0.62, 0.78, 0.83], [0, 1, 1, 0]);
-    const agentY = useTransform(scrollYProgress, [0.55, 0.62, 0.78, 0.83], [40, 0, 0, -40]);
-    const agentBlurRaw = useTransform(scrollYProgress, [0.55, 0.62, 0.78, 0.83], [20, 0, 0, 20]);
+    // ── Agent Showcase: appears right after the text cycle, on the black bg ──
+    const agentOpacity = useTransform(scrollYProgress, [0.33, 0.40, 0.58, 0.63], [0, 1, 1, 0]);
+    const agentY = useTransform(scrollYProgress, [0.33, 0.40, 0.58, 0.63], [40, 0, 0, -40]);
+    const agentBlurRaw = useTransform(scrollYProgress, [0.33, 0.40, 0.58, 0.63], [20, 0, 0, 20]);
     const agentBlurFilter = useMotionTemplate`blur(${agentBlurRaw}px)`;
+
+    // ── Ticker Tape finale: appears after the agent ──
+    const contentOpacity = useTransform(scrollYProgress, [0.65, 0.72, 0.87, 0.90], [0, 1, 1, 0]);
+    const contentY = useTransform(scrollYProgress, [0.65, 0.72], [40, 0]);
+    const contentBlurRaw = useTransform(scrollYProgress, [0.65, 0.72], [16, 0]);
+    const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
 
     // ── Black overlay fades in after AnimatedText ──
     const blackOverlayOpacity = useTransform(scrollYProgress, [0.28, 0.32], [0, 1]);
