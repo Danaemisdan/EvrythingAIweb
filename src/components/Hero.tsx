@@ -21,6 +21,7 @@ import { Check, ArrowDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import AnimatedTextCycle from "./ui/animated-text-cycle";
+import { AgentShowcase } from "./AgentShowcase";
 
 
 // Geometrical Bounding Box Extractor
@@ -262,11 +263,17 @@ export default function Hero() {
     const textCycleOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [0, 1, 1, 0]);
     const textCycleY = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [20, 0, 0, -20]);
 
-    // ── Third section content (Ticker Tape): blurs + fades IN ──
-    const contentOpacity = useTransform(scrollYProgress, [0.38, 0.48], [0, 1]);
+    // ── Third section content (Ticker Tape): blurs + fades IN, then fades OUT before agent ──
+    const contentOpacity = useTransform(scrollYProgress, [0.38, 0.48, 0.52, 0.55], [0, 1, 1, 0]);
     const contentY = useTransform(scrollYProgress, [0.38, 0.48], [40, 0]);
     const contentBlurRaw = useTransform(scrollYProgress, [0.38, 0.48], [16, 0]);
     const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
+
+    // ── Agent Showcase: fades in after ticker tape ──
+    const agentOpacity = useTransform(scrollYProgress, [0.55, 0.62, 0.78, 0.83], [0, 1, 1, 0]);
+    const agentY = useTransform(scrollYProgress, [0.55, 0.62, 0.78, 0.83], [40, 0, 0, -40]);
+    const agentBlurRaw = useTransform(scrollYProgress, [0.55, 0.62, 0.78, 0.83], [20, 0, 0, 20]);
+    const agentBlurFilter = useMotionTemplate`blur(${agentBlurRaw}px)`;
 
     // ── Black overlay fades in after AnimatedText ──
     const blackOverlayOpacity = useTransform(scrollYProgress, [0.28, 0.32], [0, 1]);
@@ -293,7 +300,7 @@ export default function Hero() {
     const bgColorClass = isWhiteBG ? "bg-white" : "bg-black";
     const bgTransitionClass = isMomentumPhase ? "transition-colors duration-[1500ms] ease-in-out" : "transition-none duration-0";
 
-    const containerHeightClass = "h-[700vh]"; // Fixed tall height, extended for the 3 distinct scrolling sections plus feature pages
+    const containerHeightClass = "h-[900vh]"; // Fixed tall height, extended for the 3 distinct scrolling sections plus feature pages
 
     return (
         <div ref={containerRef} className={`relative w-full ${containerHeightClass} ${bgTransitionClass} ${bgColorClass}`}>
@@ -512,6 +519,16 @@ export default function Hero() {
                                         className="absolute inset-0 bg-black z-20 pointer-events-none"
                                         style={{ opacity: blackOverlayOpacity }}
                                     />
+
+                                    {/* AGENT SHOWCASE */}
+                                    <motion.div
+                                        style={{ opacity: agentOpacity, y: agentY, filter: agentBlurFilter }}
+                                        className="absolute inset-0 z-50 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                    >
+                                        <div className="pointer-events-auto w-full h-full flex items-center justify-center">
+                                            <AgentShowcase />
+                                        </div>
+                                    </motion.div>
 
                                     {/* FINAL SECTION content — blurs into place as black arrives */}
                                     <motion.div
