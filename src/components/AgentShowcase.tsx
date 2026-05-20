@@ -3,366 +3,346 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AgentFace, AgentState } from "./AgentFace";
-import { X, Zap, Shield, DollarSign, Bot } from "lucide-react";
 
-// ── Capabilities ─────────────────────────────────────────────────────────────
-const CAPABILITIES = [
+const DEMOS = [
   {
-    id: "outreach",
     agentState: "thinking" as AgentState,
-    icon: Bot,
-    headline: "Finds leads. Closes deals.",
-    speech: "I autonomously scan the web, qualify prospects, and start real conversations — all without you lifting a finger.",
-    color: "#fd5934",
-    mockLabel: "Outreach Terminal",
-    mockItems: ["Sarah Jenkins — VP of Sales", "David Chen — AI Director", "Elena Rodriguez — COO"],
-    mockStatuses: ["QUALIFIED", "CONTACTED", "MEETING BOOKED"],
-    mockStatusColors: ["#22c55e", "#3b82f6", "#f97316"],
+    speech: "Let me show you what I can do. I'm scanning LinkedIn for qualified prospects right now.",
+    url: "linkedin.com/search/results/people",
+    content: "linkedin",
   },
   {
-    id: "local",
     agentState: "speaking" as AgentState,
-    icon: Shield,
-    headline: "Runs on your machine. Fully private.",
-    speech: "Your data never leaves your computer. I run entirely on local hardware — no cloud, no API, no one watching.",
-    color: "#6366f1",
-    mockLabel: "Local Runtime",
-    mockItems: ["Model: Qwen2.5-7B (local)", "Status: Running", "Memory: 4.2 GB used"],
-    mockStatuses: ["ACTIVE", "ONLINE", "PRIVATE"],
-    mockStatusColors: ["#22c55e", "#22c55e", "#a78bfa"],
+    speech: "Found 12 leads. Writing personalised outreach — no templates, each one unique.",
+    url: "mail.google.com/compose",
+    content: "gmail",
   },
   {
-    id: "automation",
-    agentState: "surprised" as AgentState,
-    icon: Zap,
-    headline: "Automates every app you use.",
-    speech: "LinkedIn, Gmail, Twitter, Notion — I connect to everything on your OS and take actions like a human would.",
-    color: "#f59e0b",
-    mockLabel: "Active Integrations",
-    mockItems: ["LinkedIn Outreach", "Gmail Composer", "Twitter Engagement"],
-    mockStatuses: ["RUNNING", "RUNNING", "SCHEDULED"],
-    mockStatusColors: ["#22c55e", "#22c55e", "#f59e0b"],
-  },
-  {
-    id: "pricing",
     agentState: "happy" as AgentState,
-    icon: DollarSign,
-    headline: "Pay once. Own it forever.",
-    speech: "No subscription. No monthly fee. No rate limits. You buy Momentum OS once and I work for you indefinitely.",
-    color: "#10b981",
-    mockLabel: "Your License",
-    mockItems: ["Momentum OS — Lifetime", "All future updates", "Unlimited usage"],
-    mockStatuses: ["PAID", "INCLUDED", "∞"],
-    mockStatusColors: ["#10b981", "#10b981", "#10b981"],
+    speech: "Meeting booked. All local. No cloud. No subscriptions. Just results.",
+    url: "calendar.google.com",
+    content: "calendar",
+  },
+  {
+    agentState: "surprised" as AgentState,
+    speech: "I connect to every app on your OS — LinkedIn, Gmail, Twitter, Notion, all of them.",
+    url: "momentum.local/integrations",
+    content: "integrations",
   },
 ];
 
-// ── TTS helper ────────────────────────────────────────────────────────────────
+function MockScreen({ content }: { content: string }) {
+  if (content === "linkedin") return (
+    <div className="w-full h-full bg-[#0a0a0f] p-4 flex flex-col gap-3">
+      <div className="text-[10px] font-mono text-white/25 tracking-widest uppercase mb-1">Scanning LinkedIn · 12 prospects found</div>
+      {[
+        { name: "Sarah Jenkins", role: "VP of Sales, Acme Corp", badge: "QUALIFIED", c: "#22c55e" },
+        { name: "David Chen",    role: "Director of AI, NovaTech", badge: "CONTACTING", c: "#3b82f6" },
+        { name: "Elena Rodriguez", role: "COO, Scale.io",         badge: "MEETING BOOKED", c: "#f97316" },
+      ].map((p, i) => (
+        <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: i * 0.15, duration: 0.35 }}
+          className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-white/[0.06]"
+          style={{ background: "rgba(255,255,255,0.025)" }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
+              style={{ background: `${p.c}18`, border: `1px solid ${p.c}35`, color: p.c }}>{p.name[0]}</div>
+            <div>
+              <div className="text-white/85 text-[12px] font-medium leading-none mb-0.5">{p.name}</div>
+              <div className="text-white/30 text-[10px]">{p.role}</div>
+            </div>
+          </div>
+          <span className="text-[9px] font-bold px-2 py-1 rounded-full"
+            style={{ color: p.c, background: `${p.c}15`, border: `1px solid ${p.c}30` }}>{p.badge}</span>
+        </motion.div>
+      ))}
+    </div>
+  );
+
+  if (content === "gmail") return (
+    <div className="w-full h-full bg-[#0a0a0f] p-4 flex flex-col gap-3">
+      <div className="text-[10px] font-mono text-white/25 tracking-widest uppercase mb-1">Composing outreach · Sarah Jenkins</div>
+      <div className="rounded-lg border border-white/[0.07] p-3 flex flex-col gap-2.5" style={{ background: "rgba(255,255,255,0.025)" }}>
+        {[["To", "sarah.jenkins@acmecorp.com"], ["Re", "Quick question about your Q3 growth strategy"]].map(([k, v]) => (
+          <div key={k} className="flex gap-2 items-center border-b border-white/[0.05] pb-2">
+            <span className="text-white/25 text-[10px] w-5">{k}</span>
+            <span className="text-white/60 text-[12px]">{v}</span>
+          </div>
+        ))}
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.6 }}
+          className="text-white/50 text-[12px] leading-relaxed">
+          Hi Sarah, I came across your recent post about scaling outbound — really resonated with our approach. Would love 15 minutes to show you what's been working for us
+          <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.9, repeat: Infinity }}
+            className="inline-block w-0.5 h-3.5 bg-white/40 ml-0.5 align-middle" />
+        </motion.p>
+      </div>
+      <div className="flex justify-end">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.8 }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-semibold" style={{ background: "#1a73e8", color: "#fff" }}>
+          Sending
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full" />
+        </motion.div>
+      </div>
+    </div>
+  );
+
+  if (content === "calendar") return (
+    <div className="w-full h-full bg-[#0a0a0f] p-4 flex flex-col gap-3">
+      <div className="text-[10px] font-mono text-white/25 tracking-widest uppercase mb-1">Meeting confirmed</div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
+        className="rounded-lg border border-[#22c55e]/25 p-4 flex flex-col gap-1.5" style={{ background: "rgba(34,197,94,0.05)" }}>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
+          <span className="text-[#22c55e] text-[10px] font-bold tracking-wider uppercase">Booked</span>
+        </div>
+        <div className="text-white text-[15px] font-semibold">30-min Intro Call · Sarah Jenkins</div>
+        <div className="text-white/40 text-[12px]">Tomorrow · 3:00 PM – 3:30 PM IST</div>
+        <div className="text-white/25 text-[11px] mt-1">Google Meet link sent automatically</div>
+      </motion.div>
+      <div className="flex items-center justify-center gap-4 mt-1">
+        {["0 API calls", "0 subscriptions", "100% local"].map((t, i) => (
+          <motion.span key={t} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.1 }}
+            className="text-white/20 text-[10px] font-medium">{t}</motion.span>
+        ))}
+      </div>
+    </div>
+  );
+
+  // integrations
+  return (
+    <div className="w-full h-full bg-[#0a0a0f] p-4 flex flex-col gap-2">
+      <div className="text-[10px] font-mono text-white/25 tracking-widest uppercase mb-1">Active integrations</div>
+      <div className="grid grid-cols-2 gap-2">
+        {[
+          { name: "LinkedIn",  status: "RUNNING",    c: "#0077b5" },
+          { name: "Gmail",     status: "RUNNING",    c: "#ea4335" },
+          { name: "Twitter",   status: "SCHEDULED",  c: "#1da1f2" },
+          { name: "Notion",    status: "STANDBY",    c: "#ffffff" },
+          { name: "Slack",     status: "RUNNING",    c: "#4a154b" },
+          { name: "HubSpot",   status: "MONITORING", c: "#ff7a59" },
+        ].map((item, i) => (
+          <motion.div key={item.name} initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.07, duration: 0.3 }}
+            className="flex items-center justify-between px-3 py-2 rounded-lg border border-white/[0.06]"
+            style={{ background: "rgba(255,255,255,0.025)" }}>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: item.c }} />
+              <span className="text-white/70 text-[11px] font-medium">{item.name}</span>
+            </div>
+            <span className="text-[9px] font-bold" style={{ color: item.status === "RUNNING" ? "#22c55e" : "rgba(255,255,255,0.3)" }}>
+              {item.status}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function useTTS() {
   const speak = useCallback((text: string, onEnd?: () => void) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      onEnd?.();
-      return;
-    }
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) { onEnd?.(); return; }
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 0.92;
-    utter.pitch = 1.0;
-    utter.volume = 1;
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v =>
-      v.name.includes("Samantha") ||
-      v.name.includes("Google UK English Female") ||
-      v.name.includes("Karen") ||
-      v.name.includes("Moira")
-    ) || voices.find(v => v.lang.startsWith("en"));
-    if (preferred) utter.voice = preferred;
-    if (onEnd) utter.onend = onEnd;
-    window.speechSynthesis.speak(utter);
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9; u.pitch = 1.0; u.volume = 1;
+    // Prefer natural-sounding macOS / Google voices
+    const load = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const v = voices.find(v => ["Samantha", "Karen", "Moira", "Google UK English Female", "Fiona"].some(n => v.name.includes(n)))
+             || voices.find(v => v.lang.startsWith("en") && !v.name.toLowerCase().includes("robot"));
+      if (v) u.voice = v;
+    };
+    load();
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.addEventListener("voiceschanged", load, { once: true });
+    }
+    if (onEnd) u.onend = onEnd;
+    window.speechSynthesis.speak(u);
   }, []);
 
   const stop = useCallback(() => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
   return { speak, stop };
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-type Phase = "sleeping" | "waking" | "open" | "closing";
+type Phase = "sleeping" | "active";
 
 export function AgentShowcase() {
-  const [phase, setPhase] = useState<Phase>("sleeping");
+  const [phase, setPhase]       = useState<Phase>("sleeping");
   const [agentState, setAgentState] = useState<AgentState>("sleeping");
-  const [activeCapIdx, setActiveCapIdx] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-  const { speak, stop } = useTTS();
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [demoIdx, setDemoIdx]   = useState(0);
+  const { speak, stop }         = useTTS();
+  const timer                   = useRef<NodeJS.Timeout | null>(null);
+  const clear = () => { if (timer.current) clearTimeout(timer.current); };
 
-  const clear = () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  const runDemo = useCallback((idx: number) => {
+    if (idx >= DEMOS.length) {
+      // Loop done — go back to sleep
+      stop();
+      setAgentState("sleeping");
+      timer.current = setTimeout(() => setPhase("sleeping"), 1200);
+      return;
+    }
+    setDemoIdx(idx);
+    setAgentState(DEMOS[idx].agentState);
+    speak(DEMOS[idx].speech, () => {
+      timer.current = setTimeout(() => runDemo(idx + 1), 1200);
+    });
+  }, [speak, stop]);
 
-  // Wake on click
-  const handleWake = () => {
-    if (phase !== "sleeping") return;
-    clear();
-    setPhase("waking");
+  const wake = () => {
+    if (phase === "active") return;
+    clear(); stop();
+    setPhase("active");
     setAgentState("idle");
-    timerRef.current = setTimeout(() => {
+    setDemoIdx(0);
+    timer.current = setTimeout(() => {
       setAgentState("thinking");
-      timerRef.current = setTimeout(() => {
-        setPhase("open");
-        setActiveCapIdx(0);
-        setIsAutoPlaying(true);
-      }, 800);
+      timer.current = setTimeout(() => runDemo(0), 600);
     }, 500);
   };
 
-  // Close window
-  const handleClose = () => {
-    clear();
-    stop();
-    setIsAutoPlaying(false);
-    setPhase("closing");
+  const endMode = () => {
+    clear(); stop();
     setAgentState("sleeping");
-    timerRef.current = setTimeout(() => setPhase("sleeping"), 700);
-  };
-
-  // Speak + auto-advance when window opens
-  useEffect(() => {
-    if (phase !== "open" || !isAutoPlaying) return;
-    const cap = CAPABILITIES[activeCapIdx];
-    setAgentState(cap.agentState);
-    speak(cap.speech, () => {
-      if (!isAutoPlaying) return;
-      timerRef.current = setTimeout(() => {
-        const next = activeCapIdx + 1;
-        if (next < CAPABILITIES.length) {
-          setActiveCapIdx(next);
-        } else {
-          setIsAutoPlaying(false);
-          setAgentState("idle");
-        }
-      }, 1200);
-    });
-    return () => { clear(); stop(); };
-  }, [phase, activeCapIdx, isAutoPlaying, speak, stop]);
-
-  // Manual tab select
-  const selectCap = (i: number) => {
-    clear();
-    stop();
-    setIsAutoPlaying(false);
-    setActiveCapIdx(i);
-    const cap = CAPABILITIES[i];
-    setAgentState(cap.agentState);
-    speak(cap.speech);
+    timer.current = setTimeout(() => setPhase("sleeping"), 700);
   };
 
   useEffect(() => () => { clear(); stop(); }, [stop]);
 
-  const isSleeping = phase === "sleeping" || phase === "closing";
-  const cap = CAPABILITIES[activeCapIdx];
+  const isActive  = phase === "active";
+  const demo      = DEMOS[demoIdx];
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-6 px-4 select-none">
+    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden select-none">
 
-      {/* ── Agent face ── */}
+      {/* Purple ambient glow (sleeping only) */}
+      <AnimatePresence>
+        {!isActive && (
+          <motion.div key="glow" className="absolute pointer-events-none z-0"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.5 } }}
+            transition={{ duration: 1 }}
+            style={{
+              width: 560, height: 560, borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(96,40,230,0.32) 0%, rgba(60,20,160,0.14) 45%, transparent 72%)",
+              filter: "blur(24px)",
+            }} />
+        )}
+      </AnimatePresence>
+
+      {/* Agent face — centered sleeping, floats to top when active */}
       <motion.div
-        className="relative"
-        style={{ cursor: isSleeping ? "pointer" : "default" }}
-        onClick={handleWake}
-        whileHover={isSleeping ? { scale: 1.04 } : {}}
-        whileTap={isSleeping ? { scale: 0.96 } : {}}
-        transition={{ type: "spring", stiffness: 380, damping: 24 }}
+        className="relative z-20"
+        animate={isActive ? { y: -190, scale: 0.55 } : { y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 26 }}
+        onClick={!isActive ? wake : undefined}
+        style={{ cursor: !isActive ? "pointer" : "default" }}
+        whileHover={!isActive ? { scale: 1.05 } : {}}
+        whileTap={!isActive ? { scale: 0.96 } : {}}
       >
-        <AgentFace
-          state={agentState}
-          size={260}
-          className="md:!w-[300px] md:!h-[300px]"
-        />
+        <AgentFace state={agentState} size={210} />
 
         {/* Pulse ring */}
         <AnimatePresence>
-          {isSleeping && (
-            <motion.div
-              key="ring"
-              className="absolute inset-[-10px] rounded-[3.8rem] border border-white/10"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: [0, 0.6, 0], scale: [0.95, 1.08, 0.95] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Wake label */}
-        <AnimatePresence>
-          {isSleeping && (
-            <motion.div
-              key="label"
-              className="absolute -bottom-12 left-1/2 -translate-x-1/2 whitespace-nowrap"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.4 }}
-            >
-              <span className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/12 bg-white/[0.04] backdrop-blur-md text-white/50 text-[13px] font-medium tracking-wide">
-                <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
-                Tap to wake the agent
-              </span>
-            </motion.div>
+          {!isActive && (
+            <motion.div key="ring"
+              className="absolute rounded-[3.2rem] border border-white/[0.09]"
+              style={{ inset: -12 }}
+              animate={{ opacity: [0, 0.65, 0], scale: [0.93, 1.1, 0.93] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }} />
           )}
         </AnimatePresence>
       </motion.div>
 
-      {/* ── Capability window ── */}
+      {/* "Tap to wake" pill */}
       <AnimatePresence>
-        {phase === "open" && (
-          <motion.div
-            key="window"
-            initial={{ opacity: 0, scale: 0.92, y: 30, filter: "blur(12px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 0.94, y: 20, filter: "blur(8px)" }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-[780px] rounded-2xl overflow-hidden"
+        {!isActive && (
+          <motion.button key="pill" onClick={wake}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="mt-8 z-10 flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/[0.04] text-white/45 text-[13px] font-medium tracking-wide hover:border-white/22 hover:text-white/70 transition-all duration-300"
+            style={{ fontFamily: "-apple-system,'SF Pro Text',sans-serif", backdropFilter: "blur(12px)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
+            Tap to see Momentum in action
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Screencast window */}
+      <AnimatePresence>
+        {isActive && (
+          <motion.div key="window"
+            initial={{ opacity: 0, y: 90, scale: 0.94 }}
+            animate={{ opacity: 1, y: -60, scale: 1 }}
+            exit={{ opacity: 0, y: 60, scale: 0.94 }}
+            transition={{ type: "spring", stiffness: 220, damping: 30, delay: 0.1 }}
+            className="absolute z-10 w-[min(660px,90vw)] rounded-2xl overflow-hidden"
             style={{
-              background: "rgba(18,18,20,0.92)",
-              backdropFilter: "blur(40px) saturate(160%)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              boxShadow: "0 40px 120px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(255,255,255,0.06) inset",
-            }}
-          >
+              top: "50%",
+              background: "rgba(12,12,16,0.9)",
+              backdropFilter: "blur(40px) saturate(180%)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 50px 120px rgba(0,0,0,0.8), inset 0 0 0 0.5px rgba(255,255,255,0.04)",
+            }}>
+
             {/* Window chrome */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07]"
-              style={{ background: "rgba(255,255,255,0.025)" }}>
-              <div className="flex items-center gap-2">
-                <button onClick={handleClose}
-                  className="w-3 h-3 rounded-full bg-[#ff5f57] hover:brightness-110 transition-all flex items-center justify-center group">
-                  <X className="w-1.5 h-1.5 text-[#8B0000] opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
+            <div className="flex items-center gap-3 px-4 py-2.5 border-b border-white/[0.06]"
+              style={{ background: "rgba(255,255,255,0.018)" }}>
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
                 <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
                 <div className="w-3 h-3 rounded-full bg-[#28c840]" />
               </div>
-              <span className="text-white/30 text-[12px] font-medium tracking-wide"
-                style={{ fontFamily: "-apple-system, 'SF Pro Text', sans-serif" }}>
-                Momentum OS — What I can do
-              </span>
-              <div className="w-16" />
+              {/* URL bar */}
+              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-md mx-3"
+                style={{ background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#22c55e] shrink-0" />
+                <AnimatePresence mode="wait">
+                  <motion.span key={demoIdx} initial={{ opacity: 0, y: 3 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -3 }}
+                    transition={{ duration: 0.2 }} className="text-white/30 text-[11px] font-mono truncate">
+                    {demo.url}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+              {/* Step dots */}
+              <div className="flex gap-1.5 shrink-0">
+                {DEMOS.map((_, i) => (
+                  <motion.div key={i}
+                    animate={{ width: i === demoIdx ? 18 : 5, opacity: i === demoIdx ? 1 : 0.28 }}
+                    style={{ height: 5, borderRadius: 999, background: "#7c3aed" }}
+                    transition={{ duration: 0.3 }} />
+                ))}
+              </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex border-b border-white/[0.06]"
-              style={{ background: "rgba(255,255,255,0.015)" }}>
-              {CAPABILITIES.map((c, i) => {
-                const Icon = c.icon;
-                return (
-                  <button key={c.id} onClick={() => selectCap(i)}
-                    className="relative flex-1 flex items-center justify-center gap-1.5 py-3 text-[12px] font-medium transition-all duration-200"
-                    style={{
-                      color: i === activeCapIdx ? c.color : "rgba(255,255,255,0.35)",
-                      fontFamily: "-apple-system, 'SF Pro Text', sans-serif",
-                    }}>
-                    <Icon className="w-3.5 h-3.5" />
-                    <span className="hidden sm:block">{c.icon === Bot ? "Outreach" : c.icon === Shield ? "Private" : c.icon === Zap ? "Automation" : "Pricing"}</span>
-                    {i === activeCapIdx && (
-                      <motion.div layoutId="tab-indicator"
-                        className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full"
-                        style={{ background: c.color }}
-                        transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
+            {/* Demo content */}
+            <div className="h-[240px] relative overflow-hidden">
               <AnimatePresence mode="wait">
-                <motion.div key={activeCapIdx}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="space-y-5"
-                >
-                  {/* Headline */}
-                  <h3 className="text-white text-[22px] font-semibold tracking-tight leading-snug"
-                    style={{ fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>
-                    {cap.headline}
-                  </h3>
-
-                  {/* Mock UI card */}
-                  <div className="rounded-xl overflow-hidden border border-white/[0.08]"
-                    style={{ background: "rgba(255,255,255,0.03)" }}>
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-                      <span className="text-white/50 text-[11px] font-semibold tracking-widest uppercase"
-                        style={{ fontFamily: "-apple-system, 'SF Pro Text', sans-serif" }}>
-                        {cap.mockLabel}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-[11px] font-medium"
-                        style={{ color: cap.color }}>
-                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: cap.color }} />
-                        LIVE
-                      </span>
-                    </div>
-                    <div className="divide-y divide-white/[0.05]">
-                      {cap.mockItems.map((item, i) => (
-                        <motion.div key={i}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.08, duration: 0.3 }}
-                          className="flex items-center justify-between px-4 py-3.5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                              style={{ background: `${cap.color}22`, border: `1px solid ${cap.color}44` }}>
-                              {item[0]}
-                            </div>
-                            <span className="text-white/80 text-[13px]"
-                              style={{ fontFamily: "-apple-system, 'SF Pro Text', sans-serif" }}>
-                              {item}
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full"
-                            style={{
-                              color: cap.mockStatusColors[i],
-                              background: `${cap.mockStatusColors[i]}15`,
-                              border: `1px solid ${cap.mockStatusColors[i]}30`,
-                            }}>
-                            {cap.mockStatuses[i]}
-                          </span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Video placeholder */}
-                  <div className="rounded-xl border border-white/[0.07] overflow-hidden"
-                    style={{ background: "rgba(255,255,255,0.02)", aspectRatio: "16/5" }}>
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                      <div className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center">
-                        <div className="w-0 h-0 border-t-[5px] border-b-[5px] border-l-[9px] border-transparent border-l-white/30 ml-0.5" />
-                      </div>
-                      <span className="text-white/20 text-[11px] font-medium tracking-wide"
-                        style={{ fontFamily: "-apple-system, 'SF Pro Text', sans-serif" }}>
-                        Demo video coming soon
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Progress dots */}
-                  <div className="flex items-center justify-center gap-2 pt-1">
-                    {CAPABILITIES.map((_, i) => (
-                      <motion.button key={i} onClick={() => selectCap(i)}
-                        animate={{ width: i === activeCapIdx ? 20 : 5, opacity: i === activeCapIdx ? 1 : 0.25 }}
-                        style={{ height: 5, borderRadius: 999, background: cap.color }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    ))}
-                  </div>
+                <motion.div key={demoIdx} className="absolute inset-0"
+                  initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }}
+                  transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}>
+                  <MockScreen content={demo.content} />
                 </motion.div>
               </AnimatePresence>
+            </div>
+
+            {/* End Agent Mode */}
+            <div className="flex justify-center py-3 border-t border-white/[0.05]"
+              style={{ background: "rgba(255,255,255,0.012)" }}>
+              <button onClick={endMode}
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 hover:brightness-115 active:scale-95"
+                style={{
+                  color: "#fd5934",
+                  background: "rgba(253,89,52,0.1)",
+                  border: "1px solid rgba(253,89,52,0.28)",
+                  fontFamily: "-apple-system,'SF Pro Text',sans-serif",
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                End Agent Mode
+              </button>
             </div>
           </motion.div>
         )}
