@@ -11,139 +11,114 @@ interface AgentFaceProps {
   isShuttered?: boolean;
   isVoiceMode?: boolean;
   className?: string;
+  size?: number; // face container size in px
 }
 
-// Absolutely Minimalist "Tall Eye" Setup + Sleep Mode
 const EyeStates = {
-  idle: { height: 64, width: 20, borderRadius: 10, rotate: 0, y: 0, transition: { type: "spring", bounce: 0.3, duration: 0.5 } },
-  listening: { height: 70, width: 28, borderRadius: 14, rotate: 0, y: 0, transition: { type: "spring", bounce: 0.4, duration: 0.4 } },
-  thinking: { height: 64, width: 20, borderRadius: 10, rotate: 0, y: -12, x: 0, transition: { type: "spring", bounce: 0.2, duration: 0.6 } },
-  speaking: { height: 54, width: 24, borderRadius: 12, rotate: 0, y: 0, transition: { type: "spring", bounce: 0.2, duration: 0.4 } },
-  happy: { height: 12, width: 48, borderRadius: 6, rotate: 0, y: -8, transition: { type: "spring", bounce: 0.5, duration: 0.5 } },
-  surprised: { height: 60, width: 60, borderRadius: 30, rotate: 0, y: -12, transition: { type: "spring", bounce: 0.6, duration: 0.4 } },
-  error: { height: 8, width: 40, borderRadius: 4, rotate: 0, y: 4, transition: { type: "spring", bounce: 0.3, duration: 0.4 } },
-  sleeping: { height: 4, width: 28, borderRadius: 2, rotate: 0, y: 0, transition: { type: "spring", bounce: 0.2, duration: 0.8 } }
+  idle:      { height: 56, width: 16, borderRadius: 8,  rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.3, duration: 0.5 } },
+  listening: { height: 64, width: 22, borderRadius: 11, rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.4, duration: 0.4 } },
+  thinking:  { height: 56, width: 16, borderRadius: 8,  rotate: 0,  y: -10, transition: { type: "spring", bounce: 0.2, duration: 0.6 } },
+  speaking:  { height: 46, width: 20, borderRadius: 10, rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.2, duration: 0.4 } },
+  happy:     { height: 10, width: 44, borderRadius: 5,  rotate: 0,  y: -6,  transition: { type: "spring", bounce: 0.5, duration: 0.5 } },
+  surprised: { height: 54, width: 54, borderRadius: 27, rotate: 0,  y: -10, transition: { type: "spring", bounce: 0.6, duration: 0.4 } },
+  error:     { height: 7,  width: 36, borderRadius: 4,  rotate: 0,  y: 4,   transition: { type: "spring", bounce: 0.3, duration: 0.4 } },
+  sleeping:  { height: 3,  width: 24, borderRadius: 2,  rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.2, duration: 0.8 } },
 };
 
-export function AgentFace({ state, isShuttered = false, isVoiceMode = false, className }: AgentFaceProps) {
+export function AgentFace({ state, isShuttered = false, isVoiceMode = false, className, size = 280 }: AgentFaceProps) {
   const currentEye = EyeStates[state] || EyeStates.idle;
-  
   const [isBlinking, setIsBlinking] = useState(false);
-  
-  // Physics-based Cursor Tracking
+
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  
-  // Spring dampers for cinematic smoothing
-  const smoothX = useSpring(mouseX, { damping: 30, stiffness: 200, mass: 0.5 });
-  const smoothY = useSpring(mouseY, { damping: 30, stiffness: 200, mass: 0.5 });
-  
-  // Transform screen pixels into a tiny offset (-20px to +20px max)
-  const eyeOffsetX = useTransform(smoothX, [-1000, 1000], [-30, 30]);
-  const eyeOffsetY = useTransform(smoothY, [-1000, 1000], [-30, 30]);
+  const smoothX = useSpring(mouseX, { damping: 28, stiffness: 180, mass: 0.5 });
+  const smoothY = useSpring(mouseY, { damping: 28, stiffness: 180, mass: 0.5 });
+  const eyeOffsetX = useTransform(smoothX, [-1000, 1000], [-22, 22]);
+  const eyeOffsetY = useTransform(smoothY, [-1000, 1000], [-22, 22]);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      // Calculate delta from center of the screen
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      const dx = e.clientX - centerX;
-      const dy = e.clientY - centerY;
-      
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      // Only track if cursor is near the face (within ~400px radius)
-      if (distance < 400) {
-         mouseX.set(dx);
-         mouseY.set(dy);
-      } else {
-         mouseX.set(0);
-         mouseY.set(0);
-      }
+    const handler = (e: MouseEvent) => {
+      const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+      const dx = e.clientX - cx, dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy);
+      mouseX.set(dist < 500 ? dx : 0);
+      mouseY.set(dist < 500 ? dy : 0);
     };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handler);
+    return () => window.removeEventListener("mousemove", handler);
   }, [mouseX, mouseY]);
-  
+
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const blinkCycle = () => {
-      if (state !== "happy" && state !== "error" && state !== "sleeping" && !isShuttered) {
+    let id: NodeJS.Timeout;
+    const cycle = () => {
+      if (!["happy", "error", "sleeping"].includes(state) && !isShuttered) {
         setIsBlinking(true);
-        setTimeout(() => setIsBlinking(false), 140);
+        setTimeout(() => setIsBlinking(false), 130);
       }
-      timeoutId = setTimeout(blinkCycle, Math.random() * 4000 + 2000);
+      id = setTimeout(cycle, Math.random() * 4000 + 2500);
     };
-    timeoutId = setTimeout(blinkCycle, 2000);
-    return () => clearTimeout(timeoutId);
+    id = setTimeout(cycle, 2500);
+    return () => clearTimeout(id);
   }, [state, isShuttered]);
 
-  const getLeftRotate = () => {
-    if (state === "happy") return 15;   
-    if (state === "error") return 20;   
-    return currentEye.rotate;
-  };
+  const leftRot  = state === "happy" ? 15  : state === "error" ? 20  : currentEye.rotate;
+  const rightRot = state === "happy" ? -15 : state === "error" ? -20 : currentEye.rotate;
 
-  const getRightRotate = () => {
-    if (state === "happy") return -15;  
-    if (state === "error") return -20;  
-    return currentEye.rotate;
-  };
+  const eyeGap = Math.round(size * 0.135); // proportional gap
 
   return (
     <div
       className={cn(
-        "relative w-[280px] h-[280px] rounded-[3rem] overflow-hidden flex items-center justify-center bg-[#070708] border-[4px] border-[#1a1a1c]",
-        "shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_0_60px_rgba(0,0,0,0.8)]",
+        "relative rounded-[3rem] overflow-hidden flex items-center justify-center bg-[#070708] border-[3px] border-[#1c1c1e]",
         className
       )}
       style={{
-        boxShadow: `0 0 60px rgba(255,255,255,0.1), inset 0 0 50px rgba(0,0,0,0.9)`
+        width: size, height: size,
+        boxShadow: "0 0 80px rgba(255,255,255,0.07), 0 30px 60px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,0,0,0.9)",
       }}
     >
-      <div className="absolute inset-x-0 top-0 h-[40%] bg-gradient-to-b from-[#ffffff10] to-transparent rounded-full blur-[2px] pointer-events-none transform -translate-y-4 scale-x-110" />
-      <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.08] mix-blend-overlay pointer-events-none"></div>
+      {/* Top glass sheen */}
+      <div className="absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-white/[0.07] to-transparent pointer-events-none -translate-y-3 scale-x-110" />
+      {/* Noise texture */}
+      <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.06] mix-blend-overlay pointer-events-none" />
 
-      {/* Physics Wrapper for Parallax Eyes */}
-      <motion.div 
-        style={{ x: state === "sleeping" || isShuttered || isVoiceMode ? 0 : eyeOffsetX, y: state === "sleeping" || isShuttered || isVoiceMode ? 0 : eyeOffsetY }}
-        className="relative z-10 flex items-center justify-center gap-10"
+      <motion.div
+        style={{
+          x: ["sleeping", "error"].includes(state) || isShuttered || isVoiceMode ? 0 : eyeOffsetX,
+          y: ["sleeping", "error"].includes(state) || isShuttered || isVoiceMode ? 0 : eyeOffsetY,
+          gap: eyeGap,
+        }}
+        className="relative z-10 flex items-center justify-center"
       >
-        <motion.div
-           animate={(isBlinking ? { height: 4, transition: { duration: 0.1 } } : { ...currentEye, rotate: getLeftRotate() }) as any}
-          className="bg-white shadow-xl origin-center"
-          style={{ boxShadow: `0 0 30px rgba(255,255,255,0.6), 0 0 60px rgba(255,255,255,0.3)` }}
-        />
-        <motion.div
-           animate={(isBlinking ? { height: 4, transition: { duration: 0.1 } } : { ...currentEye, rotate: getRightRotate() }) as any}
-          className="bg-white shadow-xl origin-center"
-          style={{ boxShadow: `0 0 30px rgba(255,255,255,0.6), 0 0 60px rgba(255,255,255,0.3)` }}
-        />
+        {[leftRot, rightRot].map((rot, i) => (
+          <motion.div
+            key={i}
+            animate={(isBlinking
+              ? { height: 3, transition: { duration: 0.09 } }
+              : { ...currentEye, rotate: rot }) as any}
+            className="bg-white origin-center"
+            style={{ boxShadow: "0 0 28px rgba(255,255,255,0.65), 0 0 56px rgba(255,255,255,0.28)" }}
+          />
+        ))}
       </motion.div>
 
-      {/* Annoyance Shutter Blast Doors */}
       <AnimatePresence>
         {isShuttered && (
           <>
-            <motion.div 
-              initial={{ y: "-100%" }} animate={{ y: "0%" }} exit={{ y: "-100%" }} 
-              transition={{ type: "spring", bounce: 0.2, stiffness: 200, damping: 20 }}
-              className="absolute top-0 left-0 w-full h-[50.5%] bg-[#1a1a1c] z-50 border-b-4 border-[#333] shadow-2xl flex items-end justify-center pb-2"
-            >
-              <div className="w-1/4 h-1.5 bg-black/40 rounded-full mb-1"></div>
-            </motion.div>
-            <motion.div 
-              initial={{ y: "100%" }} animate={{ y: "0%" }} exit={{ y: "100%" }} 
-              transition={{ type: "spring", bounce: 0.2, stiffness: 200, damping: 20 }}
-              className="absolute bottom-0 left-0 w-full h-[50.5%] bg-[#1a1a1c] z-50 border-t-4 border-[#222] shadow-2xl flex items-start justify-center pt-2"
-            >
-              <div className="w-1/4 h-1.5 bg-black/40 rounded-full mt-1"></div>
-            </motion.div>
+            {[{ from: "-100%", to: "0%", pos: "top-0", border: "border-b-2", align: "items-end pb-2" },
+              { from: "100%",  to: "0%", pos: "bottom-0", border: "border-t-2", align: "items-start pt-2" }
+            ].map((s, i) => (
+              <motion.div key={i}
+                initial={{ y: s.from }} animate={{ y: s.to }} exit={{ y: s.from }}
+                transition={{ type: "spring", bounce: 0.15, stiffness: 220, damping: 22 }}
+                className={`absolute ${s.pos} left-0 w-full h-[50.5%] bg-[#1a1a1c] z-50 ${s.border} border-[#2a2a2c] flex ${s.align} justify-center`}
+              >
+                <div className="w-1/4 h-1 bg-black/50 rounded-full" />
+              </motion.div>
+            ))}
           </>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
