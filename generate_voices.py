@@ -3,12 +3,9 @@
 generate_voices.py — Pre-generate Kokoro TTS audio for the AgentShowcase demos.
 Run: python3 generate_voices.py
 Output: public/audio/demo-{0..7}.mp3
-
-Requirements: pip install kokoro-onnx soundfile numpy
-Model: https://huggingface.co/hexgrad/Kokoro-82M
 """
 
-import os, sys
+import os, sys, urllib.request, subprocess
 
 LINES = [
     "Closed 3 SaaS deals while you were in a meeting about why sales is slow.",
@@ -21,47 +18,53 @@ LINES = [
     "No cloud. No subscriptions. No one watching. Just me. On your machine. Forever.",
 ]
 
-OUT_DIR = os.path.join(os.path.dirname(__file__), "public", "audio")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUT_DIR = os.path.join(SCRIPT_DIR, "public", "audio")
 os.makedirs(OUT_DIR, exist_ok=True)
 
-try:
-    from kokoro_onnx import Kokoro
-    import soundfile as sf
-    import numpy as np
+MODEL_FILES = {
+    "kokoro-v0_19.onnx": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v0_19.onnx",
+    "voices-v1.0.bin":   "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin",
+}
 
-    print("Loading Kokoro model...")
-    kokoro = Kokoro("kokoro-v0_19.onnx", "voices.json")
+def download(name, url, dest):
+    if os.path.exists(dest):
+        print(f"  ✓ {name} already present")
+        return
+    print(f"  ↓ Downloading {name}...")
+    urllib.request.urlretrieve(url, dest, reporthook=lambda b, bs, t: print(f"\r    {min(100, int(b*bs/t*100)) if t>0 else '?'}%", end=""))
+    print(f"\r    ✓ {name} downloaded")
 
-    for i, text in enumerate(LINES):
-        out_path = os.path.join(OUT_DIR, f"demo-{i}.wav")
-        print(f"  [{i}] Generating: {text[:60]}...")
-        samples, sr = kokoro.create(text, voice="af_sarah", speed=0.92, lang="en-us")
-        sf.write(out_path, samples, sr)
-        print(f"       → {out_path}")
+# Download model files into the script directory
+for fname, url in MODEL_FILES.items():
+    dest = os.path.join(SCRIPT_DIR, fname)
+    download(fname, url, dest)
 
-    print("\n✓ All audio files generated.")
-    print("  Convert to mp3 with: for f in public/audio/*.wav; do ffmpeg -i $f ${f%.wav}.mp3; done")
+from kokoro_onnx import Kokoro
+import soundfile as sf
 
-except ImportError:
-    print("kokoro-onnx not installed. Try: pip install kokoro-onnx soundfile")
-    print("\nAlternative — use kokoro via transformers:")
-    print("  pip install transformers torch scipy")
-    try:
-        from transformers import pipeline
-        import scipy.io.wavfile as wav
-        import numpy as np
+print("\nLoading Kokoro model...")
+kokoro = Kokoro(
+    os.path.join(SCRIPT_DIR, "kokoro-v0_19.onnx"),
+    os.path.join(SCRIPT_DIR, "voices-v1.0.bin"),
+)
 
-        print("Loading via transformers pipeline...")
-        tts = pipeline("text-to-speech", model="hexgrad/Kokoro-82M", trust_remote_code=True)
+for i, text in enumerate(LINES):
+    wav_path = os.path.join(OUT_DIR, f"demo-{i}.wav")
+    mp3_path = os.path.join(OUT_DIR, f"demo-{i}.mp3")
+    print(f"\n[{i}] {text[:65]}...")
+    samples, sr = kokoro.create(text, voice="af_sarah", speed=0.9, lang="en-us")
+    sf.write(wav_path, samples, sr)
 
-        for i, text in enumerate(LINES):
-            out_path = os.path.join(OUT_DIR, f"demo-{i}.wav")
-            print(f"  [{i}] {text[:55]}...")
-            result = tts(text)
-            wav.write(out_path, result["sampling_rate"], np.array(result["audio"]))
-            print(f"       → {out_path}")
+    # Convert to mp3 if ffmpeg available
+    result = subprocess.run(["which", "ffmpeg"], capture_output=True)
+    if result.returncode == 0:
+        subprocess.run(["ffmpeg", "-y", "-i", wav_path, "-q:a", "2", mp3_path], capture_output=True)
+        os.remove(wav_path)
+        print(f"    → {mp3_path}")
+    else:
+        # Rename wav to mp3 (browsers can play wav too via <audio>)
+        os.rename(wav_path, mp3_path)
+        print(f"    → {mp3_path} (wav, ffmpeg not found)")
 
-        print("\n✓ Done via transformers.")
-    except Exception as e:
-        print(f"  transformers pipeline also failed: {e}")
-        sys.exit(1)
+print(f"\n✓ All {len(LINES)} audio files ready in public/audio/")

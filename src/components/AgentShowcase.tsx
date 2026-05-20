@@ -362,7 +362,7 @@ export function AgentShowcase() {
                         style={{ color: demo.appColor }}>
                         <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: demo.appColor }} />
                         MOMENTUM ACTIVE
-                      </span>
+                      </motion.span>
                     </AnimatePresence>
                   </div>
 
