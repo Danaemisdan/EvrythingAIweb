@@ -152,15 +152,7 @@ export default function Hero() {
     const [logoRect, setLogoRect] = useState({ cx: 0, cy: 0, size: 300 });
 
     useEffect(() => {
-        const visited = sessionStorage.getItem("evrything-visited");
-        if (visited) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setHasVisited(true);
-            setStepIndex(STEP_KEYS.indexOf("LOGO_WHITE_BG_3"));
-        } else {
-            setHasVisited(false);
-            sessionStorage.setItem("evrything-visited", "true");
-        }
+        setHasVisited(false);
 
         // Hydrate hardware sniffing
         const userAgent = window.navigator.userAgent.toLowerCase();
@@ -526,7 +518,7 @@ export default function Hero() {
                                         className="absolute inset-0 z-50 w-full h-full flex flex-col items-center justify-center pointer-events-none"
                                     >
                                         <div className="pointer-events-auto w-full h-full flex items-center justify-center">
-                                            <AgentShowcase />
+                                            <AgentShowcase scrollYProgress={scrollYProgress} />
                                         </div>
                                     </motion.div>
 

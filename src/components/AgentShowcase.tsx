@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValueEvent, MotionValue } from "framer-motion";
 import { AgentFace, AgentState } from "./AgentFace";
 
-// ── 30-second witty industry slideshow ───────────────────────────────────────
+// ── 30-second witty industry data ───────────────────────────────────────────
 const DEMOS = [
   {
     agentState: "thinking" as AgentState,
@@ -128,33 +128,52 @@ const DEMOS = [
   },
 ];
 
-const DOCK_ICONS = ["💼", "📄", "📱", "📧", "🏥", "🏠", "🎬", "⚡"];
-
-// ── TTS: tries pre-generated Kokoro audio first, falls back to Web Speech ─────
+// ── TTS Hook: plays pre-generated Kokoro audio first, falls back to Web Speech ─────
 function useTTS() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const speak = useCallback((text: string, idx: number, onEnd?: () => void) => {
+    setIsPlaying(true);
     // Try pre-generated Kokoro audio
     const src = `/audio/demo-${idx}.mp3`;
     const audio = new Audio(src);
     audioRef.current = audio;
-    audio.onended = () => onEnd?.();
+    
+    audio.onended = () => {
+      setIsPlaying(false);
+      onEnd?.();
+    };
+    
     audio.onerror = () => {
       // Fallback: Web Speech API with best available voice
-      if (!("speechSynthesis" in window)) { onEnd?.(); return; }
+      if (!("speechSynthesis" in window)) {
+        setIsPlaying(false);
+        onEnd?.();
+        return;
+      }
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
+      
+      u.onend = () => {
+        setIsPlaying(false);
+        onEnd?.();
+      };
+      u.onerror = () => {
+        setIsPlaying(false);
+        onEnd?.();
+      };
+
       const trySpeak = () => {
         const voices = window.speechSynthesis.getVoices();
         const v = voices.find(v =>
           ["Samantha","Karen","Moira","Fiona","Tessa"].some(n => v.name.includes(n))
         ) || voices.find(v => v.lang.startsWith("en-") && v.localService);
         if (v) u.voice = v;
-        if (onEnd) u.onend = onEnd;
         window.speechSynthesis.speak(u);
       };
+      
       if (window.speechSynthesis.getVoices().length === 0) {
         window.speechSynthesis.onvoiceschanged = trySpeak;
       } else {
@@ -165,298 +184,350 @@ function useTTS() {
   }, []);
 
   const stop = useCallback(() => {
+    setIsPlaying(false);
     audioRef.current?.pause();
-    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
   }, []);
 
-  return { speak, stop };
+  return { speak, stop, isPlaying };
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
-export function AgentShowcase() {
-  const [active, setActive]       = useState(false);
-  const [demoIdx, setDemoIdx]     = useState(0);
+// ── Voice Waveform Equalizer Component ──────────────────────────────────────────
+function Equalizer({ isSpeaking }: { isSpeaking: boolean }) {
+  const bars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  return (
+    <div className="flex items-center gap-1.5 h-10 mt-6 justify-center">
+      {bars.map((i) => (
+        <motion.div
+          key={i}
+          className="w-1 rounded-full bg-gradient-to-t from-[#6d28ff] to-[#a78bfa]"
+          style={{
+            boxShadow: "0 0 10px rgba(109,40,255,0.5)",
+          }}
+          animate={isSpeaking ? {
+            height: [10, Math.random() * 32 + 10, 10],
+          } : {
+            height: 4
+          }}
+          transition={isSpeaking ? {
+            duration: Math.random() * 0.4 + 0.35,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: i * 0.04
+          } : {
+            duration: 0.3
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+interface AgentShowcaseProps {
+  scrollYProgress?: MotionValue<number>;
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+export function AgentShowcase({ scrollYProgress }: AgentShowcaseProps) {
+  const [active, setActive] = useState(false);
+  const [demoIdx, setDemoIdx] = useState(0);
   const [agentState, setAgentState] = useState<AgentState>("sleeping");
-  const { speak, stop }           = useTTS();
-  const timer                     = useRef<NodeJS.Timeout | null>(null);
-  const clear = () => { if (timer.current) clearTimeout(timer.current); };
+  const { speak, stop, isPlaying } = useTTS();
+  const [lastPlayedIdx, setLastPlayedIdx] = useState<number>(-1);
 
-  const runDemo = useCallback((idx: number) => {
-    if (idx >= DEMOS.length) {
-      stop();
+  // Monitor scroll progress if provided
+  useMotionValueEvent(scrollYProgress || new MotionValue(0), "change", (latest) => {
+    if (!scrollYProgress) return;
+    
+    // Agent is active between scroll progress 0.35 and 0.61
+    const start = 0.35;
+    const end = 0.61;
+    const range = end - start;
+    
+    if (latest >= start && latest <= end) {
+      setActive(true);
+      const rel = (latest - start) / range;
+      const idx = Math.min(7, Math.floor(rel * 8));
+      setDemoIdx(idx);
+      setAgentState(DEMOS[idx].agentState);
+    } else {
+      setActive(false);
       setAgentState("sleeping");
-      timer.current = setTimeout(() => { setActive(false); }, 1400);
-      return;
     }
-    const d = DEMOS[idx];
-    setDemoIdx(idx);
-    setAgentState(d.agentState);
-    speak(d.caption, idx, () => {
-      timer.current = setTimeout(() => runDemo(idx + 1), 1000);
-    });
-  }, [speak, stop]);
+  });
 
-  const wake = () => {
-    if (active) return;
-    clear(); stop();
-    setActive(true);
-    setAgentState("idle");
-    setDemoIdx(0);
-    timer.current = setTimeout(() => {
-      setAgentState("thinking");
-      timer.current = setTimeout(() => runDemo(0), 600);
-    }, 500);
-  };
+  // Handle TTS narration triggered by scroll position changes
+  useEffect(() => {
+    if (active && demoIdx >= 0 && demoIdx < 8) {
+      if (demoIdx !== lastPlayedIdx) {
+        stop();
+        const timer = setTimeout(() => {
+          speak(DEMOS[demoIdx].caption, demoIdx);
+          setLastPlayedIdx(demoIdx);
+        }, 200); // 200ms debounce
+        return () => clearTimeout(timer);
+      }
+    } else {
+      stop();
+      setLastPlayedIdx(-1);
+    }
+  }, [demoIdx, active, speak, stop, lastPlayedIdx]);
 
-  const end = () => { clear(); stop(); setAgentState("sleeping"); timer.current = setTimeout(() => setActive(false), 600); };
-
-  useEffect(() => () => { clear(); stop(); }, [stop]);
+  // Clean up speech on unmount
+  useEffect(() => {
+    return () => {
+      stop();
+    };
+  }, [stop]);
 
   const demo = DEMOS[demoIdx];
 
-  return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden select-none px-4">
+  // Dynamic eye state: use speaking state when TTS audio is playing
+  const currentFaceState = active 
+    ? (isPlaying ? "speaking" : agentState)
+    : "sleeping";
 
-      {/* Purple ambient glow — always present, shifts on active */}
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-center select-none px-4 lg:px-8">
+      
+      {/* Dynamic Background Ambient Light Glow — morphs color to match active app */}
       <motion.div
-        className="absolute pointer-events-none"
+        className="absolute pointer-events-none transition-all duration-[800ms]"
         animate={active
-          ? { top: "2%", scale: 0.5, opacity: 0.5 }
-          : { top: "50%", scale: 1, opacity: 1, y: "-50%" }}
-        transition={{ type: "spring", stiffness: 140, damping: 22 }}
+          ? { scale: 0.85, opacity: 0.45 }
+          : { scale: 1, opacity: 0.35 }}
         style={{
-          width: 700, height: 700, left: "50%", x: "-50%",
+          width: 700, height: 700, left: "50%", top: "50%", x: "-50%", y: "-50%",
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(109,40,255,0.38) 0%, rgba(80,20,200,0.16) 40%, transparent 70%)",
-          filter: "blur(32px)",
+          background: `radial-gradient(circle, ${active ? demo.appColor : "rgba(109,40,255,1)"}38 0%, rgba(20,20,30,0) 70%)`,
+          filter: "blur(48px)",
           zIndex: 0,
         }}
       />
 
-      {/* Agent face */}
-      <motion.div
-        className="relative z-20"
-        animate={active ? { y: -210, scale: 0.62 } : { y: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 180, damping: 24 }}
-        onClick={!active ? wake : undefined}
-        style={{ cursor: !active ? "pointer" : "default" }}
-        whileHover={!active ? { scale: 1.04 } : {}}
-        whileTap={!active ? { scale: 0.97 } : {}}
-      >
-        <AgentFace state={agentState} size={300} />
-
-        {/* Pulse ring */}
-        <AnimatePresence>
-          {!active && (
-            <motion.div key="r" className="absolute rounded-[3.6rem] border border-white/[0.08]"
-              style={{ inset: -16 }}
-              animate={{ opacity: [0, 0.7, 0], scale: [0.93, 1.09, 0.93] }}
-              transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }} />
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Wake pill */}
-      <AnimatePresence>
-        {!active && (
-          <motion.button key="pill" onClick={wake}
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.45, delay: 0.15 }}
-            className="mt-10 z-10 flex items-center gap-2 px-6 py-3 rounded-full border border-white/12 bg-white/[0.04] text-white/50 text-[14px] font-medium tracking-wide hover:border-white/25 hover:text-white/80 transition-all duration-300"
-            style={{ backdropFilter: "blur(16px)", fontFamily: "-apple-system,'SF Pro Text',sans-serif" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-white/35 animate-pulse" />
-            Tap to see Momentum in action
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* macOS desktop window */}
-      <AnimatePresence>
-        {active && (
-          <motion.div key="win"
-            initial={{ opacity: 0, y: 100, scale: 0.93 }}
-            animate={{ opacity: 1, y: -50, scale: 1 }}
-            exit={{ opacity: 0, y: 70, scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 200, damping: 28, delay: 0.08 }}
-            className="absolute z-10 rounded-2xl overflow-hidden"
-            style={{
-              top: "50%", width: "min(760px, 92vw)",
-              background: "rgba(10,10,14,0.92)",
-              backdropFilter: "blur(48px) saturate(200%)",
-              border: "1px solid rgba(255,255,255,0.09)",
-              boxShadow: "0 60px 140px rgba(0,0,0,0.85), inset 0 0 0 0.5px rgba(255,255,255,0.04)",
-            }}>
-
-            {/* ── Window chrome ── */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06]"
-              style={{ background: "rgba(255,255,255,0.02)" }}>
-              <div className="flex gap-1.5">
-                <button onClick={end} className="w-3 h-3 rounded-full bg-[#ff5f57] hover:brightness-110 transition-all" />
-                <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-                <div className="w-3 h-3 rounded-full bg-[#28c840]" />
-              </div>
-              <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-md mx-3"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: demo.appColor }} />
-                <AnimatePresence mode="wait">
-                  <motion.span key={demoIdx} initial={{ opacity: 0, y: 3 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }} className="text-white/30 text-[11px] font-mono truncate">
-                    {demo.url}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
-              <div className="flex gap-1.5 shrink-0 mr-1">
-                {DEMOS.map((_, i) => (
-                  <motion.div key={i}
-                    animate={{ width: i === demoIdx ? 16 : 4, opacity: i === demoIdx ? 1 : 0.2 }}
-                    style={{ height: 4, borderRadius: 999, background: demo.appColor }}
-                    transition={{ duration: 0.25 }} />
-                ))}
-              </div>
-            </div>
-
-            {/* ── Desktop area ── */}
-            <div className="relative overflow-hidden" style={{ height: 300 }}>
-              {/* Wallpaper */}
-              <div className="absolute inset-0"
-                style={{ background: "linear-gradient(135deg, #0d0d18 0%, #0a0a12 50%, #080810 100%)" }} />
-
-              {/* Subtle grid */}
-              <div className="absolute inset-0 opacity-[0.04]"
-                style={{
-                  backgroundImage: "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-                  backgroundSize: "40px 40px",
-                }} />
-
-              {/* ── App window inside desktop ── */}
-              <AnimatePresence mode="wait">
-                <motion.div key={demoIdx}
-                  initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97, y: -8 }}
-                  transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute rounded-xl overflow-hidden"
+      <div className="relative z-10 w-full max-w-[1300px] flex flex-col items-center justify-center">
+        
+        {/* Main Grid Container — Left Panel, Center Face, Right Panel */}
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center justify-center">
+          
+          {/* 1. Left Column: HUD Panel (Objective & Status) */}
+          <div className="lg:col-span-4 h-full flex items-center justify-center lg:justify-end min-h-[300px] lg:min-h-0">
+            <AnimatePresence mode="wait">
+              {active && (
+                <motion.div
+                  key={demoIdx}
+                  initial={{ opacity: 0, x: -30, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, x: -30, filter: "blur(10px)" }}
+                  transition={{ type: "spring", stiffness: 180, damping: 24 }}
+                  className="w-full max-w-[360px] flex flex-col gap-4 border border-white/[0.06] bg-[#070709]/80 backdrop-blur-xl p-5 sm:p-6 rounded-[2rem] shadow-2xl relative overflow-hidden"
                   style={{
-                    left: "50%", top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "78%",
-                    background: "rgba(18,18,24,0.95)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    boxShadow: `0 20px 60px rgba(0,0,0,0.7), 0 0 0 0.5px ${demo.appColor}20`,
-                  }}>
-
-                  {/* App titlebar */}
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]"
-                    style={{ background: `linear-gradient(90deg, ${demo.appColor}18, transparent)` }}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold"
-                        style={{ background: demo.appColor, color: "#fff" }}>
-                        {demo.app[0]}
-                      </div>
-                      <span className="text-white/60 text-[11px] font-semibold">{demo.app}</span>
-                    </div>
-                    <AnimatePresence mode="wait">
-                      <motion.span key={demoIdx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="flex items-center gap-1.5 text-[10px] font-semibold"
-                        style={{ color: demo.appColor }}>
-                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: demo.appColor }} />
-                        MOMENTUM ACTIVE
-                      </motion.span>
-                    </AnimatePresence>
+                    boxShadow: `0 30px 60px rgba(0,0,0,0.6), 0 0 40px ${demo.appColor}0a`,
+                    borderColor: `${demo.appColor}22`,
+                  }}
+                >
+                  {/* Neon top border light */}
+                  <div className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[9px] font-mono tracking-[0.25em] text-white/30 uppercase">
+                      MOMENTUM OS // ACTIVE_AGENT
+                    </span>
+                    <h4 className="text-2xl font-bold tracking-tight text-white mt-1">
+                      {demo.industry}
+                    </h4>
                   </div>
 
-                  {/* App content */}
-                  <div className="p-3 flex flex-col gap-1.5">
-                    <div className="text-white/25 text-[9px] font-mono tracking-widest uppercase mb-1">{demo.action}</div>
+                  <div className="flex flex-col gap-2.5 p-4 rounded-2xl border border-white/[0.05] bg-white/[0.015] backdrop-blur-md">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full transition-colors duration-500"
+                        style={{
+                          background: demo.appColor,
+                          boxShadow: `0 0 10px ${demo.appColor}`,
+                        }}
+                      />
+                      <span className="text-white/40 text-[10px] font-mono uppercase tracking-wider">
+                        Target Channel
+                      </span>
+                    </div>
+                    <div className="text-white text-[15px] font-bold">{demo.app}</div>
+                    <div className="text-white/30 text-xs font-mono select-all truncate">{demo.url}</div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <span className="text-white/30 text-[10px] font-mono uppercase tracking-wider">
+                      Current Objective
+                    </span>
+                    <div
+                      className="text-xs font-mono font-medium p-3.5 rounded-xl border border-white/[0.06] leading-relaxed break-words"
+                      style={{
+                        color: demo.appColor,
+                        background: `${demo.appColor}06`,
+                        borderColor: `${demo.appColor}15`,
+                      }}
+                    >
+                      &gt; {demo.action}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* 2. Center Column: Agent Face & Speech Equalizer Wave */}
+          <div className="lg:col-span-4 flex flex-col items-center justify-center py-6">
+            <motion.div
+              className="relative"
+              animate={active ? { scale: 0.85, y: -10 } : { scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 150, damping: 22 }}
+            >
+              <AgentFace state={currentFaceState} size={280} />
+              
+              {/* Standby Pulse Ring when sleeping */}
+              <AnimatePresence>
+                {!active && (
+                  <motion.div
+                    key="sleep-ring"
+                    className="absolute rounded-[3.6rem] border border-white/[0.08]"
+                    style={{ inset: -20 }}
+                    animate={{ opacity: [0, 0.7, 0], scale: [0.93, 1.12, 0.93] }}
+                    transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Standby System Prompt / Voice Equalizer */}
+            <AnimatePresence mode="wait">
+              {!active ? (
+                <motion.div
+                  key="standby-prompt"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4 }}
+                  className="flex flex-col items-center gap-2.5 mt-8 text-center"
+                >
+                  <span className="text-[10px] font-mono tracking-[0.3em] text-[#a78bfa] uppercase animate-pulse">
+                    [ SYSTEM STANDBY ]
+                  </span>
+                  <p className="text-white/40 text-[13px] tracking-wide max-w-[280px]">
+                    Scroll down to trigger the local agent and start OS runtime.
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="equalizer-wrapper"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Equalizer isSpeaking={isPlaying} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* 3. Right Column: HUD Panel (Real-Time Execution Logs) */}
+          <div className="lg:col-span-4 h-full flex items-center justify-center lg:justify-start min-h-[300px] lg:min-h-0">
+            <AnimatePresence mode="wait">
+              {active && (
+                <motion.div
+                  key={demoIdx}
+                  initial={{ opacity: 0, x: 30, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, x: 30, filter: "blur(10px)" }}
+                  transition={{ type: "spring", stiffness: 180, damping: 24 }}
+                  className="w-full max-w-[360px] flex flex-col gap-4 border border-white/[0.06] bg-[#070709]/80 backdrop-blur-xl p-5 sm:p-6 rounded-[2rem] shadow-2xl relative overflow-hidden"
+                  style={{
+                    boxShadow: `0 30px 60px rgba(0,0,0,0.6), 0 0 40px ${demo.appColor}0a`,
+                    borderColor: `${demo.appColor}22`,
+                  }}
+                >
+                  {/* Neon top border light */}
+                  <div className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] font-mono tracking-[0.25em] text-white/30 uppercase">
+                      OS RUNTIME // EXEC_LOGS
+                    </span>
+                    <h4 className="text-sm font-semibold tracking-wide text-white/60 mt-1 uppercase flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                      Live Thread
+                    </h4>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
                     {demo.items.map((item, i) => (
-                      <motion.div key={`${demoIdx}-${i}`}
-                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1, duration: 0.3 }}
-                        className="flex items-center justify-between px-3 py-2 rounded-lg border border-white/[0.05]"
-                        style={{ background: "rgba(255,255,255,0.025)" }}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-                            style={{ background: `${item.c}18`, border: `1px solid ${item.c}30`, color: item.c }}>
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.08, type: "spring", stiffness: 140, damping: 18 }}
+                        className="flex items-center justify-between p-3 rounded-xl border border-white/[0.04] bg-white/[0.015]"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="w-6.5 h-6.5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                            style={{ background: `${item.c}14`, border: `1px solid ${item.c}25`, color: item.c }}
+                          >
                             {item.label[0]}
                           </div>
-                          <span className="text-white/70 text-[11px] truncate max-w-[220px]">{item.label}</span>
+                          <span className="text-white/70 text-[12px] font-medium truncate">
+                            {item.label}
+                          </span>
                         </div>
-                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-2"
-                          style={{ color: item.c, background: `${item.c}14`, border: `1px solid ${item.c}28` }}>
+                        <span
+                          className="text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 border"
+                          style={{ color: item.c, background: `${item.c}0b`, borderColor: `${item.c}20` }}
+                        >
                           {item.status}
                         </span>
                       </motion.div>
                     ))}
                   </div>
                 </motion.div>
-              </AnimatePresence>
+              )}
+            </AnimatePresence>
+          </div>
 
-              {/* ── macOS Dock ── */}
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                <div className="flex items-end gap-1.5 px-3 py-2 rounded-2xl"
-                  style={{
-                    background: "rgba(255,255,255,0.07)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-                  }}>
-                  {DOCK_ICONS.map((icon, i) => (
-                    <motion.div key={i}
-                      animate={i === demo.dockActive
-                        ? { scale: 1.4, y: -6 }
-                        : { scale: 1, y: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                      className="relative w-8 h-8 rounded-xl flex items-center justify-center text-base"
-                      style={{
-                        background: i === demo.dockActive
-                          ? `linear-gradient(135deg, ${DEMOS[i]?.appColor ?? "#6d28ff"}44, ${DEMOS[i]?.appColor ?? "#6d28ff"}22)`
-                          : "rgba(255,255,255,0.06)",
-                        border: i === demo.dockActive ? `1px solid ${DEMOS[i]?.appColor ?? "#6d28ff"}50` : "1px solid rgba(255,255,255,0.08)",
-                        boxShadow: i === demo.dockActive ? `0 0 16px ${DEMOS[i]?.appColor ?? "#6d28ff"}40` : "none",
-                      }}>
-                      {icon}
-                      {i === demo.dockActive && (
-                        <div className="absolute -bottom-1.5 w-1 h-1 rounded-full"
-                          style={{ background: DEMOS[i]?.appColor ?? "#6d28ff" }} />
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
+        </div>
 
-            {/* ── Caption bar ── */}
-            <div className="px-5 py-3 border-t border-white/[0.05]"
-              style={{ background: "rgba(255,255,255,0.012)" }}>
-              <AnimatePresence mode="wait">
-                <motion.p key={demoIdx} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="text-white/55 text-[13px] leading-relaxed"
-                  style={{ fontFamily: "-apple-system,'SF Pro Text',sans-serif" }}>
-                  <span className="text-white/25 text-[10px] font-bold tracking-widest uppercase mr-2"
-                    style={{ color: demo.appColor }}>{demo.industry}</span>
-                  {demo.caption}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-
-            {/* ── End Agent Mode ── */}
-            <div className="flex justify-center py-3 border-t border-white/[0.05]">
-              <button onClick={end}
-                className="flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-semibold transition-all hover:brightness-115 active:scale-95"
+        {/* 4. Bottom Row: Caption Card (Dynamic text description) */}
+        <div className="w-full mt-10 lg:mt-12 flex justify-center min-h-[140px] lg:min-h-0">
+          <AnimatePresence mode="wait">
+            {active && (
+              <motion.div
+                key={demoIdx}
+                initial={{ opacity: 0, y: 25, filter: "blur(10px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: 15, filter: "blur(10px)" }}
+                transition={{ duration: 0.4 }}
+                className="w-full max-w-[840px] text-center p-6 lg:p-7 rounded-[2rem] border border-white/[0.06] bg-black/60 backdrop-blur-2xl relative overflow-hidden"
                 style={{
-                  color: "#fd5934", background: "rgba(253,89,52,0.09)",
-                  border: "1px solid rgba(253,89,52,0.25)",
-                  fontFamily: "-apple-system,'SF Pro Text',sans-serif",
-                }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                End Agent Mode
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  boxShadow: `0 30px 70px rgba(0,0,0,0.65), 0 0 50px ${demo.appColor}0c`,
+                  borderColor: `${demo.appColor}22`,
+                }}
+              >
+                {/* Micro glow halo */}
+                <div
+                  className="absolute -top-32 left-1/2 -translate-x-1/2 w-64 h-32 rounded-full pointer-events-none filter blur-[32px] opacity-15 transition-colors duration-500"
+                  style={{ background: demo.appColor }}
+                />
+
+                <p className="text-white/90 text-lg sm:text-[20px] font-medium leading-relaxed tracking-tight select-text">
+                  {demo.caption}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+      </div>
     </div>
   );
 }

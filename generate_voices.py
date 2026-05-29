@@ -73,7 +73,8 @@ import soundfile as sf
 
 kokoro = Kokoro(model_paths["kokoro-v0_19.onnx"], model_paths["voices-v1.0.bin"])
 
-has_ffmpeg = subprocess.run(["which", "ffmpeg"], capture_output=True).returncode == 0
+import shutil
+has_ffmpeg = shutil.which("ffmpeg") is not None
 
 for i, text in enumerate(LINES):
     wav_path = os.path.join(OUT_DIR, f"demo-{i}.wav")
