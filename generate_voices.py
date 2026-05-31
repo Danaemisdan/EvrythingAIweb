@@ -15,14 +15,11 @@ OUT_DIR    = os.path.join(SCRIPT_DIR, "public", "audio")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 LINES = [
-    "Closed 3 SaaS deals while you were in a meeting about why sales is slow.",
-    "Drafted 12 NDAs for your firm. Your paralegal thought you hired someone.",
-    "Replied to 847 customer DMs. Each felt personal. Zero were written by you.",
-    "Pitched 40 VCs your deck. 3 replied. You have dinner plans now.",
-    "Booked your clinic solid for 6 weeks. Your receptionist is shook.",
-    "Found 23 buyers for your listings. Scheduled tours. Still 9am.",
-    "Posted, clipped, captioned, and grew 2k subs. You were at brunch.",
-    "No cloud. No subscriptions. No one watching. Just me. On your machine. Forever.",
+    "I just completed this. Today the developer is not available, but I can complete the project by taking all the requirements from the client.",
+    "I already assigned today’s tasks. Open the damn board and finish them.",
+    "I cleaned the schedule. Don’t add another useless meeting and ruin it.",
+    "We have warm leads waiting. Stop behaving like revenue is optional.",
+    "I found the blocker. It’s not strategy. It’s people delaying obvious work."
 ]
 
 MODEL_FILES = {
@@ -88,6 +85,8 @@ for i, text in enumerate(LINES):
         os.remove(wav_path)
         print(f"    → {mp3_path}")
     else:
+        if os.path.exists(mp3_path):
+            os.remove(mp3_path)
         os.rename(wav_path, mp3_path)
         print(f"    → {mp3_path} (wav format, ffmpeg not found)")
 
