@@ -150,9 +150,18 @@ export default function Hero() {
     const [showPopup, setShowPopup] = useState(false);
     const [isHeroReady, setIsHeroReady] = useState(false);
     const [logoRect, setLogoRect] = useState({ cx: 0, cy: 0, size: 300 });
+    const [isAgentVisible, setIsAgentVisible] = useState(false);
 
     useEffect(() => {
-        setHasVisited(false);
+        const visited = sessionStorage.getItem("evrything-visited");
+        if (visited) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setHasVisited(true);
+            setStepIndex(STEP_KEYS.indexOf("LOGO_WHITE_BG_3"));
+        } else {
+            setHasVisited(false);
+            sessionStorage.setItem("evrything-visited", "true");
+        }
 
         // Hydrate hardware sniffing
         const userAgent = window.navigator.userAgent.toLowerCase();
@@ -229,6 +238,17 @@ export default function Hero() {
         target: containerRef,
         offset: ["start start", "end end"],
     });
+
+    useEffect(() => {
+        const unsubscribe = scrollYProgress.on("change", (latest) => {
+            if (latest >= 0.38 && latest <= 0.60) {
+                setIsAgentVisible(true);
+            } else {
+                setIsAgentVisible(false);
+            }
+        });
+        return () => unsubscribe();
+    }, [scrollYProgress]);
 
     // ── Hero text/button: blur + fade OUT on early scroll ──────────────────────
     // NOTE: blurOut is applied ONLY to text + buttons. The logo NEVER blurs.
@@ -518,7 +538,7 @@ export default function Hero() {
                                         className="absolute inset-0 z-50 w-full h-full flex flex-col items-center justify-center pointer-events-none"
                                     >
                                         <div className="pointer-events-auto w-full h-full flex items-center justify-center">
-                                            <AgentShowcase scrollYProgress={scrollYProgress} />
+                                            <AgentShowcase isVisible={isAgentVisible} />
                                         </div>
                                     </motion.div>
 

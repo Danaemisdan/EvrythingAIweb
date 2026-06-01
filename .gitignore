@@ -40,7 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Kokoro TTS models
-kokoro-v0_19.onnx
-voices-v1.0.bin
+# kokoro models and data
+/kokoro-v1.0.onnx
+/voices-v1.0.bin
 
