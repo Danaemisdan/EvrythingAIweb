@@ -268,8 +268,8 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
      
      const inTask = safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0;
      const calmText = inTask 
-       ? "Uhh... uhh... Yeah where were we? Ah yes, let me just finish this."
-       : "Uhh... uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+       ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
+       : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
      
      rawSpeak(angryText1, 999, () => {
          setSubtitle("");
@@ -280,8 +280,8 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
              setTimeout(() => {
                  setAgentState("speaking");
                  const calmText = inTask 
-                   ? "Uhh... uhh... Yeah where were we? Ah yes, let me just finish this."
-                   : "Uhh... uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+                   ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
+                   : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
                  setSubtitle(calmText);
                  speak(calmText, 999, () => {
                     setAgentState("idle");
@@ -300,11 +300,27 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
        document.body.style.overflow = "hidden";
        
        const handleScrollAttempt = (e: WheelEvent | TouchEvent) => {
-          if (!showDesktop) return; // Do not trigger during intro
-          if (angryTriggeredRef.current) return;
-          
-          triggerAngrySequence();
-       };
+           if (!showDesktop) return; // Do not trigger during intro
+           
+           if (angryTriggeredRef.current) {
+              if (isAngryRef.current) return;
+              
+              // Second scroll attempt after already being angry
+              clear();
+              stop();
+              setIsAngry(true);
+              isAngryRef.current = true;
+              setAgentState("speaking");
+              const sleepText = "Okay you want to scroll? I'll sleep then, bye.";
+              setSubtitle(sleepText);
+              speak(sleepText, 999, () => {
+                  end();
+              });
+              return;
+           }
+           
+           triggerAngrySequence();
+        };
        
        window.addEventListener('wheel', handleScrollAttempt, { passive: false });
        window.addEventListener('touchmove', handleScrollAttempt, { passive: false });
@@ -793,7 +809,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
             className={`absolute z-[9998] px-5 py-3 rounded-2xl border border-white/[0.15] text-white/95 font-medium tracking-wide text-center
               ${
                 showDesktop
-                  ? isMobile ? "top-[24vh] left-1/2 -translate-x-1/2 w-[92vw] text-sm" : "top-[20vh] left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
+                  ? isMobile ? "top-[20vh] left-1/2 -translate-x-1/2 w-[92vw] text-sm" : "top-[15vh] left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
                   : "relative mt-4 max-w-[80vw] md:max-w-[500px] text-base md:text-lg"
               }`}
             style={{

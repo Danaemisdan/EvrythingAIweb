@@ -87,11 +87,6 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                          />
                          <img src="https://media.giphy.com/media/sIIhZliB2McAo/giphy.gif" alt="Nyan Cat" className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-60 z-10" />
-                         <div className="flex flex-col items-center justify-center z-20 mix-blend-screen bg-black/40 px-12 py-6 rounded border border-white/10 backdrop-blur-md">
-                             <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-[0.3em] font-sans">Momentum</h2>
-                             <div className="h-px w-full bg-white/30 my-3"></div>
-                             <span className="text-white/80 text-[10px] md:text-xs tracking-[0.5em] uppercase font-light">Cinematic Promo // Q3</span>
-                         </div>
                          {/* Cinematic Bars */}
                          <div className="absolute top-0 left-0 right-0 h-[12%] bg-black z-30 shadow-[0_4px_20px_rgba(0,0,0,0.8)]"></div>
                          <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-black z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.8)]"></div>
