@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate, useSpring } from "framer-motion";
 import Image from "next/image";
 import { E_DOTS } from "./e-dots";
 import { V_DOTS } from "./v-dots";
@@ -238,6 +238,9 @@ export default function Hero() {
         target: containerRef,
         offset: ["start start", "end end"],
     });
+    
+    // Smooth out the scroll progress to prevent abrupt jumps and provide smooth transitions
+    const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
     useEffect(() => {
         const unsubscribe = scrollYProgress.on("change", (latest) => {
@@ -252,46 +255,44 @@ export default function Hero() {
 
     // ── Hero text/button: blur + fade OUT on early scroll ──────────────────────
     // NOTE: blurOut is applied ONLY to text + buttons. The logo NEVER blurs.
-    const blurOutOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-    const blurOutRaw = useTransform(scrollYProgress, [0, 0.15], [0, 20]);
+    const blurOutOpacity = useTransform(smoothProgress, [0, 0.15], [1, 0]);
+    const blurOutRaw = useTransform(smoothProgress, [0, 0.15], [0, 20]);
     const blurOutFilter = useMotionTemplate`blur(${blurOutRaw}px)`;
-    const blurOutY = useTransform(scrollYProgress, [0, 0.15], [0, -30]);
-    const heroPointerEvents = useTransform(scrollYProgress, [0, 0.1, 0.15], ["auto", "auto", "none"]);
+    const blurOutY = useTransform(smoothProgress, [0, 0.15], [0, -30]);
+    const heroPointerEvents = useTransform(smoothProgress, [0, 0.1, 0.15], ["auto", "auto", "none"]);
 
     // ── Minimalist Scroll Prompt: blurs & fades OUT immediately on scroll ──
-    const scrollPromptOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0]);
-    const scrollPromptBlur = useTransform(scrollYProgress, [0, 0.05], [0, 10]);
+    const scrollPromptOpacity = useTransform(smoothProgress, [0, 0.05], [1, 0]);
+    const scrollPromptBlur = useTransform(smoothProgress, [0, 0.05], [0, 10]);
     const scrollPromptFilter = useMotionTemplate`blur(${scrollPromptBlur}px)`;
 
     // ── Logo fade: static SVG fades out as the expanding copy takes over ──
-    const logoFadeOpacity = useTransform(scrollYProgress, [0.03, 0.12], [1, 0]);
+    const logoFadeOpacity = useTransform(smoothProgress, [0.03, 0.12], [1, 0]);
 
     // ── Logo scale: the white logo SVG grows exponentially to fill the screen with white ──
-    const logoScaleUp = useTransform(scrollYProgress, [0.05, 0.15], [1, 65]);
-    const logoBlurRaw = useTransform(scrollYProgress, [0.15, 0.20], [0, 0]);
+    const logoScaleUp = useTransform(smoothProgress, [0.05, 0.15], [1, 65]);
+    const logoBlurRaw = useTransform(smoothProgress, [0.15, 0.20], [0, 0]);
     const logoBlurFilter = useMotionTemplate`blur(${logoBlurRaw}px)`;
 
     // ── Second section (White Background): the Animated Text Cycle fades IN over the white logo ──
-    const textCycleOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [0, 1, 1, 0]);
-    const textCycleY = useTransform(scrollYProgress, [0.15, 0.20, 0.25, 0.30], [20, 0, 0, -20]);
+    const textCycleOpacity = useTransform(smoothProgress, [0.15, 0.20, 0.25, 0.30], [0, 1, 1, 0]);
+    const textCycleY = useTransform(smoothProgress, [0.15, 0.20, 0.25, 0.30], [20, 0, 0, -20]);
 
     // ── Agent Showcase: appears right after the text cycle, on the black bg ──
-    const agentOpacity = useTransform(scrollYProgress, [0.33, 0.40, 0.58, 0.63], [0, 1, 1, 0]);
-    const agentY = useTransform(scrollYProgress, [0.33, 0.40, 0.58, 0.63], [40, 0, 0, -40]);
-    const agentBlurRaw = useTransform(scrollYProgress, [0.33, 0.40, 0.58, 0.63], [20, 0, 0, 20]);
-    const agentBlurFilter = useMotionTemplate`blur(${agentBlurRaw}px)`;
+    const agentOpacity = useTransform(smoothProgress, [0.33, 0.40, 0.58, 0.63], [0, 1, 1, 0]);
+    const agentY = useTransform(smoothProgress, [0.33, 0.40, 0.58, 0.63], [40, 0, 0, -40]);
 
     // ── Ticker Tape finale: appears after the agent ──
-    const contentOpacity = useTransform(scrollYProgress, [0.65, 0.72, 0.87, 0.90], [0, 1, 1, 0]);
-    const contentY = useTransform(scrollYProgress, [0.65, 0.72], [40, 0]);
-    const contentBlurRaw = useTransform(scrollYProgress, [0.65, 0.72], [16, 0]);
+    const contentOpacity = useTransform(smoothProgress, [0.65, 0.72, 0.87, 0.90], [0, 1, 1, 0]);
+    const contentY = useTransform(smoothProgress, [0.65, 0.72], [40, 0]);
+    const contentBlurRaw = useTransform(smoothProgress, [0.65, 0.72], [16, 0]);
     const contentBlurFilter = useMotionTemplate`blur(${contentBlurRaw}px)`;
 
     // ── Black overlay fades in after AnimatedText ──
-    const blackOverlayOpacity = useTransform(scrollYProgress, [0.28, 0.32], [0, 1]);
+    const blackOverlayOpacity = useTransform(smoothProgress, [0.28, 0.32], [0, 1]);
 
     // ── Global Scroll Arrow Opacity (fades out at the very end only) ──
-    const globalArrowOpacity = useTransform(scrollYProgress, [0.15, 0.20, 0.90, 0.95], [0, 1, 1, 0]);
+    const globalArrowOpacity = useTransform(smoothProgress, [0.15, 0.20, 0.90, 0.95], [0, 1, 1, 0]);
 
     const enableScroll = isMomentumPhase && step === "MOMENTUM_LOCK" && isHeroReady;
 
@@ -534,8 +535,8 @@ export default function Hero() {
 
                                     {/* AGENT SHOWCASE */}
                                     <motion.div
-                                        style={{ opacity: agentOpacity, y: agentY, filter: agentBlurFilter }}
-                                        className="absolute inset-0 z-50 w-full h-full flex flex-col items-center justify-center pointer-events-none"
+                                        style={{ opacity: agentOpacity, y: agentY }}
+                                        className="absolute inset-0 z-50 w-full h-full flex flex-col items-center justify-center pointer-events-none bg-black"
                                     >
                                         <div className="pointer-events-auto w-full h-full flex items-center justify-center">
                                             <AgentShowcase isVisible={isAgentVisible} />
@@ -546,7 +547,7 @@ export default function Hero() {
                                     <motion.div
                                         id="learn-more"
                                         style={{ opacity: contentOpacity, y: contentY, filter: contentBlurFilter }}
-                                        className="relative z-40 w-full h-full flex flex-col justify-center gap-6 sm:gap-10 lg:gap-16 overflow-hidden pt-8 lg:pt-12"
+                                        className="relative z-40 w-full h-full flex flex-col justify-center gap-6 sm:gap-10 lg:gap-16 overflow-hidden pt-8 lg:pt-12 bg-black"
                                     >
                                         {/* Keep as empty placeholder. Global arrow handled below. */}
 
@@ -629,21 +630,7 @@ export default function Hero() {
                                 </div>
                             )}
 
-                            {/* Global Sticky Scroll Indicator Arrow */}
-                            {enableScroll && (
-                                <motion.div 
-                                    style={{ opacity: globalArrowOpacity }}
-                                    className="fixed bottom-10 right-10 z-50 pointer-events-none mix-blend-difference"
-                                >
-                                    <motion.div 
-                                        animate={{ y: [0, 10, 0] }} 
-                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                        className="text-white opacity-40 hover:opacity-100 transition-opacity"
-                                    >
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-                                    </motion.div>
-                                </motion.div>
-                            )}
+                            {/* Global Sticky Scroll Indicator Arrow removed for demo */}
                         </motion.div>
                     )}
                 </AnimatePresence>

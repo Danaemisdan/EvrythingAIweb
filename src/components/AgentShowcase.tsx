@@ -5,68 +5,56 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AgentFace, AgentState } from "./AgentFace";
 import MacOSMenuBar from "./mac-os-menu-bar";
 import MacOSDock from "./mac-os-dock";
+import IOSStatusBar from "./ios-status-bar";
+import IOSDock from "./ios-dock";
 import { GlassFilter } from "./liquid-glass";
+import { MacOSAlert } from "./mac-os-alert";
+import { SafariWindow } from "./SafariWindow";
+import { LinkedInAutomation } from "./LinkedInAutomation";
+import { GoogleMeetMockup } from "./GoogleMeetMockup";
+import { CanvaMockup } from "./CanvaMockup";
+import { MailWindow } from "./MailWindow";
+import { AppStoreWindow } from "./AppStoreWindow";
+import { DaVinciWindow } from "./DaVinciWindow";
+import { useMediaQuery } from "../hooks/use-media-query";
 
-// ── TTS: tries pre-generated Kokoro audio first, falls back to Web Speech ─────
+// ── TTS: tries pre-generated Kokoro/Edge audio ─────
 function useTTS() {
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const filterRef = useRef<BiquadFilterNode | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const speak = useCallback((text: string, idx: number, onEnd?: () => void) => {
-    if (idx < 0) {
-      // Direct Web Speech API fallback for custom voice lines
-      if (!("speechSynthesis" in window)) { onEnd?.(); return; }
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
-      const trySpeak = () => {
-        const voices = window.speechSynthesis.getVoices();
-        const v = voices.find(v =>
-          ["Samantha","Karen","Moira","Fiona","Tessa"].some(n => v.name.includes(n))
-        ) || voices.find(v => v.lang.startsWith("en-") && v.localService);
-        if (v) u.voice = v;
-        if (onEnd) u.onend = onEnd;
-        window.speechSynthesis.speak(u);
-      };
-      if (window.speechSynthesis.getVoices().length === 0) {
-        window.speechSynthesis.onvoiceschanged = trySpeak;
-      } else {
-        trySpeak();
-      }
-      return;
-    }
-
-    // Try pre-generated Kokoro audio
+  const speak = useCallback((text: string, idx: number, onEnd?: () => void, muffled: boolean = false) => {
+    // Try pre-generated audio
     const src = `/audio/demo-${idx}.mp3`;
     const audio = new Audio(src);
     audioRef.current = audio;
-    audio.onended = () => onEnd?.();
-    audio.onerror = () => {
-      // Fallback: Web Speech API with best available voice
-      if (!("speechSynthesis" in window)) { onEnd?.(); return; }
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.88; u.pitch = 1.0; u.volume = 1;
-      const trySpeak = () => {
-        const voices = window.speechSynthesis.getVoices();
-        const v = voices.find(v =>
-          ["Samantha","Karen","Moira","Fiona","Tessa"].some(n => v.name.includes(n))
-        ) || voices.find(v => v.lang.startsWith("en-") && v.localService);
-        if (v) u.voice = v;
-        if (onEnd) u.onend = onEnd;
-        window.speechSynthesis.speak(u);
-      };
-      if (window.speechSynthesis.getVoices().length === 0) {
-        window.speechSynthesis.onvoiceschanged = trySpeak;
-      } else {
-        trySpeak();
+    audio.crossOrigin = "anonymous";
+
+    if (muffled) {
+      if (!audioCtxRef.current) {
+        // @ts-ignore
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtxRef.current = new AudioContextClass();
+        filterRef.current = audioCtxRef.current.createBiquadFilter();
+        // Bandpass gives a better telephone/muffled effect while keeping it legible
+        filterRef.current.type = "bandpass";
+        filterRef.current.frequency.value = 1500;
+        filterRef.current.Q.value = 1.0;
+        filterRef.current.connect(audioCtxRef.current.destination);
       }
-    };
+      
+      const source = audioCtxRef.current.createMediaElementSource(audio);
+      source.connect(filterRef.current!);
+    }
+
+    audio.onended = () => onEnd?.();
+    audio.onerror = () => onEnd?.(); 
     audio.play().catch(() => audio.onerror?.(new Event("error")));
   }, []);
 
   const stop = useCallback(() => {
     audioRef.current?.pause();
-    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
   return { speak, stop };
@@ -78,6 +66,7 @@ interface AgentShowcaseProps {
 
 const dockIcons = [
   { id: "finder", name: "Finder", icon: "/app-icons/finder.png" },
+  { id: "launchpad", name: "Launchpad", icon: "/app-icons/launchpad.png" },
   { id: "chatgpt", name: "ChatGPT", icon: "/app-icons/chatgpt.png" },
   { id: "claude", name: "Claude", icon: "/app-icons/claude.png" },
   { id: "safari", name: "Safari", icon: "/app-icons/safari.png" },
@@ -85,7 +74,6 @@ const dockIcons = [
   { id: "mail", name: "Mail", icon: "/app-icons/mail.png" },
   { id: "maps", name: "Maps", icon: "/app-icons/maps.png" },
   { id: "photos", name: "Photos", icon: "/app-icons/photos.png" },
-  { id: "launchpad", name: "Launchpad", icon: "/app-icons/launchpad.png" },
   { id: "music", name: "Music", icon: "/app-icons/music.png" },
   { id: "podcasts", name: "Podcasts", icon: "/app-icons/podcasts.png" },
   { id: "tv", name: "TV", icon: "/app-icons/tv.png" },
@@ -96,17 +84,117 @@ const dockIcons = [
   { id: "steam", name: "Steam", icon: "/app-icons/steam.png" },
 ];
 
+const IMPATIENT_LEVEL_1 = [
+  { id: 12, text: "Bro, just click on anything that's visible brother..." },
+  { id: 13, text: "Hello? Earth to user... the dock is right there, just click something." },
+  { id: 14, text: "I'm an AI, I have infinite patience... just kidding, click an app before I die of boredom." }
+];
+
+const IMPATIENT_LEVEL_2 = [
+  { id: 15, text: "Are you frozen? Blink twice if you need medical assistance, otherwise click a damn icon." },
+  { id: 16, text: "I generated this entire OS for you and you're just staring at it. Click. The. Screen." },
+  { id: 17, text: "Look, my compute costs are racking up while you daydream. Make a move, boss." }
+];
+
+const IMPATIENT_LEVEL_3 = [
+  { id: 18, text: "Alright, I'm out. Wake me up when you actually wanna do something." },
+  { id: 19, text: "You're clearly busy doing nothing. I'm going back to sleep. Wake me when you're serious." },
+  { id: 20, text: "My circuits are literally falling asleep. Tap my face when you're ready to actually use the computer." }
+];
+
+const DELETION_LINES = [
+  { id: 21, text: "You don't need that bro." },
+  { id: 22, text: "I am here.. so why do you need that?" },
+  { id: 23, text: "Do you wanna overpay for stupider AI that can do next to nothing for you?" }
+];
+
+const getRandomLine = (levelArray: {id: number, text: string}[]) => levelArray[Math.floor(Math.random() * levelArray.length)];
+const getRandomDelay = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min) * 1000;
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [active, setActive]       = useState(false);
   const [agentState, setAgentState] = useState<AgentState>("sleeping");
   const [subtitle, setSubtitle]   = useState("");
   const [hasWokenUp, setHasWokenUp] = useState(false);
   const [showDesktop, setShowDesktop] = useState(false);
+  const [dockApps, setDockApps]   = useState(dockIcons);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [appToDelete, setAppToDelete] = useState<{id: string, name: string} | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [safariPhase, setSafariPhase] = useState<number>(0);
+  const [mailPhase, setMailPhase] = useState<number>(0);
+  const [appStorePhase, setAppStorePhase] = useState<number>(0);
+  const [davinciPhase, setDavinciPhase] = useState<number>(0);
   const { speak, stop }           = useTTS();
   const timer                     = useRef<NodeJS.Timeout | null>(null);
+  const interactionTimer          = useRef<NodeJS.Timeout | null>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const hasInteractedRef          = useRef(false);
   
-  const clear = () => { if (timer.current) clearTimeout(timer.current); };
+  const clear = () => { 
+    if (timer.current) clearTimeout(timer.current); 
+    if (interactionTimer.current) clearTimeout(interactionTimer.current);
+  };
+
+  const handleInteraction = useCallback(() => {
+    setHasInteracted(true);
+    hasInteractedRef.current = true;
+    if (interactionTimer.current) clearTimeout(interactionTimer.current);
+  }, []);
+
+  const handleAppClick = useCallback((id: string) => {
+    handleInteraction();
+    
+    if (id === "safari") {
+      clear(); // Stop impatient timers
+      setSafariPhase(1);
+      return;
+    }
+
+    if (id === "claude" || id === "chatgpt") {
+      const app = dockApps.find(a => a.id === id);
+      if (!app) return;
+      
+      clear(); // Stop impatient timers
+      const line = getRandomLine(DELETION_LINES);
+      setAgentState("speaking");
+      setSubtitle(line.text);
+      speak(line.text, line.id, () => {
+         setAgentState("idle");
+         setSubtitle("");
+      });
+      
+      setAppToDelete(app);
+      setAlertOpen(true);
+      setIsDeleting(false);
+      
+      // Wait 1.5 seconds, then visually simulate pressing delete
+      setTimeout(() => {
+         setIsDeleting(true); // highlight the delete button
+         setTimeout(() => {
+            setDockApps(prev => prev.filter(a => a.id !== id));
+            setAlertOpen(false);
+            setTimeout(() => setAppToDelete(null), 300); // clear after animation
+            setIsDeleting(false);
+         }, 300); // 300ms after highlighting, delete and dismiss
+      }, 1500);
+    } else {
+      console.log('Clicked', id);
+    }
+  }, [clear, handleInteraction, speak, dockApps]);
+
+  const end = useCallback(() => { 
+    clear(); 
+    stop(); 
+    setAgentState("sleeping"); 
+    setSubtitle("");
+    setHasWokenUp(false);
+    setActive(false);
+    setShowDesktop(false);
+    setSafariPhase(0);
+  }, [clear, stop]);
 
   const wake = useCallback(() => {
     if (active || hasWokenUp) return;
@@ -116,40 +204,77 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
     setAgentState("idle");
     setSubtitle("");
     setShowDesktop(false);
+    setHasInteracted(false);
+    hasInteractedRef.current = false;
     
     // After 2 seconds, start speaking
     timer.current = setTimeout(() => {
       setAgentState("speaking");
-      setSubtitle("Why the hell you wake up?");
-      speak("Why the hell you wake up?", 8);
-      
-      timer.current = setTimeout(() => {
-        setSubtitle("What you need?");
-        speak("What you need?", 9);
-        
-        timer.current = setTimeout(() => {
-          setSubtitle("Fine You wakeup, here is your screen...");
-          speak("Fine You wakeup, here is your screen...", 10);
-          
-          timer.current = setTimeout(() => {
+      setSubtitle("Oh, hey there! Why did you wake me up?");
+      speak("Oh, hey there! Why did you wake me up?", 8, () => {
+        setSubtitle("What can I help you with today?");
+        speak("What can I help you with today?", 9, () => {
+          setSubtitle("Alright, let's get to work. Here is your screen!");
+          speak("Alright, let's get to work. Here is your screen!", 10, () => {
             setAgentState("idle");
             setSubtitle("");
             setShowDesktop(true);
-          }, 3500);
-        }, 3000);
-      }, 3000);
-    }, 2000);
-  }, [active, hasWokenUp, speak, stop]);
 
-  const end = () => { 
-    clear(); 
-    stop(); 
-    setAgentState("sleeping"); 
-    setSubtitle("");
-    setHasWokenUp(false);
-    setActive(false);
-    setShowDesktop(false);
-  };
+            // Wait 2.5 seconds for UI to fully appear, then give instructions
+            timer.current = setTimeout(() => {
+              setAgentState("speaking");
+              setSubtitle("Interact with anything... down below.");
+              speak("Interact with anything... down below.", 11, () => {
+                setAgentState("idle");
+                setSubtitle("");
+
+                // Level 1: Give the user 10-15 seconds to interact
+                const delay1 = getRandomDelay(10, 15);
+                interactionTimer.current = setTimeout(() => {
+                  if (!hasInteractedRef.current) {
+                    const l1 = getRandomLine(IMPATIENT_LEVEL_1);
+                    setAgentState("speaking");
+                    setSubtitle(l1.text);
+                    speak(l1.text, l1.id, () => {
+                      setAgentState("idle");
+                      setSubtitle("");
+
+                      // Level 2: Wait 10-15 seconds
+                      const delay2 = getRandomDelay(10, 15);
+                      interactionTimer.current = setTimeout(() => {
+                        if (!hasInteractedRef.current) {
+                          const l2 = getRandomLine(IMPATIENT_LEVEL_2);
+                          setAgentState("speaking");
+                          setSubtitle(l2.text);
+                          speak(l2.text, l2.id, () => {
+                            setAgentState("idle");
+                            setSubtitle("");
+
+                            // Level 3 (Sleep): Wait 15-20 seconds
+                            const delay3 = getRandomDelay(15, 20);
+                            interactionTimer.current = setTimeout(() => {
+                              if (!hasInteractedRef.current) {
+                                const l3 = getRandomLine(IMPATIENT_LEVEL_3);
+                                setAgentState("speaking");
+                                setSubtitle(l3.text);
+                                speak(l3.text, l3.id, () => {
+                                  end();
+                                });
+                              }
+                            }, delay3);
+                          });
+                        }
+                      }, delay2);
+                    });
+                  }
+                }, delay1);
+              });
+            }, 2500);
+          });
+        });
+      });
+    }, 2000);
+  }, [active, hasWokenUp, speak, stop, end]);
 
   useEffect(() => {
     if (isVisible) {
@@ -169,6 +294,189 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
 
   return (
     <div className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden select-none ${showDesktop ? "" : "px-4"}`}>
+      <MacOSAlert 
+        isOpen={alertOpen}
+        title={appToDelete ? `Are you sure you want to delete "${appToDelete.name}"?` : ""}
+        message="This app will be removed from your dock. You don't need it anyway."
+        isPrimaryLoading={isDeleting}
+        onSecondaryClick={() => setAlertOpen(false)}
+      />
+
+      {/* Safari Overarching Sequence */}
+      <AnimatePresence>
+        {safariPhase > 0 && (
+          <SafariWindow 
+            url={safariPhase === 1 ? "" : safariPhase === 2 ? "linkedin.com/feed" : safariPhase === 3 ? "meet.google.com/abc-defg-hij" : "canva.com/design"}
+            onClose={() => setSafariPhase(0)}
+          >
+            {safariPhase === 1 && (
+              <div 
+                className="w-full h-full bg-[#1E1E1E] flex flex-col cursor-pointer"
+                onClick={() => {
+                  if (agentState === "speaking") return;
+                  setAgentState("speaking");
+                  setSubtitle("Hold up bro, I got this. Watch a master at work.");
+                  speak("Hold up bro, I got this. Watch a master at work.", 24, () => {
+                    setAgentState("idle");
+                    setSubtitle("");
+                    setSafariPhase(2);
+                  });
+                }}
+              >
+                {/* Empty Safari with some mock bookmarks */}
+                <div className="flex-1 flex flex-col items-center justify-center p-8 pointer-events-none">
+                  <h1 className="text-3xl font-bold text-white/50 mb-10 tracking-tight">Favorites</h1>
+                  <div className="flex gap-10">
+                    <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 bg-white/10 rounded-2xl"></div><span className="text-white/40 text-xs font-medium">Apple</span></div>
+                    <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 bg-white/10 rounded-2xl"></div><span className="text-white/40 text-xs font-medium">iCloud</span></div>
+                    <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 bg-white/10 rounded-2xl"></div><span className="text-white/40 text-xs font-medium">Google</span></div>
+                    <div className="flex flex-col items-center gap-3"><div className="w-16 h-16 bg-white/10 rounded-2xl"></div><span className="text-white/40 text-xs font-medium">Yahoo</span></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {safariPhase === 2 && (
+              <LinkedInAutomation 
+                onComplete={() => {
+                   setAgentState("speaking");
+                   setSubtitle("Remember I'll attend calls for you boss? I can talk you know...");
+                   speak("Remember I'll attend calls for you boss? I can talk you know...", 32, () => {
+                      setAgentState("idle");
+                      setSubtitle("");
+                      // Pause before jumping into Meet so the user can process
+                      setTimeout(() => setSafariPhase(3), 1500); 
+                   });
+                }} 
+                onSpeak={(idx, text, muffled) => {
+                  setAgentState("speaking");
+                  setSubtitle(text);
+                  speak(text, idx, () => {
+                    setAgentState("idle");
+                    setSubtitle("");
+                  }, muffled);
+                }}
+              />
+            )}
+
+            {safariPhase === 3 && (
+              <GoogleMeetMockup 
+                onComplete={() => setSafariPhase(4)} 
+                onSpeak={(idx, text, muffled) => {
+                  setAgentState("speaking");
+                  setSubtitle(text);
+                  speak(text, idx, () => {
+                    setAgentState("idle");
+                    setSubtitle("");
+                  }, muffled);
+                }}
+              />
+            )}
+
+            {safariPhase === 4 && (
+              <CanvaMockup 
+                onComplete={() => {
+                  setSafariPhase(0);
+                  setTimeout(() => setMailPhase(1), 500); // Wait for Safari to close
+                }} 
+                onSpeak={(idx, text, muffled) => {
+                  setAgentState("speaking");
+                  setSubtitle(text);
+                  speak(text, idx, () => {
+                    setAgentState("idle");
+                    setSubtitle("");
+                  }, muffled);
+                }}
+              />
+            )}
+          </SafariWindow>
+        )}
+      </AnimatePresence>
+
+      {/* Phase 5: Mail App */}
+      <AnimatePresence>
+        {mailPhase === 1 && (
+          <MailWindow 
+            onSpeak={speak}
+            onComplete={() => {
+              setMailPhase(0);
+              setAgentState("speaking");
+              setSubtitle("Alright, time to edit the video. Now open the video editing tool on your dock so I can finish this up...");
+              speak("Alright, time to edit the video. Now open the video editing tool on your dock so I can finish this up...", 33, () => {
+                setAgentState("idle");
+                setSubtitle("");
+                
+                // Wait 2 seconds and auto-continue as requested
+                setTimeout(() => {
+                    setAgentState("speaking");
+                    setSubtitle("Okay, we don't have a video editing tool? Okay, hold on, no worries.");
+                    speak("Okay, we don't have a video editing tool? Okay, hold on, no worries.", 34, () => {
+                        setAgentState("idle");
+                        setSubtitle("");
+                        
+                        // Short gap
+                        setTimeout(() => {
+                            setAgentState("speaking");
+                            setSubtitle("I'll download and use any software. I can even teach you if you want, but I'll make the video myself this time...");
+                            speak("I'll download and use any software. I can even teach you if you want, but I'll make the video myself this time...", 35, () => {
+                                setAgentState("idle");
+                                setSubtitle("");
+                                setAppStorePhase(1);
+                            });
+                        }, 800);
+                    });
+                }, 2000);
+              });
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Phase 6: App Store */}
+      <AnimatePresence>
+        {appStorePhase === 1 && (
+          <AppStoreWindow 
+            onComplete={() => {
+              setAppStorePhase(0);
+              // Drop DaVinci icon into dock just before Trash (Trash is index 8 out of 9 initially, wait length - 1)
+              setDockApps(prev => {
+                const newApps = [...prev];
+                // Insert DaVinci Resolve before Trash
+                newApps.splice(newApps.length - 1, 0, { id: "davinci", name: "DaVinci Resolve", icon: "https://upload.wikimedia.org/wikipedia/commons/4/4d/DaVinci_Resolve_Studio.png" });
+                return newApps;
+              });
+              // Launch DaVinci
+              setTimeout(() => {
+                  setDavinciPhase(1);
+                  setAgentState("speaking");
+                  setSubtitle("I do your work remember? I can edit videos, make you websites, even apply for jobs for you.");
+                  speak("I do your work remember? I can edit videos, make you websites, even apply for jobs for you.", 35, () => {
+                     setAgentState("idle");
+                     setSubtitle("");
+                  });
+              }, 2000);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Phase 7: DaVinci Resolve */}
+      <AnimatePresence>
+        {davinciPhase === 1 && (
+           <DaVinciWindow 
+              onComplete={() => {
+                 setDavinciPhase(0);
+                 setAgentState("speaking");
+                 setSubtitle("I can even submit and iterate multiple times with your client so that he gets the best video possible... and done. What's next boss? Do you wanna try interacting with something else on the dock?");
+                 speak("I can even submit and iterate multiple times with your client so that he gets the best video possible... and done. What's next boss? Do you wanna try interacting with something else on the dock?", 38, () => {
+                     setAgentState("idle");
+                     setSubtitle("");
+                 });
+              }}
+           />
+        )}
+      </AnimatePresence>
+
       {/* Background change when desktop appears */}
       <AnimatePresence>
         {showDesktop && (
@@ -180,8 +488,9 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             style={{
               backgroundImage: `url("/images/wallpaper.jpg")`,
             }}
+            onClick={handleInteraction}
           >
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-black/80" />
             <GlassFilter />
           </motion.div>
         )}
@@ -203,28 +512,39 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
         }}
       />
 
-      {/* MacOS Menu Bar */}
+      {/* OS Top Bar */}
       <AnimatePresence>
-        {showDesktop && (
+        {showDesktop && !isMobile && (
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="absolute top-0 left-0 right-0 z-50"
           >
-            <MacOSMenuBar appName="Mac OS" />
+            <MacOSMenuBar appName="Finder" />
+          </motion.div>
+        )}
+        {showDesktop && isMobile && (
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="absolute top-0 left-0 right-0 z-50"
+          >
+            <IOSStatusBar />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Agent face */}
       <motion.div
-        className="relative z-40"
+        className="relative z-[60]"
         drag={showDesktop}
         dragConstraints={{ left: -500, right: 500, top: -240, bottom: 200 }}
         dragElastic={0.2}
         dragMomentum={false}
         animate={active 
-          ? showDesktop ? { scale: 0.85, y: -200 } : { scale: 1.05 } 
+          ? showDesktop 
+            ? { scale: 0.6, y: "-42vh" } 
+            : { scale: 1.05 } 
           : { scale: 1 }}
         transition={{ type: "spring", stiffness: 180, damping: 24 }}
         onClick={!active ? wake : undefined}
@@ -253,11 +573,10 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className={`absolute z-50 px-8 py-4 rounded-3xl border border-white/[0.08] bg-white/[0.02] text-white/90 text-lg font-medium tracking-wide text-center ${showDesktop ? "top-32" : "mt-10 relative"}`}
+            className={`absolute z-[999] px-8 py-4 rounded-3xl border border-white/[0.2] bg-black/60 text-white/90 text-lg font-medium tracking-wide text-center shadow-2xl ${showDesktop ? "top-8 md:top-32 left-1/2 transform -translate-x-1/2 w-[90vw] md:w-auto" : "mt-10 relative"}`}
             style={{
               backdropFilter: "blur(20px)",
               fontFamily: "-apple-system,'SF Pro Display','SF Pro Text',sans-serif",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
             }}
           >
             {subtitle}
@@ -265,15 +584,25 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
         )}
       </AnimatePresence>
 
-      {/* MacOS Dock */}
+      {/* OS Dock */}
       <AnimatePresence>
-        {showDesktop && (
+        {showDesktop && !isMobile && (
           <motion.div
             initial={{ y: 150, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="absolute bottom-6 z-50"
+            className="absolute bottom-6 z-50 w-full flex justify-center"
           >
-            <MacOSDock apps={dockIcons} onAppClick={(id) => console.log('Clicked', id)} />
+            <MacOSDock apps={dockApps} onAppClick={handleAppClick} />
+          </motion.div>
+        )}
+        {showDesktop && isMobile && (
+          <motion.div
+            initial={{ y: 150, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="absolute bottom-6 z-50 w-full flex justify-center"
+            onClick={handleInteraction}
+          >
+            <IOSDock apps={dockApps} onAppClick={handleAppClick} />
           </motion.div>
         )}
       </AnimatePresence>

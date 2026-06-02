@@ -1,6 +1,5 @@
-'use client';
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Types for the component
 interface DockApp {
@@ -64,9 +63,9 @@ const MacOSDock: React.FC<MacOSDockProps> = ({
     } else {
       // Desktop and large screens
       return {
-        baseIconSize: Math.max(64, Math.min(80, smallerDimension * 0.05)),
-        maxScale: 1.8,
-        effectWidth: 300
+        baseIconSize: Math.max(72, Math.min(96, smallerDimension * 0.08)),
+        maxScale: 1.7,
+        effectWidth: 320
       };
     }
   }, []);
@@ -250,33 +249,14 @@ const MacOSDock: React.FC<MacOSDockProps> = ({
     >
       {/* The Glassy Backdrop Plate (handles blur, background, reflections, and rounded corners) */}
       <div 
-        className="absolute inset-0 z-0 overflow-hidden backdrop-blur-md"
+        className="absolute inset-0 z-0 rounded-[28px] border border-white/20"
         style={{
-          borderRadius: `${Math.max(12, baseIconSize * 0.4)}px`,
-          boxShadow: `0 6px 6px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1)`,
+          backgroundColor: 'rgba(255, 255, 255, 0.12)',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
         }}
-      >
-        {/* Liquid Glass Layers */}
-        <div
-          className="absolute inset-0 z-0 overflow-hidden rounded-inherit"
-          style={{
-            backdropFilter: "blur(3px)",
-            filter: "url(#glass-distortion)",
-            isolation: "isolate",
-          }}
-        />
-        <div
-          className="absolute inset-0 z-10 rounded-inherit"
-          style={{ background: "rgba(255, 255, 255, 0.25)" }}
-        />
-        <div
-          className="absolute inset-0 z-20 rounded-inherit overflow-hidden"
-          style={{
-            boxShadow:
-              "inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5)",
-          }}
-        />
-      </div>
+      />
 
       {/* Dock Content */}
       <div 
@@ -292,21 +272,31 @@ const MacOSDock: React.FC<MacOSDockProps> = ({
           const scaledSize = baseIconSize * scale;
           
           return (
-            <div
-              key={app.id}
-              ref={(el) => { iconRefs.current[index] = el; }}
-              className="absolute cursor-pointer flex flex-col items-center justify-end"
-              title={app.name}
-              onClick={() => handleAppClick(app.id, index)}
+            <AnimatePresence>
+            <motion.div
+              initial={{ y: 30, scale: 0 }}
+              animate={{ y: 0, scale: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              ref={(el: HTMLDivElement | null) => { iconRefs.current[index] = el; }}
+              className="absolute flex items-end justify-center"
               style={{
                 left: `${position - scaledSize / 2}px`,
                 bottom: '0px',
                 width: `${scaledSize}px`,
                 height: `${scaledSize}px`,
-                transformOrigin: 'bottom center',
                 zIndex: Math.round(scale * 10)
               }}
             >
+              <div 
+                className="cursor-pointer flex flex-col items-center justify-end relative"
+                title={app.name}
+                onClick={() => handleAppClick(app.id, index)}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  transformOrigin: 'bottom center',
+                }}
+              >
               <img
                 src={app.icon}
                 alt={app.name}
@@ -334,7 +324,9 @@ const MacOSDock: React.FC<MacOSDockProps> = ({
                   }}
                 />
               )}
-            </div>
+              </div>
+            </motion.div>
+            </AnimatePresence>
           );
         })}
       </div>
