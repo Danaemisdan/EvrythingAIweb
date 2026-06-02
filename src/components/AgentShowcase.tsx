@@ -61,8 +61,7 @@ function useTTS() {
     
     if (filterNodeRef.current) {
       if (muffled) {
-        filterNodeRef.current.type = 'lowpass';
-        filterNodeRef.current.frequency.value = 1200; // Adjusted from 400 so it's less extreme
+        filterNodeRef.current.type = 'allpass'; // Disabled entirely as user hates the muffled effect
       } else {
         filterNodeRef.current.type = 'allpass';
       }
@@ -199,6 +198,20 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
   const [isAngry, setIsAngry] = useState(false);
   const angryTriggeredRef = useRef(false);
   const isAngryRef = useRef(false);
+
+  // Preload audio files so there is no delay between captions appearing and speech starting
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const screech = new Audio('/screech.mp3');
+      screech.preload = 'auto';
+      (window as any).__screechAudio = screech;
+
+      for (let i = 0; i <= 46; i++) {
+        const a = new Audio(`/audio/demo-${i}.mp3`);
+        a.preload = 'auto';
+      }
+    }
+  }, []);
   
   const speak = useCallback((text: string, idx: number, onDone?: () => void, muffled?: boolean) => {
     const attempt = () => {
@@ -293,7 +306,12 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
      setAgentState("speaking");
      
      try {
-       new Audio('/screech.mp3').play().catch(() => {});
+       if ((window as any).__screechAudio) {
+           (window as any).__screechAudio.currentTime = 0;
+           (window as any).__screechAudio.play().catch(() => {});
+       } else {
+           new Audio('/screech.mp3').play().catch(() => {});
+       }
      } catch(e) {}
      
      // Delay the dialogue until after the record scratch finishes
@@ -597,12 +615,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
                   if (isAngryRef.current) return;
                   setAgentState("speaking");
-                  if (idx === 28) {
-                    setSubtitle("No worries, I can take notes, transcribe the whole thing and also deal on your behalf.");
-                    setTimeout(() => { if (!isAngryRef.current) setSubtitle("Since you want 4 videos edited by this month, we would charge you $1,000 for that."); }, 4500);
-                  } else {
-                    setSubtitle(text);
-                  }
+                  setSubtitle(text);
                   speak(text, idx, () => {
                     if (isAngryRef.current) return;
                     setAgentState("idle");
