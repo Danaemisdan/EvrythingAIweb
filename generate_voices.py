@@ -64,7 +64,17 @@ LINES = [
     "I'll download and use any software. I can even teach you if you want, but I'll make the video myself this time...",
     "I can take care of every task in your life, you just need to sit back and watch.",
     "I do your work remember? I can edit videos, make you websites, even apply for jobs for you.",
-    "I can even submit and iterate multiple times with your client so that he gets the best video possible... and done. What's next boss? Do you wanna try interacting with something else on the dock?"
+    "I can even submit and iterate multiple times with your client so that he gets the best video possible... and done. What's next boss? Do you wanna try interacting with something else on the dock?",
+    
+    # New additions (Index 39-46)
+    "Why are you scrolling? You woke me up for what? To scroll past me? Just stay here and see what I can do..!",
+    "Uhh... Yeah where were we? Ah yes, let me just finish this.",
+    "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.",
+    "Okay you want to scroll? I'll sleep then, bye.",
+    "We just finished that task boss, try another one.",
+    "Are you deaf? I said click something else, we already did the whole Safari sequence.",
+    "Okay seriously, stop clicking Safari. My patience is literally running out. Do something else!",
+    "Hold on I know you wanna sleep lemme do the work for you too boss"
 ]
 
 # We use an English (US) female neural voice for maximum realism

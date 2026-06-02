@@ -302,7 +302,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
        ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
        : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
      
-     rawSpeak(angryText1, 999, () => {
+     rawSpeak(angryText1, 39, () => {
          setSubtitle("");
          setTimeout(() => {
              setIsAngry(false);
@@ -314,7 +314,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                    ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
                    : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
                  setSubtitle(calmText);
-                 speak(calmText, 999, () => {
+                 speak(calmText, inTask ? 40 : 41, () => {
                     setAgentState("idle");
                     setSubtitle("");
                     if (!inTask) {
@@ -344,7 +344,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               setAgentState("speaking");
               const sleepText = "Okay you want to scroll? I'll sleep then, bye.";
               setSubtitle(sleepText);
-              speak(sleepText, 999, () => {
+              speak(sleepText, 42, () => {
                   end();
               });
               return;
@@ -385,7 +385,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
         setAgentState("speaking");
         const text = "We just finished that task boss, try another one.";
         setSubtitle(text);
-        speak(text, 999, () => {
+        speak(text, 43, () => {
           setAgentState("idle");
           setSubtitle("");
         });
@@ -394,7 +394,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
         setAgentState("speaking");
         const text = "Are you deaf? I said click something else, we already did the whole Safari sequence.";
         setSubtitle(text);
-        speak(text, 999, () => {
+        speak(text, 44, () => {
           setAgentState("idle");
           setSubtitle("");
         });
@@ -403,7 +403,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
         setAgentState("speaking");
         const text = "Okay seriously, stop clicking Safari. My patience is literally running out. Do something else!";
         setSubtitle(text);
-        speak(text, 999, () => {
+        speak(text, 45, () => {
           setAgentState("idle");
           setSubtitle("");
         });
@@ -659,7 +659,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                 setTimeout(() => {
                     setAgentState("speaking");
                     setSubtitle("Hold on I know you wanna sleep lemme do the work for you too boss");
-                    speak("Hold on I know you wanna sleep lemme do the work for you too boss", 999, () => {
+                    speak("Hold on I know you wanna sleep lemme do the work for you too boss", 46, () => {
                         setAgentState("idle");
                         setSubtitle("");
                         
