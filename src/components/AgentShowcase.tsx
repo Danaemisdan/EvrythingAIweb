@@ -296,16 +296,18 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
        new Audio('/screech.mp3').play().catch(() => {});
      } catch(e) {}
      
-     const angryText1 = "Why are you scrolling? You woke me up for what? To scroll past me? Just stay here and see what I can do..!";
-     setSubtitle(angryText1);
-     
-     const inTask = safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0;
-     const calmText = inTask 
-       ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
-       : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
-     
-     rawSpeak(angryText1, 39, () => {
-         setSubtitle("");
+     // Delay the dialogue until after the record scratch finishes
+     setTimeout(() => {
+         const angryText1 = "Why are you scrolling? You woke me up for what? To scroll past me? Just stay here and see what I can do..!";
+         setSubtitle(angryText1);
+         
+         const inTask = safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0;
+         const calmText = inTask 
+           ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
+           : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+         
+         rawSpeak(angryText1, 39, () => {
+             setSubtitle("");
          setTimeout(() => {
              setIsAngry(false);
              isAngryRef.current = false;
@@ -325,7 +327,8 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                  });
              }, 1500);
          }, 1000);
-     });
+         });
+     }, 800);
   }, [clear, stop, speak, safariPhase, mailPhase, appStorePhase, davinciPhase, startIdleTimeouts]);
 
   useEffect(() => {
