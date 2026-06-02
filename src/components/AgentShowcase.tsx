@@ -49,7 +49,14 @@ function useTTS() {
     }
 
     audio.onended = () => onEnd?.();
-    audio.onerror = () => onEnd?.(); 
+    audio.onerror = () => {
+      // Fallback: estimate time based on word count
+      const words = text.split(" ").length;
+      const duration = Math.max(2000, words * 300 + 500);
+      setTimeout(() => {
+        onEnd?.();
+      }, duration);
+    }; 
     audio.play().catch(() => audio.onerror?.(new Event("error")));
   }, []);
 
@@ -132,6 +139,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
   const interactionTimer          = useRef<NodeJS.Timeout | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const hasInteractedRef          = useRef(false);
+  const [safariClickCount, setSafariClickCount] = useState(0);
   
   const clear = () => { 
     if (timer.current) clearTimeout(timer.current); 
@@ -152,7 +160,37 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
     
     if (id === "safari") {
       clear(); // Stop impatient timers
-      setSafariPhase(1);
+      if (safariClickCount === 0) {
+        setSafariClickCount(1);
+        setSafariPhase(1);
+      } else if (safariClickCount === 1) {
+        setSafariClickCount(2);
+        setAgentState("speaking");
+        const text = "We just finished that task boss, try another one.";
+        setSubtitle(text);
+        speak(text, 999, () => {
+          setAgentState("idle");
+          setSubtitle("");
+        });
+      } else if (safariClickCount === 2) {
+        setSafariClickCount(3);
+        setAgentState("speaking");
+        const text = "Are you deaf? I said click something else, we already did the whole Safari sequence.";
+        setSubtitle(text);
+        speak(text, 999, () => {
+          setAgentState("idle");
+          setSubtitle("");
+        });
+      } else {
+        setSafariClickCount(prev => prev + 1);
+        setAgentState("speaking");
+        const text = "Okay seriously, stop clicking Safari. My patience is literally running out. Do something else!";
+        setSubtitle(text);
+        speak(text, 999, () => {
+          setAgentState("idle");
+          setSubtitle("");
+        });
+      }
       return;
     }
 
