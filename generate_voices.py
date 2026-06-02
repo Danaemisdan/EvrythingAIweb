@@ -52,7 +52,7 @@ LINES = [
     "Target acquired. Sending a highly personalized, totally not AI-generated pitch.",
     "Boom. They replied. Time to close this.",
     "Hey my boss is sleeping so I had to join in.",
-    "Sure I'll edit the best video you'll ever see.",
+    "No worries, I can take notes, transcribe the whole thing and also deal on your behalf. Since you want 4 videos edited by this month, we would charge you $1,000 for that.",
     "Thanks for your time in the call.",
     "Deal closed. Now I'm auto-generating a thousand-dollar contract.",
     "I am also gonna mail them this. And yes, I will work for you to complete this contract. Don't worry, I'm gonna make the money fall in your bank account.",

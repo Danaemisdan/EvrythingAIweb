@@ -48,6 +48,8 @@ function useTTS() {
   }, []);
 
   const speak = useCallback((text: string, idx: number, onEnd?: () => void, muffled: boolean = false) => {
+    stop(); // Force stop any currently playing TTS to prevent chaotic overlap!
+    
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -60,7 +62,7 @@ function useTTS() {
     if (filterNodeRef.current) {
       if (muffled) {
         filterNodeRef.current.type = 'lowpass';
-        filterNodeRef.current.frequency.value = 400; // Muffled effect
+        filterNodeRef.current.frequency.value = 1200; // Adjusted from 400 so it's less extreme
       } else {
         filterNodeRef.current.type = 'allpass';
       }

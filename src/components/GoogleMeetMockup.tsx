@@ -23,18 +23,18 @@ export function GoogleMeetMockup({
 
     // 7.5s: speak pitch
     const t2 = setTimeout(() => {
-      onSpeakRef.current(28, "Sure I'll edit the best video you'll ever see.", true);
+      onSpeakRef.current(28, "No worries, I can take notes, transcribe the whole thing and also deal on your behalf. Since you want 4 videos edited by this month, we would charge you $1,000 for that.", true);
     }, 7500);
 
-    // 13s: ending
+    // 22s: ending
     const t3 = setTimeout(() => {
       onSpeakRef.current(29, "Thanks for your time in the call.", true);
-    }, 13000);
+    }, 22000);
 
-    // 17.5s: meeting ends
+    // 26s: meeting ends
     const t4 = setTimeout(() => {
        onCompleteRef.current();
-    }, 17500); 
+    }, 26000); 
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
