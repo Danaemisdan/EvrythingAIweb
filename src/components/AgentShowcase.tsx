@@ -130,6 +130,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
   const [hasInteracted, setHasInteracted] = useState(false);
   const hasInteractedRef          = useRef(false);
   const [safariClickCount, setSafariClickCount] = useState(0);
+  const [aiDeleteCount, setAiDeleteCount] = useState(0);
   
   const clear = () => { 
     if (timer.current) clearTimeout(timer.current); 
@@ -189,7 +190,15 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
       if (!app) return;
       
       clear(); // Stop impatient timers
-      const line = getRandomLine(DELETION_LINES);
+      
+      let line = DELETION_LINES[0];
+      if (aiDeleteCount === 1) {
+        line = DELETION_LINES[2];
+      } else if (aiDeleteCount > 1) {
+        line = DELETION_LINES[1];
+      }
+      setAiDeleteCount(prev => prev + 1);
+
       setAgentState("speaking");
       setSubtitle(line.text);
       speak(line.text, line.id, () => {
