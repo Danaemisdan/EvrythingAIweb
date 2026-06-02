@@ -18,35 +18,22 @@ import { AppStoreWindow } from "./AppStoreWindow";
 import { DaVinciWindow } from "./DaVinciWindow";
 import { useMediaQuery } from "../hooks/use-media-query";
 
-// ── TTS: tries pre-generated Kokoro/Edge audio ─────
 function useTTS() {
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const filterRef = useRef<BiquadFilterNode | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const speak = useCallback((text: string, idx: number, onEnd?: () => void, muffled: boolean = false) => {
-    // Try pre-generated audio
-    const src = `/audio/demo-${idx}.mp3`;
-    const audio = new Audio(src);
-    audioRef.current = audio;
-    audio.crossOrigin = "anonymous";
-
-    if (muffled) {
-      if (!audioCtxRef.current) {
-        // @ts-ignore
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        audioCtxRef.current = new AudioContextClass();
-        filterRef.current = audioCtxRef.current.createBiquadFilter();
-        // Bandpass gives a better telephone/muffled effect while keeping it legible
-        filterRef.current.type = "bandpass";
-        filterRef.current.frequency.value = 1500;
-        filterRef.current.Q.value = 1.0;
-        filterRef.current.connect(audioCtxRef.current.destination);
-      }
-      
-      const source = audioCtxRef.current.createMediaElementSource(audio);
-      source.connect(filterRef.current!);
+  // Initialize a single audio element on mount for iOS Safari compatibility
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.crossOrigin = "anonymous";
     }
+  }, []);
+
+  const speak = useCallback((text: string, idx: number, onEnd?: () => void, muffled: boolean = false) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.src = `/audio/demo-${idx}.mp3`;
 
     audio.onended = () => onEnd?.();
     audio.onerror = () => {
@@ -61,7 +48,10 @@ function useTTS() {
   }, []);
 
   const stop = useCallback(() => {
-    audioRef.current?.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
   }, []);
 
   return { speak, stop };
@@ -597,15 +587,6 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             <MacOSMenuBar appName="Finder" />
           </motion.div>
         )}
-        {showDesktop && isMobile && (
-          <motion.div
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="absolute top-0 left-0 right-0 z-[9998]"
-          >
-            <IOSStatusBar />
-          </motion.div>
-        )}
       </AnimatePresence>
 
       {/* Agent face */}
@@ -617,7 +598,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
         dragMomentum={false}
         animate={active 
           ? showDesktop 
-            ? { scale: 0.6, y: "-42vh" } 
+            ? isMobile ? { scale: 0.45, y: "-36vh" } : { scale: 0.6, y: "-42vh" }
             : { scale: 1.05 } 
           : { scale: 1 }}
         transition={{ type: "spring", stiffness: 180, damping: 24 }}
@@ -662,7 +643,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             className={`absolute z-[9998] px-5 py-3 rounded-2xl border border-white/[0.15] text-white/95 font-medium tracking-wide text-center
               ${
                 showDesktop
-                  ? "top-auto bottom-[88px] md:bottom-auto md:top-40 left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
+                  ? isMobile ? "top-[18vh] left-1/2 -translate-x-1/2 w-[92vw] text-sm" : "top-auto bottom-[88px] md:bottom-auto md:top-40 left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
                   : "relative mt-4 max-w-[80vw] md:max-w-[500px] text-base md:text-lg"
               }`}
             style={{
