@@ -72,7 +72,7 @@ export function LinkedInAutomation({
               {/* Automated message typing */}
               {step >= 3 && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.9, originBottomLeft: 1 }}
+                  initial={{ opacity: 0, scale: 0.9, transformOrigin: "bottom right" }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="bg-[#0A66C2] text-white p-3 rounded-lg rounded-br-sm self-end max-w-[85%] text-[13px] leading-relaxed shadow-sm"
                 >
@@ -81,7 +81,7 @@ export function LinkedInAutomation({
               )}
               {step >= 4 && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.9, originBottomRight: 1 }}
+                  initial={{ opacity: 0, scale: 0.9, transformOrigin: "bottom left" }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="bg-[#F3F2EF] text-gray-800 p-3 rounded-lg rounded-bl-sm self-start max-w-[85%] text-[13px] leading-relaxed shadow-sm"
                 >

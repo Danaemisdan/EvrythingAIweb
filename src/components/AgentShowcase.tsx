@@ -351,7 +351,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
                       setTimeout(() => setSafariPhase(3), 1500); 
                    });
                 }} 
-                onSpeak={(idx, text, muffled) => {
+                onSpeak={(idx: number, text: string, muffled?: boolean) => {
                   setAgentState("speaking");
                   setSubtitle(text);
                   speak(text, idx, () => {
@@ -365,7 +365,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             {safariPhase === 3 && (
               <GoogleMeetMockup 
                 onComplete={() => setSafariPhase(4)} 
-                onSpeak={(idx, text, muffled) => {
+                onSpeak={(idx: number, text: string, muffled?: boolean) => {
                   setAgentState("speaking");
                   if (idx === 28) {
                     setSubtitle("No worries, I can take notes, transcribe the whole thing and also deal on your behalf.");
@@ -387,7 +387,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
                   setSafariPhase(0);
                   setTimeout(() => setMailPhase(1), 500); // Wait for Safari to close
                 }} 
-                onSpeak={(idx, text, muffled) => {
+                onSpeak={(idx: number, text: string, muffled?: boolean) => {
                   setAgentState("speaking");
                   if (idx === 31) {
                     setSubtitle("I am also gonna mail them this. And yes, I will work for you to complete this contract.");
