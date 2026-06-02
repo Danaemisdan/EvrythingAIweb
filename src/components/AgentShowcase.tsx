@@ -37,12 +37,34 @@ function useTTS() {
 
     audio.onended = () => onEnd?.();
     audio.onerror = () => {
-      // Fallback: estimate time based on word count
-      const words = text.split(" ").length;
-      const duration = Math.max(2000, words * 300 + 500);
-      setTimeout(() => {
-        onEnd?.();
-      }, duration);
+      // Fallback: Use browser's built-in speech synthesis
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Find a decent voice (prefer Google US English or similar)
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.name.includes('Google') && v.lang === 'en-US') || voices[0];
+        if (preferredVoice) utterance.voice = preferredVoice;
+        
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        
+        utterance.onend = () => onEnd?.();
+        utterance.onerror = () => {
+           // Ultimate fallback if synthesis fails
+           const words = text.split(" ").length;
+           const duration = Math.max(2000, words * 300 + 500);
+           setTimeout(() => onEnd?.(), duration);
+        };
+        
+        window.speechSynthesis.speak(utterance);
+      } else {
+        const words = text.split(" ").length;
+        const duration = Math.max(2000, words * 300 + 500);
+        setTimeout(() => {
+          onEnd?.();
+        }, duration);
+      }
     }; 
     audio.play().catch(() => audio.onerror?.(new Event("error")));
   }, []);
@@ -51,6 +73,11 @@ function useTTS() {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
   }, []);
 
