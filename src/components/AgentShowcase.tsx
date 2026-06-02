@@ -336,8 +336,8 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
               if (safariPhase === 1) {
                 if (agentState === "speaking") return;
                 setAgentState("speaking");
-                setSubtitle("Hold up bro, I got this.");
-                speak("Hold up bro, I got this.", 1, () => {
+                setSubtitle("Hold up bro, I got this. Watch a master at work.");
+                speak("Hold up bro, I got this. Watch a master at work.", 24, () => {
                   setAgentState("idle");
                   setSubtitle("");
                   setSafariPhase(2);
@@ -643,7 +643,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             className={`absolute z-[9998] px-5 py-3 rounded-2xl border border-white/[0.15] text-white/95 font-medium tracking-wide text-center
               ${
                 showDesktop
-                  ? isMobile ? "top-[18vh] left-1/2 -translate-x-1/2 w-[92vw] text-sm" : "top-auto bottom-[88px] md:bottom-auto md:top-40 left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
+                  ? isMobile ? "top-[26vh] left-1/2 -translate-x-1/2 w-[92vw] text-sm" : "top-[22vh] left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
                   : "relative mt-4 max-w-[80vw] md:max-w-[500px] text-base md:text-lg"
               }`}
             style={{
