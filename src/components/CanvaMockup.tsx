@@ -60,9 +60,9 @@ export function CanvaMockup({
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#F2F4F7] rounded-b-xl border-t border-white/10">
+    <div className="relative w-full h-[90vh] md:h-full overflow-hidden bg-[#F2F4F7] rounded-b-xl border-t border-white/10">
        {/* Use the provided Canva HTML clone via iframe */}
-       <iframe ref={iframeRef} src="/canva/index.html" className="absolute inset-0 w-full h-full border-none pointer-events-none z-0" />
+       <iframe ref={iframeRef} src="/canva/index.html" className="absolute inset-0 w-[1200px] md:w-full h-full border-none pointer-events-none z-0 origin-top-left transform scale-[0.35] md:scale-100" />
 
        {/* Simulated in-canvas document typing via absolute overlay */}
        {step >= 3 && rect && (

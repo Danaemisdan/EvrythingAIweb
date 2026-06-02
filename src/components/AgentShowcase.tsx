@@ -145,6 +145,9 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
   }, []);
 
   const handleAppClick = useCallback((id: string) => {
+    // If any phase is active, block interaction
+    if (safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0) return;
+    
     handleInteraction();
     
     if (id === "safari") {
@@ -467,11 +470,18 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
               onComplete={() => {
                  setDavinciPhase(0);
                  setAgentState("speaking");
-                 setSubtitle("I can even submit and iterate multiple times with your client so that he gets the best video possible... and done. What's next boss? Do you wanna try interacting with something else on the dock?");
+                 setSubtitle("I can even submit and iterate multiple times with your client...");
                  speak("I can even submit and iterate multiple times with your client so that he gets the best video possible... and done. What's next boss? Do you wanna try interacting with something else on the dock?", 38, () => {
                      setAgentState("idle");
                      setSubtitle("");
                  });
+                 // Chunk subtitle visually
+                 setTimeout(() => {
+                     setSubtitle("...so that he gets the best video possible... and done.");
+                 }, 3000);
+                 setTimeout(() => {
+                     setSubtitle("What's next boss? Do you wanna try interacting with something else on the dock?");
+                 }, 6000);
               }}
            />
         )}
@@ -573,7 +583,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className={`absolute z-[999] px-8 py-4 rounded-3xl border border-white/[0.2] bg-black/60 text-white/90 text-lg font-medium tracking-wide text-center shadow-2xl ${showDesktop ? "top-8 md:top-32 left-1/2 transform -translate-x-1/2 w-[90vw] md:w-auto" : "mt-10 relative"}`}
+            className={`absolute z-[999] px-6 md:px-8 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-white/[0.2] bg-black/60 text-white/90 text-[15px] md:text-lg font-medium tracking-wide text-center shadow-2xl ${showDesktop ? "top-64 md:top-32 left-1/2 transform -translate-x-1/2 w-[90vw] md:w-auto" : "mt-6 relative"}`}
             style={{
               backdropFilter: "blur(20px)",
               fontFamily: "-apple-system,'SF Pro Display','SF Pro Text',sans-serif",

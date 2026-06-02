@@ -19,12 +19,12 @@ export function AppStoreWindow({ onComplete }: { onComplete: () => void }) {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: step >= 5 ? 0 : 1, scale: step >= 5 ? 0.95 : 1, y: step >= 5 ? -20 : 0 }}
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[850px] h-[600px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[98vw] md:w-[850px] h-[90vh] md:h-[600px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
     >
       {/* Sidebar & Content Layout */}
       <div className="flex flex-1 h-full">
          {/* Sidebar */}
-         <div className="w-[220px] bg-[#2D2D2D]/50 border-r border-black/50 p-4 flex flex-col gap-2">
+         <div className="hidden md:flex w-[220px] bg-[#2D2D2D]/50 border-r border-black/50 p-4 flex-col gap-2">
             <div className="flex gap-2 mb-6 mt-1">
               <div className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]"></div>
               <div className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]"></div>
@@ -47,16 +47,16 @@ export function AppStoreWindow({ onComplete }: { onComplete: () => void }) {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full">
                     <h2 className="text-2xl font-bold text-white mb-6">Results for "DaVinci Resolve"</h2>
                     
-                    <div className="flex gap-6 items-start bg-black/20 p-6 rounded-2xl border border-white/5">
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center md:items-start bg-black/20 p-4 md:p-6 rounded-2xl border border-white/5">
                         {/* App Icon Mock */}
-                        <div className="w-32 h-32 rounded-[28px] bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg relative overflow-hidden flex-shrink-0">
+                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-[24px] md:rounded-[28px] bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg relative overflow-hidden flex-shrink-0">
                             <div className="absolute inset-0 bg-black/20"></div>
-                            <img src="/app-icons/davinci.png" className="absolute inset-0 w-full h-full object-cover z-10" />
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4d/DaVinci_Resolve_Studio.png" className="absolute inset-0 w-full h-full object-cover z-10 p-2" />
                         </div>
                         
-                        <div className="flex-1 pt-2">
-                            <h1 className="text-3xl font-bold text-white tracking-tight mb-1">DaVinci Resolve</h1>
-                            <p className="text-gray-400 text-lg mb-4">Hollywood's Professional Editor</p>
+                        <div className="flex-1 flex flex-col items-center md:items-start pt-2 text-center md:text-left">
+                            <h1 className="text-xl md:text-3xl font-bold text-white tracking-tight mb-1">DaVinci Resolve</h1>
+                            <p className="text-gray-400 text-sm md:text-lg mb-4">Hollywood's Professional Editor</p>
                             
                             <div className="flex items-center gap-4">
                                 {step < 3 && <div className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-1.5 rounded-full text-sm cursor-pointer shadow-lg shadow-blue-500/20">GET</div>}
