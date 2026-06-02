@@ -15,12 +15,12 @@ export function SafariWindow({ url, children, onClose, className = "" }: SafariW
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className={`absolute z-[60] flex flex-col rounded-xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-3xl ${className}`}
+      drag
+      dragMomentum={false}
+      className={`absolute z-[60] flex flex-col rounded-xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-3xl inset-x-0 mx-auto ${className}`}
       style={{
         /* Mobile: start below iOS status bar (~40px), leave room for dock (~90px) */
         top: "env(safe-area-inset-top, 40px)",
-        left: "50%",
-        transform: "translateX(-50%)",
         width: "min(98vw, 900px)",
         /* Mobile: fill between status bar and dock. Desktop: 600px */
         height: "min(calc(100vh - 140px), 600px)",

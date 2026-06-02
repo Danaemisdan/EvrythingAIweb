@@ -280,18 +280,11 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
   }, [active, hasWokenUp, speak, stop, end]);
 
   useEffect(() => {
-    if (isVisible) {
-      if (!hasWokenUp && !active) {
-        const t = setTimeout(() => {
-          wake();
-        }, 2000);
-        return () => clearTimeout(t);
-      }
-    } else {
+    if (!isVisible) {
       // Reset agent to sleeping when user scrolls away
       end();
     }
-  }, [isVisible, hasWokenUp, active, wake]);
+  }, [isVisible, end]);
 
   useEffect(() => () => { clear(); stop(); }, [stop]);
 
@@ -549,7 +542,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="absolute top-0 left-0 right-0 z-50"
+            className="absolute top-0 left-0 right-0 z-[9998]"
           >
             <MacOSMenuBar appName="Finder" />
           </motion.div>
@@ -558,7 +551,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="absolute top-0 left-0 right-0 z-50"
+            className="absolute top-0 left-0 right-0 z-[9998]"
           >
             <IOSStatusBar />
           </motion.div>
@@ -567,7 +560,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
 
       {/* Agent face */}
       <motion.div
-        className="relative z-[60]"
+        className="relative z-[9999]"
         drag={showDesktop}
         dragConstraints={{ left: -500, right: 500, top: -240, bottom: 200 }}
         dragElastic={0.2}
@@ -585,13 +578,24 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
       >
         <AgentFace state={agentState} size={210} />
 
-        {/* Pulse ring */}
+        {/* Pulse ring & Wake Text */}
         <AnimatePresence>
           {!active && (
             <motion.div key="r" className="absolute rounded-[2.5rem] border border-white/[0.08]"
               style={{ inset: -12 }}
               animate={{ opacity: [0, 0.7, 0], scale: [0.93, 1.09, 0.93] }}
               transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }} />
+          )}
+          {!active && (
+             <motion.div
+               key="wake-text"
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               exit={{ opacity: 0 }}
+               className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-white/50 text-sm font-medium tracking-wide whitespace-nowrap"
+             >
+               {isMobile ? "Tap to wake" : "Click to wake"}
+             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
@@ -605,10 +609,10 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
-            className={`absolute z-[999] px-5 py-3 rounded-2xl border border-white/[0.15] text-white/95 font-medium tracking-wide text-center
+            className={`absolute z-[9998] px-5 py-3 rounded-2xl border border-white/[0.15] text-white/95 font-medium tracking-wide text-center
               ${
                 showDesktop
-                  ? "bottom-[88px] md:bottom-24 left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
+                  ? "top-auto bottom-[88px] md:bottom-auto md:top-40 left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
                   : "relative mt-4 max-w-[80vw] md:max-w-[500px] text-base md:text-lg"
               }`}
             style={{
