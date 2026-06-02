@@ -367,7 +367,12 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
                 onComplete={() => setSafariPhase(4)} 
                 onSpeak={(idx, text, muffled) => {
                   setAgentState("speaking");
-                  setSubtitle(text);
+                  if (idx === 28) {
+                    setSubtitle("No worries, I can take notes, transcribe the whole thing and also deal on your behalf.");
+                    setTimeout(() => setSubtitle("Since you want 4 videos edited by this month, we would charge you $1,000 for that."), 4500);
+                  } else {
+                    setSubtitle(text);
+                  }
                   speak(text, idx, () => {
                     setAgentState("idle");
                     setSubtitle("");
@@ -384,7 +389,12 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
                 }} 
                 onSpeak={(idx, text, muffled) => {
                   setAgentState("speaking");
-                  setSubtitle(text);
+                  if (idx === 31) {
+                    setSubtitle("I am also gonna mail them this. And yes, I will work for you to complete this contract.");
+                    setTimeout(() => setSubtitle("Don't worry, I'm gonna make the money fall in your bank account."), 4500);
+                  } else {
+                    setSubtitle(text);
+                  }
                   speak(text, idx, () => {
                     setAgentState("idle");
                     setSubtitle("");
@@ -452,11 +462,14 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
               setTimeout(() => {
                   setDavinciPhase(1);
                   setAgentState("speaking");
-                  setSubtitle("I do your work remember? I can edit videos, make you websites, even apply for jobs for you.");
-                  speak("I do your work remember? I can edit videos, make you websites, even apply for jobs for you.", 35, () => {
+                  setSubtitle("I do your work remember?");
+                  speak("I do your work remember? I can edit videos, make you websites, even apply for jobs for you.", 37, () => {
                      setAgentState("idle");
                      setSubtitle("");
                   });
+                  setTimeout(() => {
+                      setSubtitle("I can edit videos, make you websites, even apply for jobs for you.");
+                  }, 1500);
               }, 2000);
             }}
           />
@@ -583,9 +596,10 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className={`absolute z-[999] px-6 md:px-8 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-white/[0.2] bg-black/60 text-white/90 text-[15px] md:text-lg font-medium tracking-wide text-center shadow-2xl ${showDesktop ? "top-64 md:top-32 left-1/2 transform -translate-x-1/2 w-[90vw] md:w-auto" : "mt-6 relative"}`}
+            className={`absolute z-[999] px-6 md:px-8 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-white/[0.15] bg-black/40 text-white/95 text-[15px] md:text-lg font-medium tracking-wide text-center shadow-2xl ${showDesktop ? "top-[160px] md:top-32 left-1/2 transform -translate-x-1/2 w-[92vw] md:w-auto" : "mt-6 relative"}`}
             style={{
-              backdropFilter: "blur(20px)",
+              backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
               fontFamily: "-apple-system,'SF Pro Display','SF Pro Text',sans-serif",
             }}
           >
@@ -612,7 +626,11 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             className="absolute bottom-6 z-50 w-full flex justify-center"
             onClick={handleInteraction}
           >
-            <IOSDock apps={dockApps} onAppClick={handleAppClick} />
+            <IOSDock 
+              apps={dockApps} 
+              onAppClick={handleAppClick} 
+              activeAppId={safariPhase > 0 ? "safari" : mailPhase > 0 ? "mail" : appStorePhase > 0 ? "appstore" : davinciPhase > 0 ? "davinci" : null}
+            />
           </motion.div>
         )}
       </AnimatePresence>

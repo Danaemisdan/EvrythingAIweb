@@ -24,15 +24,26 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[98vw] md:w-[95vw] h-[90vh] md:h-[85vh] bg-[#141414] rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-gray-800 flex flex-col overflow-hidden z-[80]"
+      className="absolute top-[40px] md:top-1/2 left-1/2 transform -translate-x-1/2 md:-translate-y-1/2 w-[98vw] md:w-[95vw] h-[85vh] bg-[#141414] rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-gray-800 flex flex-col overflow-hidden z-[80]"
     >
       {/* Top Menu */}
       <div className="h-8 bg-[#1A1A1A] border-b border-black flex items-center px-4 justify-between select-none text-xs text-gray-400">
         <div className="flex items-center gap-4">
-            <span className="text-white font-semibold">DaVinci Resolve</span>
-            <span>File</span><span>Edit</span><span>Trim</span><span>Timeline</span><span>Clip</span><span>Mark</span><span>View</span><span>Playback</span>
+            <span className="text-white font-bold">DaVinci Resolve</span>
+            <div className="hidden md:flex gap-4">
+              <span>File</span>
+              <span>Edit</span>
+              <span>Trim</span>
+              <span>Timeline</span>
+              <span>Clip</span>
+              <span>Mark</span>
+              <span>View</span>
+              <span>Playback</span>
+            </div>
         </div>
-        <div>Momentum_Campaign_v1.drp</div>
+        <div className="hidden md:flex items-center gap-4">
+           <span>Momentum_Campaign</span>
+        </div>
       </div>
 
       {/* Main Workspace */}

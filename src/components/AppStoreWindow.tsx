@@ -19,7 +19,7 @@ export function AppStoreWindow({ onComplete }: { onComplete: () => void }) {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: step >= 5 ? 0 : 1, scale: step >= 5 ? 0.95 : 1, y: step >= 5 ? -20 : 0 }}
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[98vw] md:w-[850px] h-[90vh] md:h-[600px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
+      className="absolute top-[40px] md:top-1/2 left-1/2 transform -translate-x-1/2 md:-translate-y-1/2 w-[98vw] md:w-[850px] h-[85vh] md:h-[600px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
     >
       {/* Sidebar & Content Layout */}
       <div className="flex flex-1 h-full">
