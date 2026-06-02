@@ -4,7 +4,7 @@
 
 First, run the development server:
 
-```bash
+```basha
 npm run dev
 # or
 yarn dev
