@@ -35,8 +35,12 @@ function useTTS() {
 
     audio.src = `/audio/demo-${idx}.mp3`;
 
+    let errorHandled = false;
+    
     audio.onended = () => onEnd?.();
     audio.onerror = () => {
+      if (errorHandled) return;
+      errorHandled = true;
       // Fallback: Use browser's built-in speech synthesis
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(text);
@@ -187,6 +191,63 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
     if (interactionTimer.current) clearTimeout(interactionTimer.current);
   };
 
+  const end = useCallback(() => { 
+    clear(); 
+    stop(); 
+    setAgentState("sleeping"); 
+    setSubtitle("");
+    setHasWokenUp(false);
+    setActive(false);
+    setShowDesktop(false);
+    setSafariPhase(0);
+  }, [clear, stop]);
+
+  const startIdleTimeouts = useCallback(() => {
+    if (interactionTimer.current) clearTimeout(interactionTimer.current);
+    hasInteractedRef.current = false;
+    
+    // Level 1: Give the user 10-15 seconds to interact
+    const delay1 = getRandomDelay(10, 15);
+    interactionTimer.current = setTimeout(() => {
+      if (!hasInteractedRef.current) {
+        const l1 = getRandomLine(IMPATIENT_LEVEL_1);
+        setAgentState("speaking");
+        setSubtitle(l1.text);
+        speak(l1.text, l1.id, () => {
+          setAgentState("idle");
+          setSubtitle("");
+
+          // Level 2: Wait 10-15 seconds
+          const delay2 = getRandomDelay(10, 15);
+          interactionTimer.current = setTimeout(() => {
+            if (!hasInteractedRef.current) {
+              const l2 = getRandomLine(IMPATIENT_LEVEL_2);
+              setAgentState("speaking");
+              setSubtitle(l2.text);
+              speak(l2.text, l2.id, () => {
+                setAgentState("idle");
+                setSubtitle("");
+
+                // Level 3 (Sleep): Wait 15-20 seconds
+                const delay3 = getRandomDelay(15, 20);
+                interactionTimer.current = setTimeout(() => {
+                  if (!hasInteractedRef.current) {
+                    const l3 = getRandomLine(IMPATIENT_LEVEL_3);
+                    setAgentState("speaking");
+                    setSubtitle(l3.text);
+                    speak(l3.text, l3.id, () => {
+                      end();
+                    });
+                  }
+                }, delay3);
+              });
+            }
+          }, delay2);
+        });
+      }
+    }, delay1);
+  }, [speak, end]);
+
   const triggerAngrySequence = useCallback(() => {
      if (angryTriggeredRef.current) return;
      angryTriggeredRef.current = true;
@@ -207,8 +268,8 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
      
      const inTask = safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0;
      const calmText = inTask 
-       ? "uhrm uhrm... Yeah where were we? Ah yes, let me just finish this."
-       : "uhrm uhrm... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+       ? "Uhh... uhh... Yeah where were we? Ah yes, let me just finish this."
+       : "Uhh... uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
      
      rawSpeak(angryText1, 999, () => {
          setSubtitle("");
@@ -218,16 +279,21 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
              
              setTimeout(() => {
                  setAgentState("speaking");
-                 const calmText = "uhrm uhrm... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+                 const calmText = inTask 
+                   ? "Uhh... uhh... Yeah where were we? Ah yes, let me just finish this."
+                   : "Uhh... uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
                  setSubtitle(calmText);
                  speak(calmText, 999, () => {
                     setAgentState("idle");
                     setSubtitle("");
+                    if (!inTask) {
+                       startIdleTimeouts();
+                    }
                  });
              }, 1500);
          }, 1000);
      });
-  }, [clear, stop, speak]);
+  }, [clear, stop, speak, safariPhase, mailPhase, appStorePhase, davinciPhase, startIdleTimeouts]);
 
   useEffect(() => {
     if (active) {
@@ -338,16 +404,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
     }
   }, [clear, handleInteraction, speak, dockApps]);
 
-  const end = useCallback(() => { 
-    clear(); 
-    stop(); 
-    setAgentState("sleeping"); 
-    setSubtitle("");
-    setHasWokenUp(false);
-    setActive(false);
-    setShowDesktop(false);
-    setSafariPhase(0);
-  }, [clear, stop]);
+
 
   const wake = useCallback(() => {
     if (active || hasWokenUp) return;
@@ -381,53 +438,15 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                 setAgentState("idle");
                 setSubtitle("");
 
-                // Level 1: Give the user 10-15 seconds to interact
-                const delay1 = getRandomDelay(10, 15);
-                interactionTimer.current = setTimeout(() => {
-                  if (!hasInteractedRef.current) {
-                    const l1 = getRandomLine(IMPATIENT_LEVEL_1);
-                    setAgentState("speaking");
-                    setSubtitle(l1.text);
-                    speak(l1.text, l1.id, () => {
-                      setAgentState("idle");
-                      setSubtitle("");
-
-                      // Level 2: Wait 10-15 seconds
-                      const delay2 = getRandomDelay(10, 15);
-                      interactionTimer.current = setTimeout(() => {
-                        if (!hasInteractedRef.current) {
-                          const l2 = getRandomLine(IMPATIENT_LEVEL_2);
-                          setAgentState("speaking");
-                          setSubtitle(l2.text);
-                          speak(l2.text, l2.id, () => {
-                            setAgentState("idle");
-                            setSubtitle("");
-
-                            // Level 3 (Sleep): Wait 15-20 seconds
-                            const delay3 = getRandomDelay(15, 20);
-                            interactionTimer.current = setTimeout(() => {
-                              if (!hasInteractedRef.current) {
-                                const l3 = getRandomLine(IMPATIENT_LEVEL_3);
-                                setAgentState("speaking");
-                                setSubtitle(l3.text);
-                                speak(l3.text, l3.id, () => {
-                                  end();
-                                });
-                              }
-                            }, delay3);
-                          });
-                        }
-                      }, delay2);
-                    });
-                  }
-                }, delay1);
+                // Start the idle waiting cycle
+                startIdleTimeouts();
               });
             }, 2500);
           });
         });
       });
     }, 2000);
-  }, [active, hasWokenUp, speak, stop, end]);
+  }, [active, hasWokenUp, speak, stop, end, startIdleTimeouts]);
 
   useEffect(() => {
     if (!isVisible) {
