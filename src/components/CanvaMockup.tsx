@@ -72,11 +72,11 @@ export function CanvaMockup({
               top: rect.top,
               width: rect.width,
               height: rect.height,
-              padding: '60px',
+              padding: '30px',
             }}
           >
-            <h1 className="text-[32px] font-serif text-white tracking-tight mb-8 mt-4">VIDEO EDITING CONTRACT</h1>
-            <div className="flex flex-col gap-6 text-gray-300 text-[16px] leading-relaxed font-sans">
+            <h1 className="text-[32px] font-serif text-white tracking-tight mb-4 mt-2">VIDEO EDITING CONTRACT</h1>
+            <div className="flex flex-col gap-4 text-gray-300 text-[16px] leading-relaxed font-sans">
                 <p><strong className="text-white">Client:</strong> John Doe, VP Marketing<br/>
                 <strong className="text-white">Contractor:</strong> Momentum OS</p>
                 <div className="h-px w-full bg-white/20"></div>

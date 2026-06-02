@@ -80,20 +80,21 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
                  <div className="h-8 flex items-center justify-center text-xs text-gray-400">Timeline - Momentum_Campaign</div>
                  <div className="flex-1 p-2 flex items-center justify-center">
                      <div className="w-full aspect-video bg-black border border-gray-800 relative overflow-hidden flex items-center justify-center">
-                         {/* Fake video playing effect */}
+                         {/* Fake video playing effect with Nyan Cat */}
                          <motion.div 
                            className="absolute inset-0 bg-gradient-to-br from-[#111] via-purple-900/40 to-[#000] mix-blend-screen"
                            animate={{ filter: ['hue-rotate(0deg)', 'hue-rotate(15deg)'] }}
                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                          />
-                         <div className="flex flex-col items-center justify-center z-10 mix-blend-screen bg-black/40 px-12 py-6 rounded border border-white/10 backdrop-blur-md">
-                             <h2 className="text-white text-5xl font-black uppercase tracking-[0.3em] font-sans">Momentum</h2>
+                         <img src="https://media.giphy.com/media/sIIhZliB2McAo/giphy.gif" alt="Nyan Cat" className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-60 z-10" />
+                         <div className="flex flex-col items-center justify-center z-20 mix-blend-screen bg-black/40 px-12 py-6 rounded border border-white/10 backdrop-blur-md">
+                             <h2 className="text-white text-3xl md:text-5xl font-black uppercase tracking-[0.3em] font-sans">Momentum</h2>
                              <div className="h-px w-full bg-white/30 my-3"></div>
-                             <span className="text-white/80 text-xs tracking-[0.5em] uppercase font-light">Cinematic Promo // Q3</span>
+                             <span className="text-white/80 text-[10px] md:text-xs tracking-[0.5em] uppercase font-light">Cinematic Promo // Q3</span>
                          </div>
                          {/* Cinematic Bars */}
-                         <div className="absolute top-0 left-0 right-0 h-[12%] bg-black z-20 shadow-[0_4px_20px_rgba(0,0,0,0.8)]"></div>
-                         <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-black z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.8)]"></div>
+                         <div className="absolute top-0 left-0 right-0 h-[12%] bg-black z-30 shadow-[0_4px_20px_rgba(0,0,0,0.8)]"></div>
+                         <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-black z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.8)]"></div>
                      </div>
                  </div>
                  <div className="h-10 flex items-center justify-center gap-4 text-gray-300">
@@ -103,8 +104,8 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
          </div>
       </div>
 
-      {/* Timeline Panel (Bottom) — hidden on very small screens */}
-      <div className="hidden sm:flex h-[200px] md:h-[250px] bg-[#1A1A1A] border-t border-black flex-col">
+      {/* Timeline Panel (Bottom) — visible on all screens */}
+      <div className="flex h-[150px] md:h-[250px] bg-[#1A1A1A] border-t border-black flex-col">
          <div className="h-8 bg-[#242424] flex items-center px-4 justify-between border-b border-black">
              <div className="text-xs text-gray-300 flex gap-4">
                  <span className="text-white">Edit</span><span>Color</span><span>Fairlight</span><span>Deliver</span>

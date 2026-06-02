@@ -472,8 +472,8 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
                 // Wait 2 seconds and auto-continue as requested
                 setTimeout(() => {
                     setAgentState("speaking");
-                    setSubtitle("Okay, we don't have a video editing tool? Okay, hold on, no worries.");
-                    speak("Okay, we don't have a video editing tool? Okay, hold on, no worries.", 34, () => {
+                    setSubtitle("Hold on I know you wanna sleep lemme do the work for you too boss");
+                    speak("Hold on I know you wanna sleep lemme do the work for you too boss", 999, () => {
                         setAgentState("idle");
                         setSubtitle("");
                         
@@ -652,7 +652,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
             className={`absolute z-[9998] px-5 py-3 rounded-2xl border border-white/[0.15] text-white/95 font-medium tracking-wide text-center
               ${
                 showDesktop
-                  ? isMobile ? "top-[26vh] left-1/2 -translate-x-1/2 w-[92vw] text-sm" : "top-[22vh] left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
+                  ? isMobile ? "top-[24vh] left-1/2 -translate-x-1/2 w-[92vw] text-sm" : "top-[20vh] left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
                   : "relative mt-4 max-w-[80vw] md:max-w-[500px] text-base md:text-lg"
               }`}
             style={{

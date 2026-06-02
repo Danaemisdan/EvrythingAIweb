@@ -41,10 +41,10 @@ export function LinkedInAutomation({
        onSpeakRef.current(26, "Boom. They replied. Time to close this.");
     }, 12000);
 
-    // 17.5s: Complete
+    // 19s: Complete
     const t5 = setTimeout(() => {
        onCompleteRef.current();
-    }, 17500);
+    }, 19000);
 
     return () => {
       clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5);
