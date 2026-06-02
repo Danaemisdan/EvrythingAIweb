@@ -125,7 +125,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
   const [mailPhase, setMailPhase] = useState<number>(0);
   const [appStorePhase, setAppStorePhase] = useState<number>(0);
   const [davinciPhase, setDavinciPhase] = useState<number>(0);
-  const { speak, stop }           = useTTS();
+  const { speak: rawSpeak, stop: rawStop } = useTTS();
   const timer                     = useRef<NodeJS.Timeout | null>(null);
   const interactionTimer          = useRef<NodeJS.Timeout | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -134,7 +134,23 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
   const [aiDeleteCount, setAiDeleteCount] = useState(0);
   const [isAngry, setIsAngry] = useState(false);
   const angryTriggeredRef = useRef(false);
+  const isAngryRef = useRef(false);
   
+  const speak = useCallback((text: string, idx: number, onDone?: () => void, muffled?: boolean) => {
+    const attempt = () => {
+      if (isAngryRef.current) {
+        setTimeout(attempt, 500);
+      } else {
+        rawSpeak(text, idx, onDone, muffled);
+      }
+    };
+    attempt();
+  }, [rawSpeak]);
+
+  const stop = useCallback(() => {
+    rawStop();
+  }, [rawStop]);
+
   useEffect(() => {
     onAgentActive?.(active);
   }, [active, onAgentActive]);
@@ -149,9 +165,10 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
      angryTriggeredRef.current = true;
      
      clear(); 
-     stop();
+     rawStop();
 
      setIsAngry(true);
+     isAngryRef.current = true;
      setAgentState("speaking");
      
      try {
@@ -161,10 +178,16 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
      const angryText1 = "Why are you scrolling? You woke me up for what? To scroll past me? Just stay here and see what I can do..!";
      setSubtitle(angryText1);
      
-     speak(angryText1, 999, () => {
+     const inTask = safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0;
+     const calmText = inTask 
+       ? "uhrm uhrm... Yeah where were we? Ah yes, let me just finish this."
+       : "uhrm uhrm... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+     
+     rawSpeak(angryText1, 999, () => {
          setSubtitle("");
          setTimeout(() => {
              setIsAngry(false);
+             isAngryRef.current = false;
              
              setTimeout(() => {
                  setAgentState("speaking");
@@ -184,8 +207,8 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
        document.body.style.overflow = "hidden";
        
        const handleScrollAttempt = (e: WheelEvent | TouchEvent) => {
+          if (!showDesktop) return; // Do not trigger during intro
           if (angryTriggeredRef.current) return;
-          if (safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0) return;
           
           triggerAngrySequence();
        };
@@ -421,10 +444,11 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               <div 
                 className="w-full h-full bg-[#1E1E1E] flex flex-col cursor-pointer"
                 onClick={() => {
-                  if (agentState === "speaking") return;
+                  if (agentState === "speaking" || isAngryRef.current) return;
                   setAgentState("speaking");
                   setSubtitle("Hold up bro, I got this. Watch a master at work.");
                   speak("Hold up bro, I got this. Watch a master at work.", 24, () => {
+                    if (isAngryRef.current) return;
                     setAgentState("idle");
                     setSubtitle("");
                     setSafariPhase(2);
@@ -457,9 +481,11 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                    });
                 }} 
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
+                  if (isAngryRef.current) return;
                   setAgentState("speaking");
                   setSubtitle(text);
                   speak(text, idx, () => {
+                    if (isAngryRef.current) return;
                     setAgentState("idle");
                     setSubtitle("");
                   }, muffled);
@@ -471,14 +497,16 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               <GoogleMeetMockup 
                 onComplete={() => setSafariPhase(4)} 
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
+                  if (isAngryRef.current) return;
                   setAgentState("speaking");
                   if (idx === 28) {
                     setSubtitle("No worries, I can take notes, transcribe the whole thing and also deal on your behalf.");
-                    setTimeout(() => setSubtitle("Since you want 4 videos edited by this month, we would charge you $1,000 for that."), 4500);
+                    setTimeout(() => { if (!isAngryRef.current) setSubtitle("Since you want 4 videos edited by this month, we would charge you $1,000 for that."); }, 4500);
                   } else {
                     setSubtitle(text);
                   }
                   speak(text, idx, () => {
+                    if (isAngryRef.current) return;
                     setAgentState("idle");
                     setSubtitle("");
                   }, muffled);
@@ -493,14 +521,16 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                   setTimeout(() => setMailPhase(1), 500); // Wait for Safari to close
                 }} 
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
+                  if (isAngryRef.current) return;
                   setAgentState("speaking");
                   if (idx === 31) {
                     setSubtitle("I am also gonna mail them this. And yes, I will work for you to complete this contract.");
-                    setTimeout(() => setSubtitle("Don't worry, I'm gonna make the money fall in your bank account."), 4500);
+                    setTimeout(() => { if (!isAngryRef.current) setSubtitle("Don't worry, I'm gonna make the money fall in your bank account."); }, 4500);
                   } else {
                     setSubtitle(text);
                   }
                   speak(text, idx, () => {
+                    if (isAngryRef.current) return;
                     setAgentState("idle");
                     setSubtitle("");
                   }, muffled);
