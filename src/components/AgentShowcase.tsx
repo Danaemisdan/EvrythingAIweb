@@ -132,6 +132,8 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
   const hasInteractedRef          = useRef(false);
   const [safariClickCount, setSafariClickCount] = useState(0);
   const [aiDeleteCount, setAiDeleteCount] = useState(0);
+  const [isAngry, setIsAngry] = useState(false);
+  const angryTriggeredRef = useRef(false);
   
   useEffect(() => {
     onAgentActive?.(active);
@@ -141,6 +143,62 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
     if (timer.current) clearTimeout(timer.current); 
     if (interactionTimer.current) clearTimeout(interactionTimer.current);
   };
+
+  const triggerAngrySequence = useCallback(() => {
+     if (angryTriggeredRef.current) return;
+     angryTriggeredRef.current = true;
+     
+     clear(); 
+     stop();
+
+     setIsAngry(true);
+     setAgentState("speaking");
+     
+     try {
+       new Audio('/screech.mp3').play().catch(() => {});
+     } catch(e) {}
+     
+     const angryText1 = "Why are you scrolling? You woke me up for what? To scroll past me? Just stay here and see what I can do..!";
+     setSubtitle(angryText1);
+     
+     speak(angryText1, 999, () => {
+         setSubtitle("");
+         setTimeout(() => {
+             setIsAngry(false);
+             
+             setTimeout(() => {
+                 setAgentState("speaking");
+                 const calmText = "uhrm uhrm... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+                 setSubtitle(calmText);
+                 speak(calmText, 999, () => {
+                    setAgentState("idle");
+                    setSubtitle("");
+                 });
+             }, 1500);
+         }, 1000);
+     });
+  }, [clear, stop, speak]);
+
+  useEffect(() => {
+    if (active) {
+       document.body.style.overflow = "hidden";
+       
+       const handleScrollAttempt = (e: WheelEvent | TouchEvent) => {
+          if (angryTriggeredRef.current) return;
+          if (safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0) return;
+          
+          triggerAngrySequence();
+       };
+       
+       window.addEventListener('wheel', handleScrollAttempt, { passive: false });
+       window.addEventListener('touchmove', handleScrollAttempt, { passive: false });
+       return () => {
+         document.body.style.overflow = "";
+         window.removeEventListener('wheel', handleScrollAttempt);
+         window.removeEventListener('touchmove', handleScrollAttempt);
+       };
+    }
+  }, [active, safariPhase, mailPhase, appStorePhase, davinciPhase, triggerAngrySequence]);
 
   const handleInteraction = useCallback(() => {
     setHasInteracted(true);
@@ -611,9 +669,11 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
         dragElastic={0.2}
         dragMomentum={false}
         animate={active 
-          ? showDesktop 
-            ? isMobile ? { scale: 0.45, y: "-36vh" } : { scale: 0.6, y: "-42vh" }
-            : { scale: 1.05 } 
+          ? isAngry
+            ? { scale: 1.5, y: "0vh" }
+            : showDesktop 
+              ? isMobile ? { scale: 0.45, y: "-36vh" } : { scale: 0.6, y: "-42vh" }
+              : { scale: 1.05 } 
           : { scale: 1 }}
         transition={{ type: "spring", stiffness: 180, damping: 24 }}
         onClick={!active ? wake : undefined}
