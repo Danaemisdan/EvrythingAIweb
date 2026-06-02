@@ -24,9 +24,8 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="absolute inset-x-0 mx-auto w-[98vw] md:w-[95vw] bg-[#141414] rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-gray-800 flex flex-col overflow-hidden z-[80]"
+      className="absolute inset-0 m-auto w-[98vw] md:w-[95vw] bg-[#141414] rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-gray-800 flex flex-col overflow-hidden z-[80]"
       style={{
-        top: "env(safe-area-inset-top, 40px)",
         height: "min(calc(100vh - 140px), 85vh)",
       }}
     >

@@ -28,9 +28,8 @@ export function MailWindow({ onComplete, onSpeak }: { onComplete: () => void, on
     <motion.div 
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: step >= 5 ? 0 : 1, scale: step >= 5 ? 0.95 : 1, y: step >= 5 ? -20 : 0 }}
-      className="absolute inset-x-0 mx-auto w-[95vw] md:w-[700px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
+      className="absolute inset-0 m-auto w-[95vw] md:w-[700px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
       style={{
-        top: "env(safe-area-inset-top, 40px)",
         height: "min(calc(100vh - 140px), 550px)",
         boxShadow: "0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset"
       }}

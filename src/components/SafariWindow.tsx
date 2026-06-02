@@ -5,10 +5,11 @@ interface SafariWindowProps {
   url: string;
   children: ReactNode;
   onClose?: () => void;
+  onInteraction?: () => void;
   className?: string;
 }
 
-export function SafariWindow({ url, children, onClose, className = "" }: SafariWindowProps) {
+export function SafariWindow({ url, children, onClose, onInteraction, className = "" }: SafariWindowProps) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9, y: 50 }}
@@ -17,10 +18,9 @@ export function SafariWindow({ url, children, onClose, className = "" }: SafariW
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
       drag
       dragMomentum={false}
-      className={`absolute z-[60] flex flex-col rounded-xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-3xl inset-x-0 mx-auto ${className}`}
+      onPointerDown={onInteraction}
+      className={`absolute z-[60] flex flex-col rounded-xl overflow-hidden shadow-2xl border border-white/20 bg-white/5 backdrop-blur-3xl inset-0 m-auto ${className}`}
       style={{
-        /* Mobile: start below iOS status bar (~40px), leave room for dock (~90px) */
-        top: "env(safe-area-inset-top, 40px)",
         width: "min(98vw, 900px)",
         /* Mobile: fill between status bar and dock. Desktop: 600px */
         height: "min(calc(100vh - 140px), 600px)",

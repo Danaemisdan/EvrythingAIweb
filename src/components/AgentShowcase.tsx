@@ -342,6 +342,18 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
           <SafariWindow 
             url={safariPhase === 1 ? "" : safariPhase === 2 ? "linkedin.com/feed" : safariPhase === 3 ? "meet.google.com/abc-defg-hij" : "canva.com/design"}
             onClose={() => setSafariPhase(0)}
+            onInteraction={() => {
+              if (safariPhase === 1) {
+                if (agentState === "speaking") return;
+                setAgentState("speaking");
+                setSubtitle("Hold up bro, I got this.");
+                speak("Hold up bro, I got this.", 1, () => {
+                  setAgentState("idle");
+                  setSubtitle("");
+                  setSafariPhase(2);
+                });
+              }
+            }}
           >
             {safariPhase === 1 && (
               <div 
