@@ -30,21 +30,21 @@ export function LinkedInAutomation({
        onSpeakRef.current(25, "Target acquired. Sending a highly personalized, totally not AI-generated pitch.");
     }, 4500);
 
-    // 8.5s: Typing starts
+    // 9s: Typing starts
     const t3 = setTimeout(() => {
        setStep(3);
-    }, 8500);
+    }, 9000);
 
-    // 12s: Speak line 26, Prospect replies
+    // 13s: Speak line 26, Prospect replies
     const t4 = setTimeout(() => {
        setStep(4);
        onSpeakRef.current(26, "Boom. They replied. Time to close this.");
-    }, 12000);
+    }, 13000);
 
-    // 19s: Complete
+    // 20.5s: Complete
     const t5 = setTimeout(() => {
        onCompleteRef.current();
-    }, 19000);
+    }, 20500);
 
     return () => {
       clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5);

@@ -14,7 +14,7 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
         }
         return p + 2;
       });
-    }, 120);
+    }, 140);
 
     return () => clearInterval(interval);
   }, [onComplete]);

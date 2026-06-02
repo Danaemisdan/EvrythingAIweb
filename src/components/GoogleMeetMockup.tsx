@@ -21,20 +21,20 @@ export function GoogleMeetMockup({
       onSpeakRef.current(27, "Hey my boss is sleeping so I had to join in.", true);
     }, 1000);
 
-    // 6s: speak pitch
+    // 7.5s: speak pitch
     const t2 = setTimeout(() => {
       onSpeakRef.current(28, "Sure I'll edit the best video you'll ever see.", true);
-    }, 6000);
+    }, 7500);
 
-    // 11s: ending
+    // 13s: ending
     const t3 = setTimeout(() => {
       onSpeakRef.current(29, "Thanks for your time in the call.", true);
-    }, 11000);
+    }, 13000);
 
-    // 15s: meeting ends
+    // 17.5s: meeting ends
     const t4 = setTimeout(() => {
        onCompleteRef.current();
-    }, 15000); 
+    }, 17500); 
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);

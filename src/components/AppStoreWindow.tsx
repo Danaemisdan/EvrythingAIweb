@@ -9,8 +9,8 @@ export function AppStoreWindow({ onComplete }: { onComplete: () => void }) {
     const t2 = setTimeout(() => setStep(2), 2500); // Results
     const t3 = setTimeout(() => setStep(3), 4000); // Click Get
     const t4 = setTimeout(() => setStep(4), 5500); // Downloading
-    const t5 = setTimeout(() => setStep(5), 8000); // Downloaded (Open)
-    const t6 = setTimeout(() => onComplete(), 9500); // Close
+    const t5 = setTimeout(() => setStep(5), 8500); // Downloaded (Open)
+    const t6 = setTimeout(() => onComplete(), 10500); // Close
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); clearTimeout(t6); };
   }, [onComplete]);

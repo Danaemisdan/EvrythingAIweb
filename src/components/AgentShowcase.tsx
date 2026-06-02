@@ -21,11 +21,29 @@ import { useMediaQuery } from "../hooks/use-media-query";
 function useTTS() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const filterNodeRef = useRef<BiquadFilterNode | null>(null);
+
   // Initialize a single audio element on mount for iOS Safari compatibility
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       audioRef.current.crossOrigin = "anonymous";
+      
+      try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtxRef.current = new AudioContextClass();
+          sourceNodeRef.current = audioCtxRef.current.createMediaElementSource(audioRef.current);
+          filterNodeRef.current = audioCtxRef.current.createBiquadFilter();
+          
+          sourceNodeRef.current.connect(filterNodeRef.current);
+          filterNodeRef.current.connect(audioCtxRef.current.destination);
+        }
+      } catch (e) {
+        console.warn("Web Audio API not supported", e);
+      }
     }
   }, []);
 
@@ -34,6 +52,19 @@ function useTTS() {
     if (!audio) return;
 
     audio.src = `/audio/demo-${idx}.mp3`;
+
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume().catch(() => {});
+    }
+    
+    if (filterNodeRef.current) {
+      if (muffled) {
+        filterNodeRef.current.type = 'lowpass';
+        filterNodeRef.current.frequency.value = 400; // Muffled effect
+      } else {
+        filterNodeRef.current.type = 'allpass';
+      }
+    }
 
     let errorHandled = false;
     
