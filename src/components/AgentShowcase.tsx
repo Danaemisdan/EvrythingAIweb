@@ -410,7 +410,15 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
       <AnimatePresence>
         {mailPhase === 1 && (
           <MailWindow 
-            onSpeak={speak}
+            onSpeak={(idx, text) => {
+              stop(); // stop any previous audio
+              setAgentState("speaking");
+              setSubtitle(text);
+              speak(text, idx, () => {
+                setAgentState("idle");
+                setSubtitle("");
+              });
+            }}
             onComplete={() => {
               setMailPhase(0);
               setAgentState("speaking");
@@ -588,19 +596,27 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
         </AnimatePresence>
       </motion.div>
 
-      {/* Subtitle speech bubble */}
-      <AnimatePresence>
+      {/* Subtitle speech bubble — always positioned right below agent face */}
+      <AnimatePresence mode="wait">
         {active && subtitle && (
           <motion.div
-            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            key={subtitle}
+            initial={{ opacity: 0, y: 8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className={`absolute z-[999] px-6 md:px-8 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-white/[0.15] bg-black/40 text-white/95 text-[15px] md:text-lg font-medium tracking-wide text-center shadow-2xl ${showDesktop ? "top-[160px] md:top-32 left-1/2 transform -translate-x-1/2 w-[92vw] md:w-auto" : "mt-6 relative"}`}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 280, damping: 28 }}
+            className={`absolute z-[999] px-5 py-3 rounded-2xl border border-white/[0.15] text-white/95 font-medium tracking-wide text-center
+              ${
+                showDesktop
+                  ? "bottom-[88px] md:bottom-24 left-1/2 -translate-x-1/2 w-[92vw] md:max-w-[520px] text-sm md:text-base"
+                  : "relative mt-4 max-w-[80vw] md:max-w-[500px] text-base md:text-lg"
+              }`}
             style={{
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              fontFamily: "-apple-system,'SF Pro Display','SF Pro Text',sans-serif",
+              background: "rgba(0,0,0,0.55)",
+              backdropFilter: "blur(28px)",
+              WebkitBackdropFilter: "blur(28px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.08)",
+              fontFamily: "-apple-system,'SF Pro Display',sans-serif",
             }}
           >
             {subtitle}
@@ -608,13 +624,13 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
         )}
       </AnimatePresence>
 
-      {/* OS Dock */}
+      {/* OS Dock — always on top of everything */}
       <AnimatePresence>
         {showDesktop && !isMobile && (
           <motion.div
             initial={{ y: 150, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="absolute bottom-6 z-50 w-full flex justify-center"
+            className="absolute bottom-4 z-[100] w-full flex justify-center pointer-events-auto"
           >
             <MacOSDock apps={dockApps} onAppClick={handleAppClick} />
           </motion.div>
@@ -623,8 +639,7 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
           <motion.div
             initial={{ y: 150, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="absolute bottom-6 z-50 w-full flex justify-center"
-            onClick={handleInteraction}
+            className="absolute bottom-2 z-[100] w-full flex justify-center pointer-events-auto"
           >
             <IOSDock 
               apps={dockApps} 

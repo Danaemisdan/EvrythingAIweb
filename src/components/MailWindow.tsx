@@ -3,31 +3,35 @@ import { motion } from "framer-motion";
 
 export function MailWindow({ onComplete, onSpeak }: { onComplete: () => void, onSpeak: (id: number, text: string) => void }) {
   const [step, setStep] = useState(0);
+  const onSpeakRef = useRef(onSpeak);
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => { onSpeakRef.current = onSpeak; }, [onSpeak]);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
 
   useEffect(() => {
     // Sequence
-    const t1 = setTimeout(() => setStep(1), 1000); // Start typing subject
+    const t1 = setTimeout(() => setStep(1), 800);
     const t2 = setTimeout(() => {
-       setStep(2); // start typing
-       onSpeak(36, "I can take care of every task in your life, you just need to sit back and watch.");
-    }, 2000);
-    
-    // 3. 5s: finish typing
-    const t3 = setTimeout(() => setStep(3), 5000); // Body done, attaching file
-    const t4 = setTimeout(() => setStep(4), 7000); // File attached, sending
+       setStep(2);
+       onSpeakRef.current(36, "I can take care of every task in your life, you just need to sit back and watch.");
+    }, 1800);
+    const t3 = setTimeout(() => setStep(3), 5500);
+    const t4 = setTimeout(() => setStep(4), 7500);
     const t5 = setTimeout(() => {
-        onComplete();
-    }, 8500); // Mail sent and close
+        onCompleteRef.current();
+    }, 9000);
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); };
-  }, [onComplete]);
+  }, []); // empty dep array — run once only
 
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: step >= 5 ? 0 : 1, scale: step >= 5 ? 0.95 : 1, y: step >= 5 ? -20 : 0 }}
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-[700px] h-[90vh] md:h-[550px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
+      className="absolute left-1/2 -translate-x-1/2 w-[95vw] md:w-[700px] bg-[#1E1E1E]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 flex flex-col overflow-hidden z-[70]"
       style={{
+        top: "env(safe-area-inset-top, 40px)",
+        height: "min(calc(100vh - 140px), 550px)",
         boxShadow: "0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset"
       }}
     >

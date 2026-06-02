@@ -24,7 +24,11 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="absolute top-[40px] md:top-1/2 left-1/2 transform -translate-x-1/2 md:-translate-y-1/2 w-[98vw] md:w-[95vw] h-[85vh] bg-[#141414] rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-gray-800 flex flex-col overflow-hidden z-[80]"
+      className="absolute left-1/2 -translate-x-1/2 w-[98vw] md:w-[95vw] bg-[#141414] rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-gray-800 flex flex-col overflow-hidden z-[80]"
+      style={{
+        top: "env(safe-area-inset-top, 40px)",
+        height: "min(calc(100vh - 140px), 85vh)",
+      }}
     >
       {/* Top Menu */}
       <div className="h-8 bg-[#1A1A1A] border-b border-black flex items-center px-4 justify-between select-none text-xs text-gray-400">
@@ -100,8 +104,8 @@ export function DaVinciWindow({ onComplete }: { onComplete: () => void }) {
          </div>
       </div>
 
-      {/* Timeline Panel (Bottom) */}
-      <div className="h-[250px] bg-[#1A1A1A] border-t border-black flex flex-col">
+      {/* Timeline Panel (Bottom) — hidden on very small screens */}
+      <div className="hidden sm:flex h-[200px] md:h-[250px] bg-[#1A1A1A] border-t border-black flex-col">
          <div className="h-8 bg-[#242424] flex items-center px-4 justify-between border-b border-black">
              <div className="text-xs text-gray-300 flex gap-4">
                  <span className="text-white">Edit</span><span>Color</span><span>Fairlight</span><span>Deliver</span>
