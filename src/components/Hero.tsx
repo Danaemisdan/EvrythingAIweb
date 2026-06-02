@@ -148,6 +148,13 @@ export default function Hero() {
     const [hasVisited, setHasVisited] = useState<boolean | null>(null);
     const [osLabel, setOsLabel] = useState<"macOS" | "Windows" | "iOS" | "Android">("Windows");
     const [showPopup, setShowPopup] = useState(false);
+    const [showArrow, setShowArrow] = useState(false);
+    const [agentActive, setAgentActive] = useState(false);
+
+    useEffect(() => {
+        const t = setTimeout(() => setShowArrow(true), 3000);
+        return () => clearTimeout(t);
+    }, []);
     const [isHeroReady, setIsHeroReady] = useState(false);
     const [logoRect, setLogoRect] = useState({ cx: 0, cy: 0, size: 300 });
     const [isAgentVisible, setIsAgentVisible] = useState(false);
@@ -430,19 +437,18 @@ export default function Hero() {
                                                             </p>
 
                                                             <div className="pt-0 flex flex-row items-center justify-center gap-4 sm:gap-7 z-50 w-full px-2" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif" }}>
-                                                                {/* Pre-order — transparent with white border, Aurora on hover */}
+                                                                {/* Pre-order -> Coming Soon */}
                                                                 <button
-                                                                    onClick={() => setShowPopup(true)}
-                                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-6 sm:px-9 py-2.5 sm:py-3.5 rounded-full font-semibold text-[15px] sm:text-[17px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-auto shadow-sm"
+                                                                    className="aurora-download-btn group relative bg-transparent border border-white/50 text-white px-6 sm:px-9 py-2.5 sm:py-3.5 rounded-full font-semibold text-[15px] sm:text-[17px] tracking-normal transition-all duration-300 hover:border-transparent flex items-center justify-center shrink-0 w-auto shadow-sm cursor-default"
                                                                 >
-                                                                    Pre-order
+                                                                    Coming Soon
                                                                     <span className="aurora-glow-ring"></span>
                                                                 </button>
 
                                                                 {/* Learn More — bare text link (Apple secondary style) */}
                                                                 <button
                                                                     className="text-white hover:text-white/70 font-medium text-[15px] sm:text-[17px] tracking-normal transition-colors duration-200 flex items-center justify-center gap-1.5 group w-auto"
-                                                                    onClick={() => { window.scrollTo({ top: window.innerHeight * 1.5, behavior: "smooth" }); }}
+                                                                    onClick={() => { window.scrollTo({ top: window.innerHeight * 1.0, behavior: "smooth" }); }}
                                                                 >
                                                                     Learn More
                                                                     <span className="inline-block transition-transform duration-200 group-hover:translate-x-1 font-normal opacity-80 mt-[1px]">›</span>
@@ -539,7 +545,7 @@ export default function Hero() {
                                         className="absolute inset-0 z-50 w-full h-full flex flex-col items-center justify-center pointer-events-none bg-black"
                                     >
                                         <div className="pointer-events-auto w-full h-full flex items-center justify-center">
-                                            <AgentShowcase isVisible={isAgentVisible} />
+                                            <AgentShowcase isVisible={isAgentVisible} onAgentActive={setAgentActive} />
                                         </div>
                                     </motion.div>
 
@@ -572,10 +578,9 @@ export default function Hero() {
                                                     </p>
                                                     <div className="flex justify-end w-full">
                                                         <button
-                                                            onClick={() => setShowPopup(true)}
-                                                            className="aurora-download-btn group relative bg-transparent border border-[#555] text-white px-10 py-3.5 lg:px-12 lg:py-4 rounded-full font-semibold text-[17px] sm:text-[18px] tracking-normal transition-all duration-300 hover:border-transparent active:scale-[0.98] flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm"
+                                                            className="aurora-download-btn group relative bg-transparent border border-[#555] text-white px-10 py-3.5 lg:px-12 lg:py-4 rounded-full font-semibold text-[17px] sm:text-[18px] tracking-normal transition-all duration-300 hover:border-transparent flex items-center justify-center shrink-0 w-full sm:w-auto shadow-sm cursor-default"
                                                         >
-                                                            Pre-order
+                                                            Coming Soon
                                                             <span className="aurora-glow-ring"></span>
                                                         </button>
                                                     </div>
@@ -818,6 +823,26 @@ export default function Hero() {
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Scroll Down Arrow */}
+            <AnimatePresence>
+                {showArrow && !agentActive && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] cursor-pointer text-white/50 hover:text-white transition-colors duration-300"
+                        onClick={() => window.scrollTo({ top: window.scrollY + window.innerHeight * 0.8, behavior: "smooth" })}
+                    >
+                        <motion.div
+                            animate={{ y: [0, 8, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <ArrowDown className="w-8 h-8" strokeWidth={1.5} />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

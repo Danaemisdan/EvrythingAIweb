@@ -59,6 +59,7 @@ function useTTS() {
 
 interface AgentShowcaseProps {
   isVisible?: boolean;
+  onAgentActive?: (active: boolean) => void;
 }
 
 const dockIcons = [
@@ -109,7 +110,7 @@ const getRandomLine = (levelArray: {id: number, text: string}[]) => levelArray[M
 const getRandomDelay = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min) * 1000;
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
+export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcaseProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [active, setActive]       = useState(false);
   const [agentState, setAgentState] = useState<AgentState>("sleeping");
@@ -132,6 +133,10 @@ export function AgentShowcase({ isVisible = false }: AgentShowcaseProps) {
   const [safariClickCount, setSafariClickCount] = useState(0);
   const [aiDeleteCount, setAiDeleteCount] = useState(0);
   
+  useEffect(() => {
+    onAgentActive?.(active);
+  }, [active, onAgentActive]);
+
   const clear = () => { 
     if (timer.current) clearTimeout(timer.current); 
     if (interactionTimer.current) clearTimeout(interactionTimer.current);
