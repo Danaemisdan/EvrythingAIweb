@@ -23,7 +23,7 @@ export function GoogleMeetMockup({
 
     // 7.5s: speak pitch
     const t2 = setTimeout(() => {
-      onSpeakRef.current(28, "No worries, I can take notes, transcribe the whole thing and also deal on your behalf. Since you want 4 videos edited by this month, we would charge you $1,000 for that.", true);
+      onSpeakRef.current(28, "Sure I'll edit the best video you'll ever see.", true);
     }, 7500);
 
     // 22s: ending

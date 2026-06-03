@@ -73,34 +73,11 @@ function useTTS() {
     audio.onerror = () => {
       if (errorHandled) return;
       errorHandled = true;
-      // Fallback: Use browser's built-in speech synthesis
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Find a decent voice (prefer Google US English or similar)
-        const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(v => v.name.includes('Google') && v.lang === 'en-US') || voices[0];
-        if (preferredVoice) utterance.voice = preferredVoice;
-        
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        
-        utterance.onend = () => onEnd?.();
-        utterance.onerror = () => {
-           // Ultimate fallback if synthesis fails
-           const words = text.split(" ").length;
-           const duration = Math.max(2000, words * 300 + 500);
-           setTimeout(() => onEnd?.(), duration);
-        };
-        
-        window.speechSynthesis.speak(utterance);
-      } else {
-        const words = text.split(" ").length;
-        const duration = Math.max(2000, words * 300 + 500);
-        setTimeout(() => {
-          onEnd?.();
-        }, duration);
-      }
+      // If audio fails to load, just simulate the duration so the sequence doesn't get stuck forever.
+      // Do NOT use speechSynthesis as the user hates the robotic OS voice fallback.
+      const words = text.split(" ").length;
+      const duration = Math.max(2000, words * 300 + 500);
+      setTimeout(() => onEnd?.(), duration);
     }; 
     audio.play().catch(() => audio.onerror?.(new Event("error")));
   }, []);
@@ -198,18 +175,14 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
   const [isAngry, setIsAngry] = useState(false);
   const angryTriggeredRef = useRef(false);
   const isAngryRef = useRef(false);
+  const [introPhase, setIntroPhase] = useState<number>(0);
 
-  // Preload audio files so there is no delay between captions appearing and speech starting
+  // Preload screech audio so there is no delay
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const screech = new Audio('/screech.mp3');
       screech.preload = 'auto';
       (window as any).__screechAudio = screech;
-
-      for (let i = 0; i <= 46; i++) {
-        const a = new Audio(`/audio/demo-${i}.mp3`);
-        a.preload = 'auto';
-      }
     }
   }, []);
   
@@ -246,6 +219,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
     setActive(false);
     setShowDesktop(false);
     setSafariPhase(0);
+    setIntroPhase(0);
   }, [clear, stop]);
 
   const startIdleTimeouts = useCallback(() => {
@@ -476,17 +450,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
 
 
 
-  const wake = useCallback(() => {
-    if (active || hasWokenUp) return;
-    clear(); stop();
-    setActive(true);
-    setHasWokenUp(true);
-    setAgentState("idle");
-    setSubtitle("");
-    setShowDesktop(false);
-    setHasInteracted(false);
-    hasInteractedRef.current = false;
-    
+  const startNormalWakeSequence = useCallback(() => {
     // After 2 seconds, start speaking
     timer.current = setTimeout(() => {
       setAgentState("speaking");
@@ -516,7 +480,41 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
         });
       });
     }, 2000);
-  }, [active, hasWokenUp, speak, stop, end, startIdleTimeouts]);
+  }, [speak, startIdleTimeouts]);
+
+  const wake = useCallback(() => {
+    if (active || hasWokenUp) return;
+    clear(); stop();
+    setActive(true);
+    setHasWokenUp(true);
+    setAgentState("idle");
+    setSubtitle("");
+    setShowDesktop(false);
+    setHasInteracted(false);
+    hasInteractedRef.current = false;
+    
+    if (introPhase === 0) {
+       setIntroPhase(1);
+       // Pause text intro
+       timer.current = setTimeout(() => {
+          setAgentState("speaking");
+          const introText = "Pause. So the agent doesn't actually speak back to you... if you're that dumb. Also, you can just interact with me by opening apps on the dock, and I will explain how I help you do anything without lifting a finger. Now, continue.";
+          setSubtitle(introText);
+          speak(introText, 47, () => {
+             setIntroPhase(2);
+             setSubtitle("");
+             setAgentState("idle");
+             
+             timer.current = setTimeout(() => {
+                 setIntroPhase(3);
+                 startNormalWakeSequence();
+             }, 2000);
+          });
+       }, 500);
+    } else {
+       startNormalWakeSequence();
+    }
+  }, [active, hasWokenUp, introPhase, clear, stop, speak, startNormalWakeSequence]);
 
   useEffect(() => {
     if (!isVisible) {
@@ -615,7 +613,12 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
                   if (isAngryRef.current) return;
                   setAgentState("speaking");
-                  setSubtitle(text);
+                  if (idx === 28) {
+                    setSubtitle("No worries, I can take notes, transcribe the whole thing and also deal on your behalf.");
+                    setTimeout(() => { if (!isAngryRef.current) setSubtitle("Since you want 4 videos edited by this month, we would charge you $1,000 for that."); }, 4500);
+                  } else {
+                    setSubtitle(text);
+                  }
                   speak(text, idx, () => {
                     if (isAngryRef.current) return;
                     setAgentState("idle");
@@ -896,6 +899,38 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               onAppClick={handleAppClick} 
               activeAppId={safariPhase > 0 ? "safari" : mailPhase > 0 ? "mail" : appStorePhase > 0 ? "appstore" : davinciPhase > 0 ? "davinci" : null}
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Intro Phase UI Overlays */}
+      <AnimatePresence>
+        {introPhase === 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none"
+          >
+            <div className="w-32 h-32 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+              </svg>
+            </div>
+          </motion.div>
+        )}
+        
+        {introPhase === 2 && (
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0, textShadow: "0px 0px 0px rgba(255,0,0,0)" }}
+            animate={{ scale: 1, opacity: 1, textShadow: "0px 0px 40px rgba(255,0,0,0.8)" }}
+            exit={{ scale: 1.5, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 10 }}
+            className="absolute inset-0 z-[200] flex items-center justify-center pointer-events-none"
+          >
+            <h1 className="text-6xl md:text-8xl font-black text-[#FF3B30] uppercase tracking-tighter text-center">
+              Demo Of<br />How It Works
+            </h1>
           </motion.div>
         )}
       </AnimatePresence>
