@@ -14,7 +14,7 @@ interface AgentFaceProps {
   size?: number; // face container size in px
 }
 
-const EyeStates = {
+const EyeStates: Record<AgentState, any> = {
   idle:      { height: 56, width: 16, borderRadius: 8,  rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.3, duration: 0.5 } },
   listening: { height: 64, width: 22, borderRadius: 11, rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.4, duration: 0.4 } },
   thinking:  { height: 56, width: 16, borderRadius: 8,  rotate: 0,  y: -10, transition: { type: "spring", bounce: 0.2, duration: 0.6 } },
@@ -22,7 +22,7 @@ const EyeStates = {
   happy:     { height: 10, width: 44, borderRadius: 5,  rotate: 0,  y: -6,  transition: { type: "spring", bounce: 0.5, duration: 0.5 } },
   surprised: { height: 54, width: 54, borderRadius: 27, rotate: 0,  y: -10, transition: { type: "spring", bounce: 0.6, duration: 0.4 } },
   error:     { height: 7,  width: 36, borderRadius: 4,  rotate: 0,  y: 4,   transition: { type: "spring", bounce: 0.3, duration: 0.4 } },
-  sleeping:  { height: 3,  width: 24, borderRadius: 2,  rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.2, duration: 0.8 } },
+  sleeping:  { height: 4,  width: 30, borderRadius: 2,  rotate: 0,  y: 6,   transition: { type: "spring", bounce: 0.2, duration: 0.8 } },
   paused:    { height: 56, width: 16, borderRadius: 8,  rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0, duration: 0.1 } },
 };
 

@@ -377,11 +377,14 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               stop();
               setIsAngry(true);
               isAngryRef.current = true;
+              setHideUIForAngry(true); // Hide the UI again just like the first time
               setAgentState("speaking");
               const sleepText = "Okay you want to scroll? I'll sleep then, bye.";
               setSubtitle(sleepText);
-              speak(sleepText, 42, () => {
+              // Use rawSpeak so it doesn't get blocked by the isAngryRef check in speak()
+              rawSpeak(sleepText, 42, () => {
                   end();
+                  setHideUIForAngry(false); // Clean up in case
               });
               return;
            }
