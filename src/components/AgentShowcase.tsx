@@ -47,7 +47,7 @@ function useTTS() {
     }
   }, []);
 
-  const speak = useCallback((text: string, idx: number, onEnd?: () => void, muffled: boolean = false) => {
+  const speak = useCallback((text: string, idx: number, onEnd?: () => void, muffled: boolean = false, onPlay?: () => void) => {
     stop(); // Force stop any currently playing TTS to prevent chaotic overlap!
     
     const audio = audioRef.current;
@@ -70,11 +70,13 @@ function useTTS() {
     let errorHandled = false;
     
     audio.onended = () => onEnd?.();
+    audio.onplay = () => onPlay?.();
     audio.onerror = () => {
       if (errorHandled) return;
       errorHandled = true;
       // If audio fails to load, just simulate the duration so the sequence doesn't get stuck forever.
       // Do NOT use speechSynthesis as the user hates the robotic OS voice fallback.
+      if (onPlay) onPlay();
       const words = text.split(" ").length;
       const duration = Math.max(2000, words * 300 + 500);
       setTimeout(() => onEnd?.(), duration);
@@ -150,6 +152,24 @@ const getRandomLine = (levelArray: {id: number, text: string}[]) => levelArray[M
 const getRandomDelay = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min) * 1000;
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+const TypewriterSubtitle = ({ text, onComplete }: { text: string, onComplete?: () => void }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  useEffect(() => {
+    setDisplayedText("");
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayedText(text.slice(0, i + 1));
+      i++;
+      if (i === text.length) {
+        clearInterval(interval);
+        onComplete?.();
+      }
+    }, 45); // Typing speed
+    return () => clearInterval(interval);
+  }, [text, onComplete]);
+  return <>{displayedText}</>;
+};
+
 export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcaseProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [active, setActive]       = useState(false);
@@ -186,12 +206,12 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
     }
   }, []);
   
-  const speak = useCallback((text: string, idx: number, onDone?: () => void, muffled?: boolean) => {
+  const speak = useCallback((text: string, idx: number, onDone?: () => void, muffled?: boolean, onPlay?: () => void) => {
     const attempt = () => {
       if (isAngryRef.current) {
         setTimeout(attempt, 500);
       } else {
-        rawSpeak(text, idx, onDone, muffled);
+        rawSpeak(text, idx, onDone, muffled, onPlay);
       }
     };
     attempt();
@@ -451,14 +471,12 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
 
 
   const startNormalWakeSequence = useCallback(() => {
-    // After 2 seconds, start speaking
     timer.current = setTimeout(() => {
       setAgentState("speaking");
-      setSubtitle("Oh, hey there! Why did you wake me up?");
       speak("Oh, hey there! Why did you wake me up?", 8, () => {
-        setSubtitle("What can I help you with today?");
+        setSubtitle("");
         speak("What can I help you with today?", 9, () => {
-          setSubtitle("Alright, let's get to work. Here is your screen!");
+          setSubtitle("");
           speak("Alright, let's get to work. Here is your screen!", 10, () => {
             setAgentState("idle");
             setSubtitle("");
@@ -467,18 +485,17 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
             // Wait 2.5 seconds for UI to fully appear, then give instructions
             timer.current = setTimeout(() => {
               setAgentState("speaking");
-              setSubtitle("Interact with anything... down below.");
               speak("Interact with anything... down below.", 11, () => {
                 setAgentState("idle");
                 setSubtitle("");
 
                 // Start the idle waiting cycle
                 startIdleTimeouts();
-              });
+              }, false, () => setSubtitle("Interact with anything... down below."));
             }, 2500);
-          });
-        });
-      });
+          }, false, () => setSubtitle("Alright, let's get to work. Here is your screen!"));
+        }, false, () => setSubtitle("What can I help you with today?"));
+      }, false, () => setSubtitle("Oh, hey there! Why did you wake me up?"));
     }, 2000);
   }, [speak, startIdleTimeouts]);
 
@@ -497,9 +514,8 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
        setIntroPhase(1);
        // Pause text intro
        timer.current = setTimeout(() => {
-          setAgentState("speaking");
+          setAgentState("paused");
           const introText = "Pause. So the agent doesn't actually speak back to you... if you're that dumb. Also, you can just interact with me by opening apps on the dock, and I will explain how I help you do anything without lifting a finger. Now, continue.";
-          setSubtitle(introText);
           speak(introText, 47, () => {
              setIntroPhase(2);
              setSubtitle("");
@@ -509,6 +525,9 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                  setIntroPhase(3);
                  startNormalWakeSequence();
              }, 2000);
+          }, false, () => {
+             // Only set subtitle when audio actually starts playing!
+             setSubtitle(introText);
           });
        }, 500);
     } else {
@@ -872,7 +891,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               fontFamily: "-apple-system,'SF Pro Display',sans-serif",
             }}
           >
-            {subtitle}
+            {introPhase === 1 ? <TypewriterSubtitle text={subtitle} /> : subtitle}
           </motion.div>
         )}
       </AnimatePresence>
@@ -910,23 +929,22 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none"
+            className="absolute inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-[2px] pointer-events-none"
           >
-            <div className="w-32 h-32 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-              </svg>
-            </div>
+            {/* HUGE pause icon over the agent */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-64 h-64 text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
           </motion.div>
         )}
         
         {introPhase === 2 && (
           <motion.div
-            initial={{ scale: 0.5, opacity: 0, textShadow: "0px 0px 0px rgba(255,0,0,0)" }}
-            animate={{ scale: 1, opacity: 1, textShadow: "0px 0px 40px rgba(255,0,0,0.8)" }}
+            initial={{ scale: 0.5, opacity: 0, y: -20, textShadow: "0px 0px 0px rgba(255,0,0,0)" }}
+            animate={{ scale: 1, opacity: 1, y: 0, textShadow: "0px 0px 40px rgba(255,0,0,0.8)" }}
             exit={{ scale: 1.5, opacity: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 10 }}
-            className="absolute inset-0 z-[200] flex items-center justify-center pointer-events-none"
+            className="absolute inset-0 z-[200] flex items-center justify-center pointer-events-none pb-[350px]"
           >
             <h1 className="text-6xl md:text-8xl font-black text-[#FF3B30] uppercase tracking-tighter text-center">
               Demo Of<br />How It Works

@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-export type AgentState = "idle" | "thinking" | "speaking" | "happy" | "surprised" | "listening" | "error" | "sleeping";
+export type AgentState = "idle" | "thinking" | "speaking" | "happy" | "surprised" | "listening" | "error" | "sleeping" | "paused";
 
 interface AgentFaceProps {
   state: AgentState;
@@ -23,6 +23,7 @@ const EyeStates = {
   surprised: { height: 54, width: 54, borderRadius: 27, rotate: 0,  y: -10, transition: { type: "spring", bounce: 0.6, duration: 0.4 } },
   error:     { height: 7,  width: 36, borderRadius: 4,  rotate: 0,  y: 4,   transition: { type: "spring", bounce: 0.3, duration: 0.4 } },
   sleeping:  { height: 3,  width: 24, borderRadius: 2,  rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0.2, duration: 0.8 } },
+  paused:    { height: 56, width: 16, borderRadius: 8,  rotate: 0,  y: 0,   transition: { type: "spring", bounce: 0, duration: 0.1 } },
 };
 
 export function AgentFace({ state, isShuttered = false, isVoiceMode = false, className, size = 280 }: AgentFaceProps) {
@@ -51,7 +52,7 @@ export function AgentFace({ state, isShuttered = false, isVoiceMode = false, cla
   useEffect(() => {
     let id: NodeJS.Timeout;
     const cycle = () => {
-      if (!["happy", "error", "sleeping"].includes(state) && !isShuttered) {
+      if (!["happy", "error", "sleeping", "paused"].includes(state) && !isShuttered) {
         setIsBlinking(true);
         setTimeout(() => setIsBlinking(false), 130);
       }
@@ -84,8 +85,8 @@ export function AgentFace({ state, isShuttered = false, isVoiceMode = false, cla
 
       <motion.div
         style={{
-          x: ["sleeping", "error"].includes(state) || isShuttered || isVoiceMode ? 0 : eyeOffsetX,
-          y: ["sleeping", "error"].includes(state) || isShuttered || isVoiceMode ? 0 : eyeOffsetY,
+          x: ["sleeping", "error", "paused"].includes(state) || isShuttered || isVoiceMode ? 0 : eyeOffsetX,
+          y: ["sleeping", "error", "paused"].includes(state) || isShuttered || isVoiceMode ? 0 : eyeOffsetY,
           gap: eyeGap,
         }}
         className="relative z-10 flex items-center justify-center"
