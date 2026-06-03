@@ -94,7 +94,19 @@ function useTTS() {
     }
   }, []);
 
-  return { speak, stop };
+  const pause = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+  }, []);
+
+  const resume = useCallback(() => {
+    if (audioRef.current && audioRef.current.paused && audioRef.current.src) {
+      audioRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  return { speak, stop, pause, resume };
 }
 
 interface AgentShowcaseProps {
@@ -183,11 +195,15 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
   const [mailPhase, setMailPhase] = useState<number>(0);
   const [appStorePhase, setAppStorePhase] = useState<number>(0);
   const [davinciPhase, setDavinciPhase] = useState<number>(0);
-  const { speak: rawSpeak, stop: rawStop } = useTTS();
   const timer                     = useRef<NodeJS.Timeout | null>(null);
   const interactionTimer          = useRef<NodeJS.Timeout | null>(null);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  
+  const { speak: rawSpeak, stop: rawStop, pause, resume } = useTTS();
+  const [hideUIForAngry, setHideUIForAngry] = useState(false);
+  const originalSubtitleRef = useRef("");
+  const originalAgentStateRef = useRef<AgentState>("idle");
   const hasInteractedRef          = useRef(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [safariClickCount, setSafariClickCount] = useState(0);
   const [aiDeleteCount, setAiDeleteCount] = useState(0);
   const [isAngry, setIsAngry] = useState(false);
@@ -287,59 +303,64 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
   }, [speak, end]);
 
   const triggerAngrySequence = useCallback(() => {
-     if (angryTriggeredRef.current) return;
-     angryTriggeredRef.current = true;
-     
-     clear(); 
-     rawStop();
+    if (angryTriggeredRef.current) return;
+    if (isAngryRef.current) return;
+    setIsAngry(true);
+    isAngryRef.current = true;
+    angryTriggeredRef.current = true;
+    
+    // Pause the currently speaking audio so we can resume later
+    pause();
+    
+    // Show black overlay to hide UI
+    setHideUIForAngry(true);
 
-     setIsAngry(true);
-     isAngryRef.current = true;
-     setAgentState("speaking");
-     
-     try {
-       if ((window as any).__screechAudio) {
-           (window as any).__screechAudio.currentTime = 0;
-           (window as any).__screechAudio.play().catch(() => {});
-       } else {
-           new Audio('/screech.mp3').play().catch(() => {});
-       }
-     } catch(e) {}
-     
-     // Delay the dialogue until after the record scratch finishes
-     setTimeout(() => {
-         const angryText1 = "Why are you scrolling? You woke me up for what? To scroll past me? Just stay here and see what I can do..!";
-         setSubtitle(angryText1);
-         
-         const inTask = safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0;
-         const calmText = inTask 
-           ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
-           : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
-         
-         rawSpeak(angryText1, 39, () => {
-             setSubtitle("");
-         setTimeout(() => {
-             setIsAngry(false);
-             isAngryRef.current = false;
-             
-             setTimeout(() => {
-                 setAgentState("speaking");
-                 const calmText = inTask 
-                   ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
-                   : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
-                 setSubtitle(calmText);
-                 speak(calmText, inTask ? 40 : 41, () => {
-                    setAgentState("idle");
-                    setSubtitle("");
-                    if (!inTask) {
-                       startIdleTimeouts();
-                    }
-                 });
-             }, 1500);
-         }, 1000);
-         });
-     }, 800);
-  }, [clear, stop, speak, safariPhase, mailPhase, appStorePhase, davinciPhase, startIdleTimeouts]);
+    try {
+      if ((window as any).__screechAudio) {
+          (window as any).__screechAudio.currentTime = 0;
+          (window as any).__screechAudio.play().catch(() => {});
+      } else {
+          new Audio('/screech.mp3').play().catch(() => {});
+      }
+    } catch(e) {}
+    
+    // Save previous state to restore later
+    originalSubtitleRef.current = subtitle;
+    originalAgentStateRef.current = agentState;
+    
+    setTimeout(() => {
+        setAgentState("speaking");
+        const angryText1 = "Why are you scrolling? You woke me up for what? To scroll past me? Just stay here and see what I can do..!";
+        setSubtitle(angryText1);
+        
+        const angryAudio = new Audio('/audio/demo-39.mp3');
+        angryAudio.onended = () => {
+            const inTask = safariPhase > 0 || mailPhase > 0 || appStorePhase > 0 || davinciPhase > 0;
+            const calmText = inTask 
+              ? "Uhh... Yeah where were we? Ah yes, let me just finish this."
+              : "Uhh... Yeah where were we? Okay yes click on something on the dock, I'll give you a hint just click on Safari brother.";
+            
+            setSubtitle(calmText);
+            const calmAudio = new Audio(inTask ? '/audio/demo-40.mp3' : '/audio/demo-41.mp3');
+            calmAudio.onended = () => {
+                // Restore UI and resume paused audio
+                setHideUIForAngry(false);
+                setIsAngry(false);
+                isAngryRef.current = false;
+                setAgentState(originalAgentStateRef.current);
+                setSubtitle(originalSubtitleRef.current);
+                resume();
+                
+                // If it was idle and not in task, restart idle timeouts
+                if (!inTask && originalAgentStateRef.current === "idle") {
+                    startIdleTimeouts();
+                }
+            };
+            calmAudio.play().catch(() => {});
+        };
+        angryAudio.play().catch(() => {});
+    }, 800);
+  }, [pause, resume, subtitle, agentState, safariPhase, mailPhase, appStorePhase, davinciPhase, startIdleTimeouts]);
 
   useEffect(() => {
     if (active) {
@@ -630,12 +651,7 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
                   if (isAngryRef.current) return;
                   setAgentState("speaking");
-                  if (idx === 28) {
-                    setSubtitle("No worries, I can take notes, transcribe the whole thing and also deal on your behalf.");
-                    setTimeout(() => { if (!isAngryRef.current) setSubtitle("Since you want 4 videos edited by this month, we would charge you $1,000 for that."); }, 4500);
-                  } else {
-                    setSubtitle(text);
-                  }
+                  setSubtitle(text);
                   speak(text, idx, () => {
                     if (isAngryRef.current) return;
                     setAgentState("idle");
@@ -948,6 +964,19 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               EXPERIENCE<br />AUTONOMY
             </h1>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Angry Phase UI Hider */}
+      <AnimatePresence>
+        {hideUIForAngry && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="absolute inset-0 z-[9990] bg-black"
+          />
         )}
       </AnimatePresence>
     </div>
