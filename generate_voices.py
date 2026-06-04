@@ -74,7 +74,11 @@ LINES = [
     "We just finished that task boss, try another one.",
     "Are you deaf? I said click something else, we already did the whole Safari sequence.",
     "Okay seriously, stop clicking Safari. My patience is literally running out. Do something else!",
-    "Hold on I know you wanna sleep lemme do the work for you too boss"
+    "Hold on I know you wanna sleep lemme do the work for you too boss",
+    
+    # Intro Phase Dialogues (Index 47-48)
+    "What you're going to experience is basically how the world's first fully autonomous AI agent will actually do all of your work in your life.",
+    "Note: Since this is just a demo, I won't respond to your voice. But you can interact with me by clicking apps on the dock below. I will guide you and show you how I can do all your work while you sit back and relax."
 ]
 
 # We use an English (US) female neural voice for maximum realism

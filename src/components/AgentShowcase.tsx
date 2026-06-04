@@ -539,17 +539,22 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
        // Pause text intro
        timer.current = setTimeout(() => {
           setAgentState("paused");
-          const introText = "Pause. So the agent doesn't actually speak back to you... if you're that dumb. Also, you can just interact with me by opening apps on the dock, and I will explain how I help you do anything without lifting a finger. Now, continue.";
-          setSubtitle(introText);
-          speak(introText, 47, () => {
-             setIntroPhase(2);
-             setSubtitle("");
-             setAgentState("idle");
-             
-             timer.current = setTimeout(() => {
-                 setIntroPhase(3);
-                 startNormalWakeSequence();
-             }, 2000);
+          const text1 = "What you're going to experience is basically how the world's first fully autonomous AI agent will actually do all of your work in your life.";
+          const text2 = "Note: Since this is just a demo, I won't respond to your voice. But you can interact with me by clicking apps on the dock below. I will guide you and show you how I can do all your work while you sit back and relax.";
+          
+          setSubtitle(text1);
+          speak(text1, 47, () => {
+             setSubtitle(text2);
+             speak(text2, 48, () => {
+                 setIntroPhase(2);
+                 setSubtitle("");
+                 setAgentState("idle");
+                 
+                 timer.current = setTimeout(() => {
+                     setIntroPhase(3);
+                     startNormalWakeSequence();
+                 }, 2000);
+             });
           });
        }, 500);
     } else {
@@ -636,7 +641,6 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                    });
                 }} 
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
-                  if (isAngryRef.current) return;
                   setAgentState("speaking");
                   setSubtitle(text);
                   speak(text, idx, () => {
@@ -652,7 +656,6 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
               <GoogleMeetMockup 
                 onComplete={() => setSafariPhase(4)} 
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
-                  if (isAngryRef.current) return;
                   setAgentState("speaking");
                   setSubtitle(text);
                   speak(text, idx, () => {
@@ -671,7 +674,6 @@ export function AgentShowcase({ isVisible = false, onAgentActive }: AgentShowcas
                   setTimeout(() => setMailPhase(1), 500); // Wait for Safari to close
                 }} 
                 onSpeak={(idx: number, text: string, muffled?: boolean) => {
-                  if (isAngryRef.current) return;
                   setAgentState("speaking");
                   if (idx === 31) {
                     setSubtitle("I am also gonna mail them this. And yes, I will work for you to complete this contract.");
