@@ -6,6 +6,7 @@ export function MessagesWindow({ onComplete }: { onComplete: () => void }) {
   const [showVideo, setShowVideo] = useState(false);
   const [sent, setSent] = useState(false);
   const [teamReply, setTeamReply] = useState(false);
+  const [agentReply, setAgentReply] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -13,7 +14,7 @@ export function MessagesWindow({ onComplete }: { onComplete: () => void }) {
     if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [showVideo, sent, teamReply]);
+  }, [showVideo, sent, teamReply, agentReply]);
 
   useEffect(() => {
     // Phase 1: Typing indicator -> start uploading
@@ -35,8 +36,12 @@ export function MessagesWindow({ onComplete }: { onComplete: () => void }) {
                     // Phase 3: Team Replies
                     setTimeout(() => {
                         setTeamReply(true);
-                        // Trigger next showcase phase
-                        setTimeout(onComplete, 2000);
+                        // Phase 4: Agent Replies
+                        setTimeout(() => {
+                            setAgentReply(true);
+                            // Trigger next showcase phase
+                            setTimeout(onComplete, 2000);
+                        }, 1500);
                     }, 1500);
                 }, 800);
             }, 500);
@@ -192,6 +197,20 @@ export function MessagesWindow({ onComplete }: { onComplete: () => void }) {
                             <div className="bg-[#3A3A3C] text-white text-[14px] py-2 px-4 rounded-2xl rounded-bl-sm shadow-sm leading-relaxed">
                                 Looks great! Let's review it in our meeting tomorrow.
                             </div>
+                        </motion.div>
+                    )}
+
+                    {/* Agent Reply */}
+                    {agentReply && (
+                         <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex flex-col items-end gap-1 max-w-[70%] self-end mt-4"
+                        >
+                            <div className="bg-blue-600 text-white text-[14px] py-2 px-4 rounded-2xl rounded-br-sm shadow-sm leading-relaxed">
+                                Got it, I've scheduled the meeting.
+                            </div>
+                            <span className="text-[10px] text-gray-400 mr-2">Delivered</span>
                         </motion.div>
                     )}
                 </AnimatePresence>

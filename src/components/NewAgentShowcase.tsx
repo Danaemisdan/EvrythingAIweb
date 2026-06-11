@@ -8,6 +8,7 @@ import { GlassFilter } from "./liquid-glass";
 import MacOSMenuBar from "./mac-os-menu-bar";
 import { NewDaVinciWindow } from "./NewDaVinciWindow";
 import { MessagesWindow } from "./MessagesWindow";
+import { LockScreen } from "./LockScreen";
 
 function useTTS() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -118,6 +119,7 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
   const [agentState, setAgentState] = useState<AgentState>("sleeping");
   const [subtitle, setSubtitle] = useState("");
   const [showDesktop, setShowDesktop] = useState(false);
+  const [showLockScreen, setShowLockScreen] = useState(false);
   
   // Workflow state:
   // 0 = idle (waiting for click 1)
@@ -150,6 +152,7 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
     setSubtitle("");
     setActive(false);
     setShowDesktop(false);
+    setShowLockScreen(false);
     setPresentationStep(0);
     setIsProcessingClick(false);
   }, [clear, stop]);
@@ -173,6 +176,7 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
     setAgentState("idle");
     setSubtitle("");
     setShowDesktop(false);
+    setShowLockScreen(false);
     
     timer.current = setTimeout(() => {
        setAgentState("speaking");
@@ -180,10 +184,22 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
        speak("Oh, hey there! Why did you wake me up?", 8, () => {
            setAgentState("idle");
            setSubtitle("");
-           setShowDesktop(true);
+           setShowLockScreen(true);
        });
     }, 500);
   }, [active, clear, stop, speak]);
+
+  const handleUnlock = useCallback(() => {
+     setShowLockScreen(false);
+     setAgentState("speaking");
+     const text = "Hey Danny, welcome back. What creative work should we do now bro?";
+     setSubtitle(text);
+     speak(text, 54, () => {
+        setAgentState("idle");
+        setSubtitle("");
+        setShowDesktop(true);
+     });
+  }, [speak]);
 
   const handleGlobalClick = useCallback(() => {
     if (!showDesktop || isProcessingClick) return;
@@ -266,7 +282,7 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
             <MessagesWindow 
                onComplete={() => {
                   setAgentState("speaking");
-                  const text = "I just received a reply from the team, so I will add this meeting to the calendar.";
+                  const text = "We'll get ready for the meeting today at this time.";
                   setSubtitle(text);
                   speak(text, 53, () => {
                       setAgentState("sleeping");
@@ -294,6 +310,12 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
             <GlassFilter />
           </motion.div>
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+         {showLockScreen && (
+             <LockScreen onUnlock={handleUnlock} />
+         )}
       </AnimatePresence>
 
       {/* Purple ambient glow */}
@@ -333,7 +355,7 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
         dragElastic={0.2}
         dragMomentum={false}
         animate={active 
-          ? showDesktop 
+          ? (showDesktop || showLockScreen)
               ? isMobile ? { scale: 0.45, y: "-36vh" } : { scale: 0.6, y: "-42vh" }
               : { scale: 1.05 } 
           : { scale: 1 }}
