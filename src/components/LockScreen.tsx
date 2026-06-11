@@ -35,7 +35,7 @@ export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
       <div className="absolute inset-0 bg-black/20 backdrop-blur-3xl z-0" />
 
       {/* Date and Time (Top) */}
-      <div className="absolute top-16 flex flex-col items-center z-10 text-white drop-shadow-md">
+      <div className="absolute top-32 flex flex-col items-center z-10 text-white drop-shadow-md">
         <div className="text-xl font-medium tracking-wide mb-1 opacity-90">{formattedDate}</div>
         <div className="text-7xl font-bold tracking-tight">{formattedTime}</div>
       </div>

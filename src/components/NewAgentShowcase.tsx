@@ -282,7 +282,7 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
             <MessagesWindow 
                onComplete={() => {
                   setAgentState("speaking");
-                  const text = "We'll get ready for the meeting today at this time.";
+                  const text = "I'll schedule a meet with the client and attend the call myself to provide the updates.";
                   setSubtitle(text);
                   speak(text, 53, () => {
                       setAgentState("sleeping");

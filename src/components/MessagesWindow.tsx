@@ -177,7 +177,7 @@ export function MessagesWindow({ onComplete }: { onComplete: () => void }) {
                             className={`flex flex-col items-end gap-1 max-w-[70%] self-end mt-4 ${sent ? '' : 'opacity-80'}`}
                         >
                             <div className="w-[280px] h-[180px] bg-black rounded-2xl border border-gray-700 relative overflow-hidden flex items-center justify-center shadow-md">
-                                <img src="https://media.giphy.com/media/sIIhZliB2McAo/giphy.gif" alt="Momentum Campaign" className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-90" />
+                                <img src="/images/wallpaper.jpg" alt="Momentum Campaign" className="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-90" />
                                 <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                 </div>
@@ -195,7 +195,7 @@ export function MessagesWindow({ onComplete }: { onComplete: () => void }) {
                         >
                             <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 to-orange-400 shrink-0"></div>
                             <div className="bg-[#3A3A3C] text-white text-[14px] py-2 px-4 rounded-2xl rounded-bl-sm shadow-sm leading-relaxed">
-                                Looks great! Let's review it in our meeting tomorrow.
+                                Looks nice can we have a meeting tonight?
                             </div>
                         </motion.div>
                     )}
@@ -208,7 +208,7 @@ export function MessagesWindow({ onComplete }: { onComplete: () => void }) {
                             className="flex flex-col items-end gap-1 max-w-[70%] self-end mt-4"
                         >
                             <div className="bg-blue-600 text-white text-[14px] py-2 px-4 rounded-2xl rounded-br-sm shadow-sm leading-relaxed">
-                                Got it, I've scheduled the meeting.
+                                I'll fix a meet with them right away.
                             </div>
                             <span className="text-[10px] text-gray-400 mr-2">Delivered</span>
                         </motion.div>

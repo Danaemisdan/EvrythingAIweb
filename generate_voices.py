@@ -85,7 +85,7 @@ LINES = [
     "I'll add a blue color background on the title screen.",
     "And now I will make sure to add more videos... I'll trim the third video to your size.",
     "Exporting the video now... and I'll send it to your team on the Messages app.",
-    "We'll get ready for the meeting today at this time.",
+    "I'll schedule a meet with the client and attend the call myself to provide the updates.",
     "Hey Danny, welcome back. What creative work should we do now bro?"
 ]
 
