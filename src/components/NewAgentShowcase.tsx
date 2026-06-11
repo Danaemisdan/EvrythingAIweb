@@ -106,10 +106,10 @@ interface AgentShowcaseProps {
 }
 
 const presentationDockApps = [
-  { id: "finder", name: "Finder", icon: "https://upload.wikimedia.org/wikipedia/en/thumb/5/59/macOS_Finder_icon_%282020%29.png/512px-macOS_Finder_icon_%282020%29.png" },
+  { id: "finder", name: "Finder", icon: "/app-icons/finder.png" },
   { id: "davinci", name: "DaVinci Resolve", icon: "https://upload.wikimedia.org/wikipedia/commons/4/4d/DaVinci_Resolve_Studio.png" },
-  { id: "messages", name: "Messages", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Messages_macOS.svg/512px-Messages_macOS.svg.png" },
-  { id: "settings", name: "System Settings", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/System_Preferences_icon_%282020%29.png/512px-System_Preferences_icon_%282020%29.png" },
+  { id: "messages", name: "Messages", icon: "/app-icons/messages.png" },
+  { id: "settings", name: "System Settings", icon: "/app-icons/settings.png" },
 ];
 
 export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShowcaseProps) {
