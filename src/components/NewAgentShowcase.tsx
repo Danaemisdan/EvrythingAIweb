@@ -106,10 +106,10 @@ interface AgentShowcaseProps {
 }
 
 const presentationDockApps = [
-  { id: "finder", name: "Finder", icon: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png" },
+  { id: "finder", name: "Finder", icon: "https://upload.wikimedia.org/wikipedia/en/thumb/5/59/macOS_Finder_icon_%282020%29.png/512px-macOS_Finder_icon_%282020%29.png" },
   { id: "davinci", name: "DaVinci Resolve", icon: "https://upload.wikimedia.org/wikipedia/commons/4/4d/DaVinci_Resolve_Studio.png" },
-  { id: "messages", name: "Messages", icon: "https://upload.wikimedia.org/wikipedia/commons/5/51/IMessage_logo.svg" },
-  { id: "settings", name: "System Settings", icon: "https://upload.wikimedia.org/wikipedia/commons/8/82/System_Preferences_icon_%282020%29.png" },
+  { id: "messages", name: "Messages", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Messages_macOS.svg/512px-Messages_macOS.svg.png" },
+  { id: "settings", name: "System Settings", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/System_Preferences_icon_%282020%29.png/512px-System_Preferences_icon_%282020%29.png" },
 ];
 
 export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShowcaseProps) {
@@ -191,9 +191,9 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
     stop();
 
     if (presentationStep === 0) {
-       // Step 1: "Okay, I'll edit this video for you." -> Opens DaVinci
+       // Step 1: "I'll edit this video for you." -> Opens DaVinci
        setAgentState("speaking");
-       const text = "Okay, I'll edit this video for you.";
+       const text = "I'll edit this video for you.";
        setSubtitle(text);
        speak(text, 49, () => {
            setAgentState("idle");
@@ -202,9 +202,9 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
            setIsProcessingClick(false);
        });
     } else if (presentationStep === 1) {
-       // Step 2: "Okay, I'll add a blue color background on the title screen."
+       // Step 2: "I'll add a blue color background on the title screen."
        setAgentState("speaking");
-       const text = "Okay, I'll add a blue color background on the title screen.";
+       const text = "I'll add a blue color background on the title screen.";
        setSubtitle(text);
        speak(text, 50, () => {
            setAgentState("idle");
@@ -213,9 +213,9 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
            setIsProcessingClick(false);
        });
     } else if (presentationStep === 2) {
-       // Step 3: "And now I will make sure to add more videos... okay, I'll trim the third video to your size."
+       // Step 3: "And now I will make sure to add more videos... I'll trim the third video to your size."
        setAgentState("speaking");
-       const text = "And now I will make sure to add more videos... okay, I'll trim the third video to your size.";
+       const text = "And now I will make sure to add more videos... I'll trim the third video to your size.";
        setSubtitle(text);
        speak(text, 51, () => {
            setAgentState("idle");
@@ -265,8 +265,14 @@ export function NewAgentShowcase({ isVisible = false, onAgentActive }: AgentShow
          {presentationStep === 5 && (
             <MessagesWindow 
                onComplete={() => {
-                  setAgentState("sleeping");
-                  // Do nothing else after sending the message
+                  setAgentState("speaking");
+                  const text = "I just received a reply from the team, so I will add this meeting to the calendar.";
+                  setSubtitle(text);
+                  speak(text, 53, () => {
+                      setAgentState("sleeping");
+                      setSubtitle("");
+                      setPresentationStep(6);
+                  });
                }}
             />
          )}
