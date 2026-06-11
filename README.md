@@ -4,7 +4,7 @@
 
 First, run the development server:
 
-npm run dev
+npm run devv
 # or
 yarn dev
 # or
