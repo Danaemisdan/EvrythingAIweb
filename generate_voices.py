@@ -78,7 +78,13 @@ LINES = [
     
     # Intro Phase Dialogues (Index 47-48)
     "What you're going to experience is basically how the world's first fully autonomous AI agent will actually do all of your work in your life.",
-    "Note: Since this is just a demo, I won't respond to your voice. But you can interact with me by clicking apps on the dock below. I will guide you and show you how I can do all your work while you sit back and relax."
+    "Note: Since this is just a demo, I won't respond to your voice. But you can interact with me by clicking apps on the dock below. I will guide you and show you how I can do all your work while you sit back and relax.",
+
+    # Added Dialogues (Index 49-52)
+    "Okay, I'll edit this video for you.",
+    "Okay, I'll add a blue color background on the title screen.",
+    "And now I will make sure to add more videos... okay, I'll trim the third video to your size.",
+    "Exporting the video now... and I'll send it to your team on the Messages app."
 ]
 
 # We use an English (US) female neural voice for maximum realism
