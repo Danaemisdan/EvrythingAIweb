@@ -5,7 +5,7 @@
 First, run the development server:
 
 npm run dev
-# or
+# orr
 yarn dev
 # or
 pnpm dev
