@@ -5,11 +5,11 @@
 First, run the development server:
 
 npm run dev
-# or
+# orr
 yarn dev
-# or
+# orr
 pnpm dev
-# or
+# orr
 bun dev
 ```
 
