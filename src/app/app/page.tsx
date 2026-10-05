@@ -63,7 +63,7 @@ export default function AppPage() {
 
   // Face positions
   const faceVariants = {
-    0: { x: "0%", y: "0%", scale: 1 },
+    0: { x: "0%", y: "-15vh", scale: 1 },
     1: { x: "25vw", y: "-22vh", scale: 0.55 }, // Top Right of Dev widget
     2: { x: "-25vw", y: "-22vh", scale: 0.55 }, // Top Left of Creative widget
     3: { x: "25vw", y: "-22vh", scale: 0.55 },  // Top Right of Ops widget
@@ -103,7 +103,7 @@ export default function AppPage() {
       <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
       <motion.div 
         style={{ opacity: heroOpacity, y: heroY }}
-        className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20 pb-96"
+        className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20 mt-[25vh]"
       >
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">
           Intelligence that <br />
