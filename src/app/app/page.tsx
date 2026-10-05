@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect, ReactNode } from "react";
-import { motion, useInView } from "framer-motion";
-import { AgentFace, AgentState } from "@/components/AgentFace";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { Video, Mail, Code, Users, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { AgentFace, AgentState } from "@/components/AgentFace";
 
 // ---------------------------------------------------------------------------
 // SECTION COMPONENT
@@ -19,7 +20,7 @@ function Section({ index, setActiveSection, children }: { index: number, setActi
   }, [isInView, index, setActiveSection]);
 
   return (
-    <section ref={ref} className="min-h-screen w-full flex items-center justify-center p-6 md:p-12 relative z-10">
+    <section ref={ref} className="min-h-screen w-full flex items-center justify-center p-6 md:p-12 relative z-10 pointer-events-none">
       <div className="max-w-7xl w-full flex">
         {children}
       </div>
@@ -34,6 +35,24 @@ export default function AppPage() {
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [faceState, setFaceState] = useState<AgentState>("idle");
+
+  const introRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: introProgress } = useScroll({
+    target: introRef,
+    offset: ["start start", "end start"]
+  });
+
+  // Zoom portal effect exactly as user requested: white portal scales out of eyes
+  const portalScale = useTransform(introProgress, [0, 0.2, 0.6, 1], [1, 1, 80, 200]);
+  const portalOpacity = useTransform(introProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
+  
+  // Fade out the Agent Face while the portal expands so the eyes don't poke out
+  // Fade it back in at the very end when transitioning to the dark interactive sections
+  const faceOpacity = useTransform(introProgress, [0.1, 0.2, 0.9, 1], [1, 0, 0, 1]);
+  
+  // Fade out hero text
+  const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
+  const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
 
   // Keep face state in sync with sections if not explicitly interacting
   useEffect(() => {
@@ -72,7 +91,7 @@ export default function AppPage() {
     <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-hidden">
       
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5 mix-blend-difference">
         <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">
           Momentum
         </Link>
@@ -81,12 +100,12 @@ export default function AppPage() {
         </Link>
       </nav>
 
-      {/* Sticky Agent Face */}
+      {/* Sticky Agent Face & Portal Effect */}
       <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
         <motion.div
           animate={typeof window !== "undefined" && window.innerWidth < 768 ? mobileFaceVariants[activeSection as keyof typeof mobileFaceVariants] : faceVariants[activeSection as keyof typeof faceVariants]}
           transition={{ type: "spring", stiffness: 150, damping: 20 }}
-          className="relative pointer-events-auto"
+          className="relative pointer-events-auto flex items-center justify-center"
         >
           {/* Subtle glow behind the face that changes color based on section */}
           <motion.div 
@@ -101,16 +120,30 @@ export default function AppPage() {
             }}
             transition={{ duration: 1 }}
           />
-          <AgentFace state={faceState} size={180} />
+          
+          <motion.div style={{ opacity: faceOpacity }}>
+            <AgentFace state={faceState} size={180} />
+          </motion.div>
+
+          {/* The white portal that perfectly overlaps the eyes and zooms out during intro */}
+          {activeSection === 0 && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
+              <motion.div
+                style={{ scale: portalScale, opacity: portalOpacity }}
+                className="w-[50px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
+              />
+            </div>
+          )}
         </motion.div>
       </div>
+
+      {/* Intro Scroll Tracker */}
+      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 pointer-events-none z-10" />
 
       {/* Hero Section (0) */}
       <Section index={0} setActiveSection={setActiveSection}>
         <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: activeSection === 0 ? 1 : 0 }} 
-          transition={{ duration: 0.5 }}
+          style={{ opacity: heroOpacity, y: heroY }}
           className="w-full flex flex-col items-center text-center mt-64 pointer-events-none"
         >
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">
@@ -118,10 +151,13 @@ export default function AppPage() {
             <span className="text-zinc-500">does the work.</span>
           </h1>
           <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed mx-auto">
-            Scroll down to see Momentum physically navigate and execute complex tasks across your applications.
+            Scroll down to enter the portal and see Momentum execute complex tasks across applications.
           </p>
         </motion.div>
       </Section>
+
+      {/* Add spacer so the intro scroll has room before section 1 appears */}
+      <div className="h-[150vh] w-full" />
 
       {/* Creative Section (1) */}
       <Section index={1} setActiveSection={setActiveSection}>
@@ -159,7 +195,7 @@ export default function AppPage() {
             <h3 className="text-3xl font-medium text-white mb-2">Inbox Manager</h3>
             <p className="text-zinc-400 mb-6">Reads incoming emails, drafts replies, and clears your inbox autonomously.</p>
             
-            <div className="flex flex-col gap-3 mb-6">
+            <div className="flex flex-col gap-3 mb-6 relative">
                <motion.div 
                  initial={{ opacity: 1, x: 0 }}
                  animate={activeSection === 2 ? { opacity: 0, x: 100 } : { opacity: 1, x: 0 }}
