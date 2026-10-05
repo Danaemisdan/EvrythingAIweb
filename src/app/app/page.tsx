@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useTransform, useMotionValue } from "framer-motion";
 import { Video, Mail, Code, Users, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { AgentFace } from "@/components/AgentFace";
@@ -45,10 +45,24 @@ export default function AppPage() {
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
+  const scrollYProgress = useMotionValue(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const scrollableDistance = rect.height - window.innerHeight;
+      if (scrollableDistance <= 0) return;
+      const progress = Math.max(0, Math.min(1, -rect.top / scrollableDistance));
+      scrollYProgress.set(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    // Trigger once on mount
+    handleScroll();
+    
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [scrollYProgress]);
 
   // Scale the portal up to fill the screen
   const portalScale = useTransform(scrollYProgress, [0, 0.2, 0.6, 1], [1, 1, 80, 200]);
@@ -106,7 +120,7 @@ export default function AppPage() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
               <motion.div
                 style={{ scale: portalScale, opacity: portalOpacity }}
-                className="w-[72px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
+                className="w-[54px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
               />
             </div>
           </div>
