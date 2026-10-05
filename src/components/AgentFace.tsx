@@ -65,7 +65,7 @@ export function AgentFace({ state, isShuttered = false, isVoiceMode = false, cla
   const leftRot  = state === "happy" ? 15  : state === "error" ? 20  : currentEye.rotate;
   const rightRot = state === "happy" ? -15 : state === "error" ? -20 : currentEye.rotate;
 
-  const eyeGap = Math.round(size * 0.135); // proportional gap
+  const eyeGap = Math.round(size * 0.23); // wider proportional gap
 
   return (
     <div

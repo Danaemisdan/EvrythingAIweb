@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Video, Mail, Code, Users, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { AgentFace } from "@/components/AgentFace";
@@ -50,13 +50,15 @@ export default function AppPage() {
     offset: ["start start", "end start"]
   });
 
-  // Zoom portal: starts scaling up slowly, then extremely fast to fill the screen
-  const portalScale = useTransform(scrollYProgress, [0, 0.4, 0.8, 1], [1, 1, 30, 200]);
-  const portalOpacity = useTransform(scrollYProgress, [0, 0.3, 0.5], [0, 1, 1]);
-  
-  // Hero text fades out as we start scrolling
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, -50]);
+  // Scale the portal up to fill the screen
+  const portalScale = useTransform(scrollYProgress, [0, 0.2, 0.6, 1], [1, 1, 80, 200]);
+  // Fade in the white portal element very early over the eyes
+  const portalOpacity = useTransform(scrollYProgress, [0, 0.1, 0.2], [0, 1, 1]);
+  // Fade out the hero text
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, -50]);
+  // Fade out the actual AgentFace behind the portal so we don't see its edges when portal scales
+  const faceOpacity = useTransform(scrollYProgress, [0.1, 0.3], [1, 0]);
 
   useEffect(() => {
     setMounted(true);
@@ -65,7 +67,7 @@ export default function AppPage() {
   if (!mounted) return null;
 
   return (
-    <div className="bg-black selection:bg-black/10 font-sans overflow-x-hidden">
+    <div className="bg-black selection:bg-black/10 font-sans">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-sm border-b border-white/5 mix-blend-difference">
         <Link href="/" className="text-xl font-bold tracking-tighter text-white hover:opacity-80 transition-opacity">
@@ -76,9 +78,10 @@ export default function AppPage() {
         </Link>
       </nav>
 
-      {/* 200vh container for scroll portal effect */}
-      <div ref={containerRef} className="h-[250vh] relative w-full bg-black">
-        <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden">
+      {/* Tall container for scroll portal effect */}
+      <div ref={containerRef} className="h-[300vh] relative w-full bg-black">
+        {/* Sticky section that holds the Hero text and Face */}
+        <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black">
           
           <motion.div 
             style={{ opacity: heroOpacity, y: heroY }}
@@ -93,15 +96,19 @@ export default function AppPage() {
             </p>
           </motion.div>
 
-          <div className="z-20 relative -mt-64 md:-mt-80 pointer-events-auto">
-            {/* Make the Agent face "idle" so it tracks mouse and has eyes open */}
-            <AgentFace state="idle" size={160} />
+          <div className="z-20 relative -mt-64 md:-mt-80 pointer-events-auto flex items-center justify-center">
+            {/* Actual Agent Face */}
+            <motion.div style={{ opacity: faceOpacity }}>
+              <AgentFace state="idle" size={160} />
+            </motion.div>
             
-            {/* The white portal that zooms out of the eyes */}
-            <motion.div
-              style={{ scale: portalScale, opacity: portalOpacity }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-12 bg-white rounded-full pointer-events-none origin-center"
-            />
+            {/* The white portal that perfectly overlaps the eyes and zooms out */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
+              <motion.div
+                style={{ scale: portalScale, opacity: portalOpacity }}
+                className="w-[72px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
+              />
+            </div>
           </div>
         </div>
       </div>
