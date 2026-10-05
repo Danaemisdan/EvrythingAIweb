@@ -1,36 +1,109 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence, useInView } from "framer-motion";
 import Link from "next/link";
-import { AgentFace } from "@/components/AgentFace";
+import { AgentFace, AgentState } from "@/components/AgentFace";
 import { Terminal, Cpu, Network, Video, Layers, Wand2, Mail, Calendar, MessageSquare } from "lucide-react";
 
-// --- Components ---
+export default function AppPage() {
+  const [mounted, setMounted] = useState(false);
+  const [activeSection, setActiveSection] = useState(0);
+  const [faceState, setFaceState] = useState<AgentState>("idle");
 
-function IntroSequence({ introProgress }: { introProgress: any }) {
+  // --- Intro Scroll ---
+  const introRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: introProgress } = useScroll({ target: introRef, offset: ["start start", "end start"] });
   const portalScale = useTransform(introProgress, [0, 0.3, 0.6, 1], [1, 1, 80, 200]);
   const portalOpacity = useTransform(introProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
-  const faceOpacity = useTransform(introProgress, [0.1, 0.2, 0.9, 1], [1, 0, 0, 1]);
+  const faceOpacityIntro = useTransform(introProgress, [0.1, 0.2, 0.9, 1], [1, 0, 0, 1]);
   const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
   const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
 
+  // --- Section Trackers ---
+  const devRef = useRef<HTMLDivElement>(null);
+  const devInView = useInView(devRef, { margin: "-40% 0px -40% 0px" });
+  const { scrollYProgress: devProgress } = useScroll({ target: devRef, offset: ["start end", "end start"] });
+  const devStep = useTransform(devProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
+  const [currentDevStep, setCurrentDevStep] = useState(0);
+  useEffect(() => { devStep.on("change", (v) => setCurrentDevStep(Math.round(v))); }, [devStep]);
+
+  const creativeRef = useRef<HTMLDivElement>(null);
+  const creativeInView = useInView(creativeRef, { margin: "-40% 0px -40% 0px" });
+  const { scrollYProgress: creativeProgress } = useScroll({ target: creativeRef, offset: ["start end", "end start"] });
+  const creativeStep = useTransform(creativeProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
+  const [currentCreativeStep, setCurrentCreativeStep] = useState(0);
+  useEffect(() => { creativeStep.on("change", (v) => setCurrentCreativeStep(Math.round(v))); }, [creativeStep]);
+
+  const opsRef = useRef<HTMLDivElement>(null);
+  const opsInView = useInView(opsRef, { margin: "-40% 0px -40% 0px" });
+  const { scrollYProgress: opsProgress } = useScroll({ target: opsRef, offset: ["start end", "end start"] });
+  const opsStep = useTransform(opsProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
+  const [currentOpsStep, setCurrentOpsStep] = useState(0);
+  useEffect(() => { opsStep.on("change", (v) => setCurrentOpsStep(Math.round(v))); }, [opsStep]);
+
+  // Sync active section
+  useEffect(() => {
+    if (opsInView) setActiveSection(3);
+    else if (creativeInView) setActiveSection(2);
+    else if (devInView) setActiveSection(1);
+    else setActiveSection(0);
+  }, [devInView, creativeInView, opsInView]);
+
+  // Sync face state
+  useEffect(() => {
+    if (activeSection === 0) setFaceState("idle");
+    else if (activeSection === 1) setFaceState(currentDevStep === 0 ? "thinking" : currentDevStep === 1 ? "error" : "happy");
+    else if (activeSection === 2) setFaceState(currentCreativeStep === 2 ? "idle" : "thinking");
+    else if (activeSection === 3) setFaceState(currentOpsStep === 0 ? "listening" : "speaking");
+  }, [activeSection, currentDevStep, currentCreativeStep, currentOpsStep]);
+
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+
+  // Face positions
+  const faceVariants = {
+    0: { x: "0%", y: "0%", scale: 1 },
+    1: { x: "25vw", y: "-22vh", scale: 0.55 }, // Top Right of Dev widget
+    2: { x: "-25vw", y: "-22vh", scale: 0.55 }, // Top Left of Creative widget
+    3: { x: "25vw", y: "-22vh", scale: 0.55 },  // Top Right of Ops widget
+  };
+
   return (
-    <>
-      <div className="fixed inset-0 pointer-events-none z-10 flex items-center justify-center">
-        <motion.div style={{ opacity: faceOpacity }}>
-          <AgentFace state="idle" size={180} />
+    <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-hidden">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5 mix-blend-difference">
+        <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">Momentum</Link>
+        <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Back to Home</Link>
+      </nav>
+
+      {/* SINGLE STICKY MOVING FACE */}
+      <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+        <motion.div
+          animate={faceVariants[activeSection as keyof typeof faceVariants]}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+          className="relative pointer-events-auto"
+        >
+          {/* Intro Portal - only visible in section 0 */}
+          {activeSection === 0 && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
+              <motion.div
+                style={{ scale: portalScale, opacity: portalOpacity }}
+                className="w-[54px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
+              />
+            </div>
+          )}
+          
+          <motion.div style={{ opacity: activeSection === 0 ? faceOpacityIntro : 1 }}>
+            <AgentFace state={faceState} size={180} />
+          </motion.div>
         </motion.div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
-          <motion.div
-            style={{ scale: portalScale, opacity: portalOpacity }}
-            className="w-[50px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
-          />
-        </div>
       </div>
+
+      {/* Intro Section */}
+      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
       <motion.div 
         style={{ opacity: heroOpacity, y: heroY }}
-        className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20"
+        className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20 pb-96"
       >
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">
           Intelligence that <br />
@@ -40,53 +113,9 @@ function IntroSequence({ introProgress }: { introProgress: any }) {
           Scroll down to enter the portal and see Momentum execute complex tasks across applications.
         </p>
       </motion.div>
-    </>
-  );
-}
-
-export default function AppPage() {
-  const introRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: introProgress } = useScroll({
-    target: introRef,
-    offset: ["start start", "end start"]
-  });
-
-  // Track scroll for Dev Section
-  const devRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: devProgress } = useScroll({ target: devRef, offset: ["start end", "end start"] });
-  const devStep = useTransform(devProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
-  const [currentDevStep, setCurrentDevStep] = useState(0);
-  useEffect(() => { devStep.on("change", (v) => setCurrentDevStep(Math.round(v))); }, [devStep]);
-
-  // Track scroll for Creative Section
-  const creativeRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: creativeProgress } = useScroll({ target: creativeRef, offset: ["start end", "end start"] });
-  const creativeStep = useTransform(creativeProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
-  const [currentCreativeStep, setCurrentCreativeStep] = useState(0);
-  useEffect(() => { creativeStep.on("change", (v) => setCurrentCreativeStep(Math.round(v))); }, [creativeStep]);
-
-  // Track scroll for Ops Section
-  const opsRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: opsProgress } = useScroll({ target: opsRef, offset: ["start end", "end start"] });
-  const opsStep = useTransform(opsProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
-  const [currentOpsStep, setCurrentOpsStep] = useState(0);
-  useEffect(() => { opsStep.on("change", (v) => setCurrentOpsStep(Math.round(v))); }, [opsStep]);
-
-  return (
-    <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-hidden">
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5 mix-blend-difference">
-        <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">Momentum</Link>
-        <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Back to Home</Link>
-      </nav>
-
-      {/* Intro Portal Scroll area */}
-      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
-      <IntroSequence introProgress={introProgress} />
-
-      <div className="h-[250vh]" /> {/* Spacer for intro scroll */}
+      <div className="h-[250vh]" />
 
       <div className="relative z-40 bg-black">
-        {/* Massive Statement */}
         <div className="min-h-screen flex items-center justify-center px-6 md:px-24">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.1] max-w-5xl text-center">
             Momentum is not an assistant. <br/>
@@ -96,8 +125,6 @@ export default function AppPage() {
 
         {/* --- SECTION 1: ENGINEERING --- */}
         <div ref={devRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col md:flex-row gap-20 items-start">
-          
-          {/* Scrolling Text (Left) */}
           <div className="w-full md:w-1/2 flex flex-col gap-[40vh] py-[20vh]">
             <div className="max-w-xl">
               <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6"><Terminal className="text-emerald-400" /></div>
@@ -108,44 +135,33 @@ export default function AppPage() {
                 <li className="flex items-center gap-4 text-lg text-zinc-300"><Network className="w-5 h-5 text-emerald-500" /> CI/CD pipeline management</li>
               </ul>
             </div>
-            
             <div className="max-w-xl">
               <h3 className="text-4xl md:text-5xl font-medium mb-6">Proactive Debugging</h3>
               <p className="text-xl text-zinc-400 leading-relaxed">When a pipeline breaks or a runtime error occurs, Momentum automatically investigates the stack trace, writes the patch, runs tests, and pushes the fix before you even wake up.</p>
             </div>
-
             <div className="max-w-xl">
               <h3 className="text-4xl md:text-5xl font-medium mb-6">Zero-Setup Deployments</h3>
               <p className="text-xl text-zinc-400 leading-relaxed">Simply describe the application you want. Momentum will scaffold the database, configure the cloud infrastructure, and give you a live production URL.</p>
             </div>
           </div>
-
-          {/* Sticky Interactive Widget (Right) */}
           <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
-            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-emerald-500/20 p-8 shadow-2xl flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4"><AgentFace state={currentDevStep === 0 ? "thinking" : currentDevStep === 1 ? "error" : "happy"} size={100} /></div>
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-emerald-500/20 p-8 pt-32 shadow-2xl flex flex-col relative overflow-hidden">
               <h4 className="text-xl font-medium text-white mb-6">Terminal / IDE</h4>
-              
               <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 font-mono text-sm overflow-hidden flex flex-col justify-end gap-2">
                 <AnimatePresence mode="popLayout">
                   {currentDevStep >= 0 && (
                     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-zinc-400">
-                      $ momentum build --target=production<br/>
-                      <span className="text-zinc-500">Analyzing 1,402 files...</span>
+                      $ momentum build --target=production<br/><span className="text-zinc-500">Analyzing 1,402 files...</span>
                     </motion.div>
                   )}
                   {currentDevStep >= 1 && (
                     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mt-4">
-                      <span className="text-red-400">✖ Build Failed: TypeError in auth.ts</span><br/>
-                      <span className="text-zinc-500">Momentum Agent intercepted error...</span><br/>
-                      <span className="text-emerald-400">Applying patch to auth.ts (lines 14-22)...</span>
+                      <span className="text-red-400">✖ Build Failed: TypeError in auth.ts</span><br/><span className="text-zinc-500">Momentum Agent intercepted error...</span><br/><span className="text-emerald-400">Applying patch to auth.ts (lines 14-22)...</span>
                     </motion.div>
                   )}
                   {currentDevStep >= 2 && (
                     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mt-4">
-                      <span className="text-emerald-400">✔ Patch successful. Tests passed.</span><br/>
-                      <span className="text-blue-400">Deploying to Vercel (Production)...</span><br/>
-                      <span className="text-white mt-2 inline-block font-bold">✨ Live at: https://app.production.com</span>
+                      <span className="text-emerald-400">✔ Patch successful. Tests passed.</span><br/><span className="text-blue-400">Deploying to Vercel (Production)...</span><br/><span className="text-white mt-2 inline-block font-bold">✨ Live at: https://app.production.com</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -156,13 +172,9 @@ export default function AppPage() {
 
         {/* --- SECTION 2: CREATIVE --- */}
         <div ref={creativeRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col-reverse md:flex-row gap-20 items-start">
-          
-          {/* Sticky Interactive Widget (Left) */}
           <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
-            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-pink-500/20 p-8 shadow-2xl flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 left-4"><AgentFace state={currentCreativeStep === 2 ? "idle" : "thinking"} size={100} /></div>
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-pink-500/20 p-8 pt-32 shadow-2xl flex flex-col relative overflow-hidden">
               <h4 className="text-xl font-medium text-white mb-6 text-right">Media Timeline</h4>
-              
               <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 flex flex-col justify-center gap-4 relative overflow-hidden">
                 <div className="h-48 bg-zinc-900 rounded-lg overflow-hidden relative">
                    {currentCreativeStep === 0 && <div className="absolute inset-0 flex items-center justify-center text-zinc-600">Raw Assets (142 files)</div>}
@@ -182,8 +194,6 @@ export default function AppPage() {
               </div>
             </div>
           </div>
-
-          {/* Scrolling Text (Right) */}
           <div className="w-full md:w-1/2 flex flex-col gap-[40vh] py-[20vh]">
             <div className="max-w-xl">
               <div className="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center mb-6"><Video className="text-pink-400" /></div>
@@ -194,7 +204,6 @@ export default function AppPage() {
                 <li className="flex items-center gap-4 text-lg text-zinc-300"><Wand2 className="w-5 h-5 text-pink-500" /> Prompt-based color grading</li>
               </ul>
             </div>
-            
             <div className="max-w-xl">
               <h3 className="text-4xl md:text-5xl font-medium mb-6">Iterate at the Speed of Thought</h3>
               <p className="text-xl text-zinc-400 leading-relaxed">Tell Momentum to "make the intro punchier" or "swap the b-roll to match a cyberpunk aesthetic." It executes complex NLE operations in seconds, letting you focus on the vision.</p>
@@ -204,8 +213,6 @@ export default function AppPage() {
 
         {/* --- SECTION 3: OPS --- */}
         <div ref={opsRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col md:flex-row gap-20 items-start">
-          
-          {/* Scrolling Text (Left) */}
           <div className="w-full md:w-1/2 flex flex-col gap-[40vh] py-[20vh]">
             <div className="max-w-xl">
               <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6"><Mail className="text-blue-400" /></div>
@@ -216,19 +223,14 @@ export default function AppPage() {
                 <li className="flex items-center gap-4 text-lg text-zinc-300"><MessageSquare className="w-5 h-5 text-blue-500" /> Multi-stakeholder negotiation</li>
               </ul>
             </div>
-            
             <div className="max-w-xl">
               <h3 className="text-4xl md:text-5xl font-medium mb-6">Inbox Zero, Permanently.</h3>
               <p className="text-xl text-zinc-400 leading-relaxed">It categorizes everything, surfaces only what requires your executive decision, and automatically archives or resolves the rest. You will never waste time on administrative overhead again.</p>
             </div>
           </div>
-
-          {/* Sticky Interactive Widget (Right) */}
           <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
-            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-blue-500/20 p-8 shadow-2xl flex flex-col relative overflow-hidden">
-              <div className="absolute top-4 right-4"><AgentFace state={currentOpsStep === 0 ? "listening" : "speaking"} size={100} /></div>
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-blue-500/20 p-8 pt-32 shadow-2xl flex flex-col relative overflow-hidden">
               <h4 className="text-xl font-medium text-white mb-6">Active Negotiation</h4>
-              
               <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 flex flex-col gap-4 overflow-hidden justify-end">
                 <AnimatePresence mode="popLayout">
                   {currentOpsStep >= 0 && (
@@ -260,7 +262,6 @@ export default function AppPage() {
           </div>
         </div>
 
-        {/* Final CTA */}
         <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
           <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-8">Ready to expand your workforce?</h2>
           <Link href="/newagent" className="inline-flex h-16 items-center justify-center rounded-full bg-white px-10 text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
