@@ -1,329 +1,274 @@
 "use client";
 
-import React, { useState, useRef, useEffect, ReactNode } from "react";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { Video, Mail, Code, Users, CheckCircle } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { AgentFace, AgentState } from "@/components/AgentFace";
+import { AgentFace } from "@/components/AgentFace";
+import { Terminal, Cpu, Network, Video, Layers, Wand2, Mail, Calendar, MessageSquare } from "lucide-react";
 
-// ---------------------------------------------------------------------------
-// SECTION COMPONENT
-// ---------------------------------------------------------------------------
-function Section({ index, setActiveSection, children }: { index: number, setActiveSection: (i: number) => void, children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { margin: "-45% 0px -45% 0px" });
+// --- Components ---
 
-  useEffect(() => {
-    if (isInView) {
-      setActiveSection(index);
-    }
-  }, [isInView, index, setActiveSection]);
+function IntroSequence({ introProgress }: { introProgress: any }) {
+  const portalScale = useTransform(introProgress, [0, 0.3, 0.6, 1], [1, 1, 80, 200]);
+  const portalOpacity = useTransform(introProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
+  const faceOpacity = useTransform(introProgress, [0.1, 0.2, 0.9, 1], [1, 0, 0, 1]);
+  const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
+  const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
 
   return (
-    <section ref={ref} className="min-h-screen w-full flex items-center justify-center p-6 md:p-12 relative z-10 pointer-events-none">
-      <div className="max-w-7xl w-full flex">
-        {children}
+    <>
+      <div className="fixed inset-0 pointer-events-none z-10 flex items-center justify-center">
+        <motion.div style={{ opacity: faceOpacity }}>
+          <AgentFace state="idle" size={180} />
+        </motion.div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
+          <motion.div
+            style={{ scale: portalScale, opacity: portalOpacity }}
+            className="w-[50px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
+          />
+        </div>
       </div>
-    </section>
+      <motion.div 
+        style={{ opacity: heroOpacity, y: heroY }}
+        className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20"
+      >
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">
+          Intelligence that <br />
+          <span className="text-zinc-500">does the work.</span>
+        </h1>
+        <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed mx-auto">
+          Scroll down to enter the portal and see Momentum execute complex tasks across applications.
+        </p>
+      </motion.div>
+    </>
   );
 }
 
-// ---------------------------------------------------------------------------
-// PAGE COMPONENT
-// ---------------------------------------------------------------------------
 export default function AppPage() {
-  const [mounted, setMounted] = useState(false);
-  const [activeSection, setActiveSection] = useState(0);
-  const [faceState, setFaceState] = useState<AgentState>("idle");
-
   const introRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: introProgress } = useScroll({
     target: introRef,
     offset: ["start start", "end start"]
   });
 
-  // Zoom portal effect exactly as user requested: white portal scales out of eyes
-  const portalScale = useTransform(introProgress, [0, 0.2, 0.6, 1], [1, 1, 80, 200]);
-  const portalOpacity = useTransform(introProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
-  
-  // Fade out the Agent Face while the portal expands so the eyes don't poke out
-  // Fade it back in at the very end when transitioning to the dark interactive sections
-  const faceOpacity = useTransform(introProgress, [0.1, 0.2, 0.9, 1], [1, 0, 0, 1]);
-  
-  // Fade out hero text
-  const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
-  const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
+  // Track scroll for Dev Section
+  const devRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: devProgress } = useScroll({ target: devRef, offset: ["start end", "end start"] });
+  const devStep = useTransform(devProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
+  const [currentDevStep, setCurrentDevStep] = useState(0);
+  useEffect(() => { devStep.on("change", (v) => setCurrentDevStep(Math.round(v))); }, [devStep]);
 
-  // Keep face state in sync with sections if not explicitly interacting
-  useEffect(() => {
-    if (activeSection === 0) setFaceState("idle");
-    else if (activeSection === 1) setFaceState("thinking");
-    else if (activeSection === 2) setFaceState("listening");
-    else if (activeSection === 3) setFaceState("idle");
-    else if (activeSection === 4) setFaceState("speaking");
-  }, [activeSection]);
+  // Track scroll for Creative Section
+  const creativeRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: creativeProgress } = useScroll({ target: creativeRef, offset: ["start end", "end start"] });
+  const creativeStep = useTransform(creativeProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
+  const [currentCreativeStep, setCurrentCreativeStep] = useState(0);
+  useEffect(() => { creativeStep.on("change", (v) => setCurrentCreativeStep(Math.round(v))); }, [creativeStep]);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  // Face positions depending on which section is active
-  const faceVariants = {
-    0: { x: "0%", y: "0%", scale: 1 },
-    1: { x: "25vw", y: "-15vh", scale: 0.65 }, // Moves top right
-    2: { x: "-25vw", y: "15vh", scale: 0.65 }, // Moves bottom left
-    3: { x: "25vw", y: "15vh", scale: 0.65 },  // Moves bottom right
-    4: { x: "-25vw", y: "-15vh", scale: 0.65 }, // Moves top left
-  };
-
-  // Mobile variants (face stays roughly center/top, just scales down a bit)
-  const mobileFaceVariants = {
-    0: { x: "0%", y: "0%", scale: 0.8 },
-    1: { x: "0%", y: "-35vh", scale: 0.5 },
-    2: { x: "0%", y: "-35vh", scale: 0.5 },
-    3: { x: "0%", y: "-35vh", scale: 0.5 },
-    4: { x: "0%", y: "-35vh", scale: 0.5 },
-  };
+  // Track scroll for Ops Section
+  const opsRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: opsProgress } = useScroll({ target: opsRef, offset: ["start end", "end start"] });
+  const opsStep = useTransform(opsProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
+  const [currentOpsStep, setCurrentOpsStep] = useState(0);
+  useEffect(() => { opsStep.on("change", (v) => setCurrentOpsStep(Math.round(v))); }, [opsStep]);
 
   return (
     <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-hidden">
-      
-      {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5 mix-blend-difference">
-        <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">
-          Momentum
-        </Link>
-        <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-          Back to Home
-        </Link>
+        <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">Momentum</Link>
+        <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Back to Home</Link>
       </nav>
 
-      {/* Sticky Agent Face & Portal Effect */}
-      <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
-        <motion.div
-          animate={typeof window !== "undefined" && window.innerWidth < 768 ? mobileFaceVariants[activeSection as keyof typeof mobileFaceVariants] : faceVariants[activeSection as keyof typeof faceVariants]}
-          transition={{ type: "spring", stiffness: 150, damping: 20 }}
-          className="relative pointer-events-auto flex items-center justify-center"
-        >
-          {/* Subtle glow behind the face that changes color based on section */}
-          <motion.div 
-            className="absolute inset-0 blur-[100px] -z-10 rounded-full"
-            animate={{
-              backgroundColor: 
-                activeSection === 1 ? "rgba(236, 72, 153, 0.2)" : // Pink
-                activeSection === 2 ? "rgba(59, 130, 246, 0.2)" : // Blue
-                activeSection === 3 ? "rgba(16, 185, 129, 0.2)" : // Emerald
-                activeSection === 4 ? "rgba(249, 115, 22, 0.2)" : // Orange
-                "rgba(255, 255, 255, 0.05)"
-            }}
-            transition={{ duration: 1 }}
-          />
+      {/* Intro Portal Scroll area */}
+      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
+      <IntroSequence introProgress={introProgress} />
+
+      <div className="h-[250vh]" /> {/* Spacer for intro scroll */}
+
+      <div className="relative z-40 bg-black">
+        {/* Massive Statement */}
+        <div className="min-h-screen flex items-center justify-center px-6 md:px-24">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.1] max-w-5xl text-center">
+            Momentum is not an assistant. <br/>
+            <span className="text-zinc-600">It is a fully autonomous digital workforce capable of reasoning, planning, and executing across any domain.</span>
+          </h2>
+        </div>
+
+        {/* --- SECTION 1: ENGINEERING --- */}
+        <div ref={devRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col md:flex-row gap-20 items-start">
           
-          <motion.div style={{ opacity: faceOpacity }}>
-            <AgentFace state={faceState} size={180} />
-          </motion.div>
-
-          {/* The white portal that perfectly overlaps the eyes and zooms out during intro */}
-          {activeSection === 0 && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
-              <motion.div
-                style={{ scale: portalScale, opacity: portalOpacity }}
-                className="w-[50px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
-              />
+          {/* Scrolling Text (Left) */}
+          <div className="w-full md:w-1/2 flex flex-col gap-[40vh] py-[20vh]">
+            <div className="max-w-xl">
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6"><Terminal className="text-emerald-400" /></div>
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Absolute Autonomy in Engineering</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed mb-8">Momentum doesn't just write snippets. It reads your entire repository, understands your architecture, and builds full-stack features from end to end.</p>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><Cpu className="w-5 h-5 text-emerald-500" /> Multi-file architecture design</li>
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><Network className="w-5 h-5 text-emerald-500" /> CI/CD pipeline management</li>
+              </ul>
             </div>
-          )}
-        </motion.div>
+            
+            <div className="max-w-xl">
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Proactive Debugging</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed">When a pipeline breaks or a runtime error occurs, Momentum automatically investigates the stack trace, writes the patch, runs tests, and pushes the fix before you even wake up.</p>
+            </div>
+
+            <div className="max-w-xl">
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Zero-Setup Deployments</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed">Simply describe the application you want. Momentum will scaffold the database, configure the cloud infrastructure, and give you a live production URL.</p>
+            </div>
+          </div>
+
+          {/* Sticky Interactive Widget (Right) */}
+          <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-emerald-500/20 p-8 shadow-2xl flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4"><AgentFace state={currentDevStep === 0 ? "thinking" : currentDevStep === 1 ? "error" : "happy"} size={100} /></div>
+              <h4 className="text-xl font-medium text-white mb-6">Terminal / IDE</h4>
+              
+              <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 font-mono text-sm overflow-hidden flex flex-col justify-end gap-2">
+                <AnimatePresence mode="popLayout">
+                  {currentDevStep >= 0 && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="text-zinc-400">
+                      $ momentum build --target=production<br/>
+                      <span className="text-zinc-500">Analyzing 1,402 files...</span>
+                    </motion.div>
+                  )}
+                  {currentDevStep >= 1 && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mt-4">
+                      <span className="text-red-400">✖ Build Failed: TypeError in auth.ts</span><br/>
+                      <span className="text-zinc-500">Momentum Agent intercepted error...</span><br/>
+                      <span className="text-emerald-400">Applying patch to auth.ts (lines 14-22)...</span>
+                    </motion.div>
+                  )}
+                  {currentDevStep >= 2 && (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mt-4">
+                      <span className="text-emerald-400">✔ Patch successful. Tests passed.</span><br/>
+                      <span className="text-blue-400">Deploying to Vercel (Production)...</span><br/>
+                      <span className="text-white mt-2 inline-block font-bold">✨ Live at: https://app.production.com</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SECTION 2: CREATIVE --- */}
+        <div ref={creativeRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col-reverse md:flex-row gap-20 items-start">
+          
+          {/* Sticky Interactive Widget (Left) */}
+          <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-pink-500/20 p-8 shadow-2xl flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 left-4"><AgentFace state={currentCreativeStep === 2 ? "idle" : "thinking"} size={100} /></div>
+              <h4 className="text-xl font-medium text-white mb-6 text-right">Media Timeline</h4>
+              
+              <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 flex flex-col justify-center gap-4 relative overflow-hidden">
+                <div className="h-48 bg-zinc-900 rounded-lg overflow-hidden relative">
+                   {currentCreativeStep === 0 && <div className="absolute inset-0 flex items-center justify-center text-zinc-600">Raw Assets (142 files)</div>}
+                   {currentCreativeStep === 1 && <div className="absolute inset-0 flex items-center justify-center text-pink-400">Syncing Audio & B-Roll...</div>}
+                   {currentCreativeStep === 2 && (
+                     <div className="absolute inset-0">
+                       <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover opacity-80" />
+                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm"><span className="text-white font-bold bg-pink-600 px-4 py-2 rounded-full">Final Cut Ready</span></div>
+                     </div>
+                   )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <motion.div className="h-6 bg-pink-500/20 rounded w-full" animate={{ width: currentCreativeStep > 0 ? "100%" : "30%" }} transition={{ duration: 0.5 }} />
+                  <motion.div className="h-6 bg-rose-500/20 rounded w-3/4" animate={{ width: currentCreativeStep > 0 ? "80%" : "10%" }} transition={{ duration: 0.5 }} />
+                  <motion.div className="h-6 bg-purple-500/20 rounded w-1/2" animate={{ width: currentCreativeStep > 0 ? "60%" : "5%" }} transition={{ duration: 0.5 }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scrolling Text (Right) */}
+          <div className="w-full md:w-1/2 flex flex-col gap-[40vh] py-[20vh]">
+            <div className="max-w-xl">
+              <div className="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center mb-6"><Video className="text-pink-400" /></div>
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">A New Era of Creative Control</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed mb-8">Drop thousands of raw clips into a folder. Momentum will categorize them, find the best takes, and assemble a narrative timeline synced perfectly to your music.</p>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><Layers className="w-5 h-5 text-pink-500" /> Automated asset organization</li>
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><Wand2 className="w-5 h-5 text-pink-500" /> Prompt-based color grading</li>
+              </ul>
+            </div>
+            
+            <div className="max-w-xl">
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Iterate at the Speed of Thought</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed">Tell Momentum to "make the intro punchier" or "swap the b-roll to match a cyberpunk aesthetic." It executes complex NLE operations in seconds, letting you focus on the vision.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SECTION 3: OPS --- */}
+        <div ref={opsRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col md:flex-row gap-20 items-start">
+          
+          {/* Scrolling Text (Left) */}
+          <div className="w-full md:w-1/2 flex flex-col gap-[40vh] py-[20vh]">
+            <div className="max-w-xl">
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6"><Mail className="text-blue-400" /></div>
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Business Operations on Autopilot</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed mb-8">Momentum doesn't just read your email; it manages your professional relationships. It drafts nuanced replies, negotiates deals within your parameters, and coordinates complex schedules.</p>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><Calendar className="w-5 h-5 text-blue-500" /> Autonomous calendar Tetris</li>
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><MessageSquare className="w-5 h-5 text-blue-500" /> Multi-stakeholder negotiation</li>
+              </ul>
+            </div>
+            
+            <div className="max-w-xl">
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Inbox Zero, Permanently.</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed">It categorizes everything, surfaces only what requires your executive decision, and automatically archives or resolves the rest. You will never waste time on administrative overhead again.</p>
+            </div>
+          </div>
+
+          {/* Sticky Interactive Widget (Right) */}
+          <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-blue-500/20 p-8 shadow-2xl flex flex-col relative overflow-hidden">
+              <div className="absolute top-4 right-4"><AgentFace state={currentOpsStep === 0 ? "listening" : "speaking"} size={100} /></div>
+              <h4 className="text-xl font-medium text-white mb-6">Active Negotiation</h4>
+              
+              <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 flex flex-col gap-4 overflow-hidden justify-end">
+                <AnimatePresence mode="popLayout">
+                  {currentOpsStep >= 0 && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start bg-zinc-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm max-w-[85%] text-zinc-200">
+                      <span className="text-xs text-zinc-500 block mb-1">Acme Corp</span>
+                      We need a 20% discount on the enterprise plan to proceed with the Q4 deployment.
+                    </motion.div>
+                  )}
+                  {currentOpsStep >= 1 && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-end bg-blue-600 px-4 py-3 rounded-2xl rounded-tr-sm text-sm max-w-[85%] text-white">
+                      <span className="text-xs text-blue-300 block mb-1">Momentum (on your behalf)</span>
+                      I can authorize 10% today, and I'll include our priority support package free for 6 months to offset the difference.
+                    </motion.div>
+                  )}
+                  {currentOpsStep >= 2 && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start bg-zinc-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm max-w-[85%] text-zinc-200">
+                      <span className="text-xs text-zinc-500 block mb-1">Acme Corp</span>
+                      That works. Send the contract over.
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {currentOpsStep >= 2 && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-center">
+                    <span className="text-xs text-blue-400 border border-blue-500/30 bg-blue-500/10 px-4 py-2 rounded-full">Contract Auto-Generated & Sent</span>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Final CTA */}
+        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
+          <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-8">Ready to expand your workforce?</h2>
+          <Link href="/newagent" className="inline-flex h-16 items-center justify-center rounded-full bg-white px-10 text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+            Deploy Momentum
+          </Link>
+        </div>
+
       </div>
-
-      {/* Intro Scroll Tracker */}
-      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 pointer-events-none z-10" />
-
-      {/* Hero Section (0) */}
-      <Section index={0} setActiveSection={setActiveSection}>
-        <motion.div 
-          style={{ opacity: heroOpacity, y: heroY }}
-          className="w-full flex flex-col items-center text-center mt-64 pointer-events-none"
-        >
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">
-            Intelligence that <br />
-            <span className="text-zinc-500">does the work.</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed mx-auto">
-            Scroll down to enter the portal and see Momentum execute complex tasks across applications.
-          </p>
-        </motion.div>
-      </Section>
-
-      {/* Add spacer so the intro scroll has room before section 1 appears */}
-      <div className="h-[150vh] w-full" />
-
-      {/* Creative Section (1) */}
-      <Section index={1} setActiveSection={setActiveSection}>
-        <div className={`w-full max-w-xl transition-all duration-700 ${activeSection === 1 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"} mr-auto`}>
-          <div className="bg-zinc-900/60 backdrop-blur-xl rounded-[2rem] border border-pink-500/20 p-8 shadow-2xl pointer-events-auto">
-            <h3 className="text-3xl font-medium text-white mb-2">Video Editor AI</h3>
-            <p className="text-zinc-400 mb-6">Momentum perfectly syncs audio, adds effects, and renders your timeline.</p>
-            
-            <div className="h-40 bg-black/60 rounded-xl overflow-hidden relative border border-white/5 mb-6 flex flex-col justify-end p-2 gap-1">
-               <motion.div className="h-6 bg-pink-500/40 rounded flex items-center px-2 text-[10px] text-pink-200"
-                 animate={{ width: activeSection === 1 ? ["10%", "40%", "100%"] : "10%" }}
-                 transition={{ duration: 3, ease: "easeInOut", repeat: activeSection === 1 ? Infinity : 0, repeatDelay: 1 }}
-               >A-Roll.mp4</motion.div>
-               <motion.div className="h-6 bg-rose-500/40 rounded flex items-center px-2 text-[10px] text-rose-200"
-                 animate={{ width: activeSection === 1 ? ["0%", "60%", "90%"] : "0%" }}
-                 transition={{ duration: 3, ease: "easeInOut", delay: 0.5, repeat: activeSection === 1 ? Infinity : 0, repeatDelay: 1 }}
-               >B-Roll.mp4</motion.div>
-            </div>
-            
-            <button 
-              onMouseEnter={() => setFaceState("happy")}
-              onMouseLeave={() => setFaceState("thinking")}
-              className="w-full bg-pink-600 hover:bg-pink-500 transition-colors py-4 rounded-xl text-white font-medium text-lg"
-            >
-              Export Final Cut
-            </button>
-          </div>
-        </div>
-      </Section>
-
-      {/* Admin Section (2) */}
-      <Section index={2} setActiveSection={setActiveSection}>
-        <div className={`w-full max-w-xl transition-all duration-700 ${activeSection === 2 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"} ml-auto`}>
-          <div className="bg-zinc-900/60 backdrop-blur-xl rounded-[2rem] border border-blue-500/20 p-8 shadow-2xl pointer-events-auto">
-            <h3 className="text-3xl font-medium text-white mb-2">Inbox Manager</h3>
-            <p className="text-zinc-400 mb-6">Reads incoming emails, drafts replies, and clears your inbox autonomously.</p>
-            
-            <div className="flex flex-col gap-3 mb-6 relative">
-               <motion.div 
-                 initial={{ opacity: 1, x: 0 }}
-                 animate={activeSection === 2 ? { opacity: 0, x: 100 } : { opacity: 1, x: 0 }}
-                 transition={{ delay: 1, duration: 0.5 }}
-                 className="p-4 bg-black/60 border border-white/5 rounded-xl flex justify-between items-center"
-               >
-                 <span className="text-zinc-200 font-medium">Urgent: Q3 Report Data</span>
-                 <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full">Drafting...</span>
-               </motion.div>
-               
-               <motion.div 
-                 initial={{ opacity: 1, x: 0 }}
-                 animate={activeSection === 2 ? { opacity: 0, x: 100 } : { opacity: 1, x: 0 }}
-                 transition={{ delay: 1.5, duration: 0.5 }}
-                 className="p-4 bg-black/60 border border-white/5 rounded-xl flex justify-between items-center"
-               >
-                 <span className="text-zinc-200 font-medium">Reschedule lunch?</span>
-                 <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">Calendar Updated</span>
-               </motion.div>
-
-               <motion.div 
-                 initial={{ opacity: 0 }}
-                 animate={activeSection === 2 ? { opacity: 1 } : { opacity: 0 }}
-                 transition={{ delay: 2, duration: 0.5 }}
-                 className="absolute inset-0 flex items-center justify-center pointer-events-none"
-               >
-                 <span className="text-blue-400 font-medium text-xl bg-blue-500/10 px-6 py-3 rounded-full border border-blue-500/20">
-                   Inbox Zero Achieved ✨
-                 </span>
-               </motion.div>
-            </div>
-            
-            <button 
-              onMouseEnter={() => setFaceState("happy")}
-              onMouseLeave={() => setFaceState("listening")}
-              className="w-full bg-blue-600 hover:bg-blue-500 transition-colors py-4 rounded-xl text-white font-medium text-lg mt-6"
-            >
-              Process Next Batch
-            </button>
-          </div>
-        </div>
-      </Section>
-
-      {/* Dev Section (3) */}
-      <Section index={3} setActiveSection={setActiveSection}>
-        <div className={`w-full max-w-xl transition-all duration-700 ${activeSection === 3 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"} mr-auto`}>
-          <div className="bg-zinc-900/60 backdrop-blur-xl rounded-[2rem] border border-emerald-500/20 p-8 shadow-2xl pointer-events-auto">
-            <h3 className="text-3xl font-medium text-white mb-2">Code Architecture</h3>
-            <p className="text-zinc-400 mb-6">Spots syntax errors, refactors architecture, and ships to production.</p>
-            
-            <div className="p-5 bg-black/80 rounded-xl font-mono text-sm border border-white/5 mb-6 h-36 flex flex-col justify-center">
-               {faceState === "error" ? (
-                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                   <span className="text-red-400">TypeError: Cannot read properties of undefined</span><br/>
-                   <span className="text-zinc-500">  at processData (utils.ts:42)</span><br/>
-                   <span className="text-zinc-500">  at Main (app.tsx:18)</span>
-                 </motion.div>
-               ) : faceState === "happy" ? (
-                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                   <span className="text-emerald-400">✔ Successfully patched utils.ts</span><br/>
-                   <span className="text-emerald-400">✔ All 42 tests passed</span><br/>
-                   <span className="text-white mt-2 inline-block">Deploying to Vercel... 🚀</span>
-                 </motion.div>
-               ) : (
-                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                   <span className="text-zinc-300">Scanning codebase for vulnerabilities...</span><br/>
-                   <span className="text-emerald-400 mt-2 inline-block">100% Secure. Systems nominal.</span>
-                 </motion.div>
-               )}
-            </div>
-            
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setFaceState("error")}
-                className="flex-1 bg-zinc-800 hover:bg-zinc-700 border border-red-500/30 transition-colors py-4 rounded-xl text-white font-medium text-lg"
-              >
-                Break Code
-              </button>
-              <button 
-                onClick={() => setFaceState("happy")}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 transition-colors py-4 rounded-xl text-white font-medium text-lg"
-              >
-                Auto-Fix
-              </button>
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      {/* Comm Section (4) */}
-      <Section index={4} setActiveSection={setActiveSection}>
-        <div className={`w-full max-w-xl transition-all duration-700 ${activeSection === 4 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"} ml-auto`}>
-          <div className="bg-zinc-900/60 backdrop-blur-xl rounded-[2rem] border border-orange-500/20 p-8 shadow-2xl pointer-events-auto">
-            <h3 className="text-3xl font-medium text-white mb-2">Client Negotiation</h3>
-            <p className="text-zinc-400 mb-6">Acts as your proxy in deals, handling back-and-forth messages.</p>
-            
-            <div className="flex flex-col gap-3 h-48 bg-black/60 rounded-xl p-4 overflow-hidden border border-white/5 mb-6 relative">
-               <motion.div initial={{ opacity: 0, y: 10 }} animate={activeSection === 4 ? { opacity: 1, y: 0 } : {}} className="self-start bg-zinc-800 px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm max-w-[85%] text-zinc-200">
-                 Client: We need a 20% discount to proceed with the enterprise plan.
-               </motion.div>
-               
-               <motion.div initial={{ opacity: 0, y: 10 }} animate={activeSection === 4 ? { opacity: 1, y: 0 } : {}} transition={{ delay: 1 }} className="self-end bg-orange-600 px-4 py-2.5 rounded-2xl rounded-tr-sm text-sm max-w-[85%] text-white">
-                 Momentum: I can authorize 10% today, and I'll include our priority support package free for 6 months.
-               </motion.div>
-
-               <motion.div initial={{ opacity: 0, y: 10 }} animate={activeSection === 4 ? { opacity: 1, y: 0 } : {}} transition={{ delay: 2.5 }} className="self-start bg-zinc-800 px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm max-w-[85%] text-zinc-200">
-                 Client: That works. Send the contract over.
-               </motion.div>
-               
-               <motion.div initial={{ opacity: 0, y: 10 }} animate={activeSection === 4 ? { opacity: 1, y: 0 } : {}} transition={{ delay: 3.5 }} className="self-end bg-orange-600 px-4 py-2.5 rounded-2xl rounded-tr-sm text-sm max-w-[85%] text-white">
-                 Momentum: Contract drafted and sent via DocuSign. Pleasure doing business! 🤝
-               </motion.div>
-            </div>
-            
-            <Link 
-              href="/newagent"
-              onMouseEnter={() => setFaceState("happy")}
-              onMouseLeave={() => setFaceState("speaking")}
-              className="flex items-center justify-center w-full bg-white text-black hover:bg-zinc-200 transition-colors py-4 rounded-xl font-bold text-lg"
-            >
-              Start Your Own Agent
-            </Link>
-          </div>
-        </div>
-      </Section>
-
-      {/* Spacing at bottom */}
-      <div className="h-32 w-full" />
     </div>
   );
 }
