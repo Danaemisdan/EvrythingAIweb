@@ -30,9 +30,9 @@ export default function AppPage() {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  const portalScale = useTransform(introProgress, [0, 0.3, 0.6, 1], [1, 1, 80, 200]);
-  const portalOpacity = useTransform(introProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
-  const faceOpacityIntro = useTransform(introProgress, [0.1, 0.2, 0.9, 1], [1, 0, 0, 1]);
+  const portalScale = useTransform(introProgress, [0, 0.1, 0.6, 1], [1, 1, 80, 200]);
+  const portalOpacity = useTransform(introProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
+  const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 0.9, 1], [1, 0, 0, 1]);
   const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
   const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
 
