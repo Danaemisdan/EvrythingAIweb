@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { motion, useScroll, useTransform, AnimatePresence, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence, useInView, useMotionValue } from "framer-motion";
 import Link from "next/link";
 import { AgentFace, AgentState } from "@/components/AgentFace";
 import { Terminal, Cpu, Network, Video, Layers, Wand2, Mail, Calendar, MessageSquare } from "lucide-react";
@@ -13,7 +13,23 @@ export default function AppPage() {
 
   // --- Intro Scroll ---
   const introRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: introProgress } = useScroll({ target: introRef, offset: ["start start", "end start"] });
+  const introProgress = useMotionValue(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!introRef.current) return;
+      const rect = introRef.current.getBoundingClientRect();
+      const totalScrollDistance = rect.height;
+      const currentScroll = -rect.top;
+      let progress = currentScroll / totalScrollDistance;
+      progress = Math.max(0, Math.min(1, progress));
+      introProgress.set(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   const portalScale = useTransform(introProgress, [0, 0.3, 0.6, 1], [1, 1, 80, 200]);
   const portalOpacity = useTransform(introProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
   const faceOpacityIntro = useTransform(introProgress, [0.1, 0.2, 0.9, 1], [1, 0, 0, 1]);
