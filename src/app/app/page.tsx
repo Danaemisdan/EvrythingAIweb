@@ -15,60 +15,66 @@ export default function AppPage() {
   const introRef = useRef<HTMLDivElement>(null);
   const introProgress = useMotionValue(0);
 
+  // --- Section Trackers ---
+  const devRef = useRef<HTMLDivElement>(null);
+  const creativeRef = useRef<HTMLDivElement>(null);
+  const opsRef = useRef<HTMLDivElement>(null);
+  const universalRef = useRef<HTMLDivElement>(null);
+  
+  const [currentDevStep, setCurrentDevStep] = useState(0);
+  const [currentCreativeStep, setCurrentCreativeStep] = useState(0);
+  const [currentOpsStep, setCurrentOpsStep] = useState(0);
+
   useEffect(() => {
     const handleScroll = () => {
-      if (!introRef.current) return;
-      const rect = introRef.current.getBoundingClientRect();
-      const totalScrollDistance = rect.height;
-      const currentScroll = -rect.top;
-      let progress = currentScroll / totalScrollDistance;
-      progress = Math.max(0, Math.min(1, progress));
-      introProgress.set(progress);
+      const vh = window.innerHeight;
+      
+      // 1. Intro Progress
+      if (introRef.current) {
+        const rect = introRef.current.getBoundingClientRect();
+        let progress = -rect.top / rect.height;
+        progress = Math.max(0, Math.min(1, progress));
+        introProgress.set(progress);
+      }
+
+      const isActive = (ref: React.RefObject<HTMLDivElement>) => {
+        if (!ref.current) return false;
+        const rect = ref.current.getBoundingClientRect();
+        return rect.top < vh * 0.8 && rect.bottom > vh * 0.2;
+      };
+
+      const getStep = (ref: React.RefObject<HTMLDivElement>) => {
+        if (!ref.current) return 0;
+        const rect = ref.current.getBoundingClientRect();
+        const totalDistance = vh + rect.height;
+        const scrolled = vh - rect.top;
+        const p = Math.max(0, Math.min(1, scrolled / totalDistance));
+        if (p > 0.7) return 2;
+        if (p > 0.5) return 1;
+        return 0;
+      };
+
+      setCurrentDevStep(getStep(devRef));
+      setCurrentCreativeStep(getStep(creativeRef));
+      setCurrentOpsStep(getStep(opsRef));
+
+      if (isActive(universalRef)) setActiveSection(4);
+      else if (isActive(opsRef)) setActiveSection(3);
+      else if (isActive(creativeRef)) setActiveSection(2);
+      else if (isActive(devRef)) setActiveSection(1);
+      else setActiveSection(0);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [introProgress]);
+  }, []);
+
   const portalScale = useTransform(introProgress, [0, 0.1, 0.6, 1], [1, 1, 80, 200]);
   const portalOpacity = useTransform(introProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
   const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 1], [1, 0, 0]);
   const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
   const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
-
-  // --- Section Trackers ---
-  const devRef = useRef<HTMLDivElement>(null);
-  const devInView = useInView(devRef, { margin: "-40% 0px -40% 0px" });
-  const { scrollYProgress: devProgress } = useScroll({ target: devRef, offset: ["start end", "end start"] });
-  const devStep = useTransform(devProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
-  const [currentDevStep, setCurrentDevStep] = useState(0);
-  useEffect(() => { devStep.on("change", (v) => setCurrentDevStep(Math.round(v))); }, [devStep]);
-
-  const creativeRef = useRef<HTMLDivElement>(null);
-  const creativeInView = useInView(creativeRef, { margin: "-40% 0px -40% 0px" });
-  const { scrollYProgress: creativeProgress } = useScroll({ target: creativeRef, offset: ["start end", "end start"] });
-  const creativeStep = useTransform(creativeProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
-  const [currentCreativeStep, setCurrentCreativeStep] = useState(0);
-  useEffect(() => { creativeStep.on("change", (v) => setCurrentCreativeStep(Math.round(v))); }, [creativeStep]);
-
-  const opsRef = useRef<HTMLDivElement>(null);
-  const opsInView = useInView(opsRef, { margin: "-40% 0px -40% 0px" });
-  const { scrollYProgress: opsProgress } = useScroll({ target: opsRef, offset: ["start end", "end start"] });
-  const opsStep = useTransform(opsProgress, [0.3, 0.5, 0.7], [0, 1, 2]);
-  const [currentOpsStep, setCurrentOpsStep] = useState(0);
-  useEffect(() => { opsStep.on("change", (v) => setCurrentOpsStep(Math.round(v))); }, [opsStep]);
-
-  const universalRef = useRef<HTMLDivElement>(null);
-  const universalInView = useInView(universalRef, { margin: "-40% 0px -40% 0px" });
-
-  // Sync active section
-  useEffect(() => {
-    if (universalInView) setActiveSection(4);
-    else if (opsInView) setActiveSection(3);
-    else if (creativeInView) setActiveSection(2);
-    else if (devInView) setActiveSection(1);
-    else setActiveSection(0);
-  }, [devInView, creativeInView, opsInView, universalInView]);
 
   // Sync face state
   useEffect(() => {
