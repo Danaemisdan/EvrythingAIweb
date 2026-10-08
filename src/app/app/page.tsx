@@ -32,7 +32,7 @@ export default function AppPage() {
   }, []);
   const portalScale = useTransform(introProgress, [0, 0.1, 0.6, 1], [1, 1, 80, 200]);
   const portalOpacity = useTransform(introProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
-  const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 0.9, 1], [1, 0, 0, 1]);
+  const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 1], [1, 0, 0]);
   const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
   const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
 
@@ -109,7 +109,10 @@ export default function AppPage() {
             </div>
           )}
           
-          <motion.div style={{ opacity: activeSection === 0 ? faceOpacityIntro : 1 }}>
+          <motion.div 
+            style={{ opacity: activeSection === 0 ? faceOpacityIntro as any : 1 }}
+            className={activeSection === 0 ? "" : "transition-opacity duration-1000 ease-in"}
+          >
             <AgentFace state={faceState} size={180} />
           </motion.div>
         </motion.div>
