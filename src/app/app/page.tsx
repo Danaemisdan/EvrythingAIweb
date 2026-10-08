@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, useScroll, useTransform, AnimatePresence, useInView, useMotionValue } from "framer-motion";
 import Link from "next/link";
 import { AgentFace, AgentState } from "@/components/AgentFace";
-import { Terminal, Cpu, Network, Video, Layers, Wand2, Mail, Calendar, MessageSquare } from "lucide-react";
+import { Terminal, Cpu, Network, Video, Layers, Wand2, Mail, Calendar, MessageSquare, ShieldCheck, MonitorSmartphone } from "lucide-react";
 
 export default function AppPage() {
   const [mounted, setMounted] = useState(false);
@@ -29,7 +29,7 @@ export default function AppPage() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [introProgress]);
   const portalScale = useTransform(introProgress, [0, 0.1, 0.6, 1], [1, 1, 80, 200]);
   const portalOpacity = useTransform(introProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
   const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 1], [1, 0, 0]);
@@ -58,13 +58,17 @@ export default function AppPage() {
   const [currentOpsStep, setCurrentOpsStep] = useState(0);
   useEffect(() => { opsStep.on("change", (v) => setCurrentOpsStep(Math.round(v))); }, [opsStep]);
 
+  const universalRef = useRef<HTMLDivElement>(null);
+  const universalInView = useInView(universalRef, { margin: "-40% 0px -40% 0px" });
+
   // Sync active section
   useEffect(() => {
-    if (opsInView) setActiveSection(3);
+    if (universalInView) setActiveSection(4);
+    else if (opsInView) setActiveSection(3);
     else if (creativeInView) setActiveSection(2);
     else if (devInView) setActiveSection(1);
     else setActiveSection(0);
-  }, [devInView, creativeInView, opsInView]);
+  }, [devInView, creativeInView, opsInView, universalInView]);
 
   // Sync face state
   useEffect(() => {
@@ -72,6 +76,7 @@ export default function AppPage() {
     else if (activeSection === 1) setFaceState(currentDevStep === 0 ? "thinking" : currentDevStep === 1 ? "error" : "happy");
     else if (activeSection === 2) setFaceState(currentCreativeStep === 2 ? "idle" : "thinking");
     else if (activeSection === 3) setFaceState(currentOpsStep === 0 ? "listening" : "speaking");
+    else if (activeSection === 4) setFaceState("happy");
   }, [activeSection, currentDevStep, currentCreativeStep, currentOpsStep]);
 
   useEffect(() => { setMounted(true); }, []);
@@ -83,6 +88,7 @@ export default function AppPage() {
     1: { x: "25vw", y: "-22vh", scale: 0.55 }, // Top Right of Dev widget
     2: { x: "-25vw", y: "-22vh", scale: 0.55 }, // Top Left of Creative widget
     3: { x: "25vw", y: "-22vh", scale: 0.55 },  // Top Right of Ops widget
+    4: { x: "-25vw", y: "-22vh", scale: 0.55 }, // Top Left of Universal widget
   };
 
   return (
@@ -277,6 +283,44 @@ export default function AppPage() {
                   </motion.div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SECTION 4: UNIVERSAL & PRIVACY --- */}
+        <div ref={universalRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col-reverse md:flex-row gap-20 items-start">
+          <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-purple-500/20 p-8 pt-32 shadow-2xl flex flex-col relative overflow-hidden">
+              <h4 className="text-xl font-medium text-white mb-6 text-right">Universal OS Control</h4>
+              <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 flex flex-col items-center justify-center gap-6 relative overflow-hidden text-center">
+                <div className="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <ShieldCheck className="w-10 h-10 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-green-400 font-medium mb-1">100% Local Execution</div>
+                  <div className="text-zinc-500 text-sm">Your data never leaves your device.</div>
+                </div>
+                <div className="mt-8 border-t border-white/10 w-full pt-8">
+                  <div className="text-5xl font-bold text-white mb-2">$30</div>
+                  <div className="text-purple-400 font-medium text-lg mb-2">One-Time Fee</div>
+                  <div className="text-zinc-500 text-sm max-w-xs mx-auto">Pay only after you use it and see the value. Zero subscriptions, ever.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-full md:w-1/2 flex flex-col gap-[40vh] py-[20vh]">
+            <div className="max-w-xl">
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-6"><MonitorSmartphone className="text-purple-400" /></div>
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Controls Any Application</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed mb-8">Momentum isn't just a web wrapper. It directly interfaces with your operating system, driving any desktop application with human-like precision.</p>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><Layers className="w-5 h-5 text-purple-500" /> From 3D Modeling to Chip Design</li>
+                <li className="flex items-center gap-4 text-lg text-zinc-300"><Wand2 className="w-5 h-5 text-purple-500" /> No exact prompting required—just state intent</li>
+              </ul>
+            </div>
+            <div className="max-w-xl">
+              <h3 className="text-4xl md:text-5xl font-medium mb-6">Total Privacy. Zero Subscriptions.</h3>
+              <p className="text-xl text-zinc-400 leading-relaxed">It runs completely on your PC hardware. It's blisteringly fast, inherently private, and your data is uncompromisingly safe. Best of all? It's a one-time fee of $30. We despise subscriptions. You only pay after you've used it.</p>
             </div>
           </div>
         </div>
