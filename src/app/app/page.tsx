@@ -96,7 +96,7 @@ export default function AppPage() {
   useEffect(() => {
     if (activeSection === 0) setFaceState("idle");
     else if (activeSection === 1) setFaceState("speaking"); 
-    else if (activeSection >= 2 && activeSection <= 8) setFaceState(animationStep === 1 ? "error" : "thinking");
+    else if (activeSection >= 2 && activeSection <= 8) setFaceState("thinking");
     else if (activeSection === 9) setFaceState("idle");
   }, [activeSection, animationStep]);
 
@@ -345,11 +345,13 @@ export default function AppPage() {
                     <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-black flex items-center justify-center">
                        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(0,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px', transform: 'perspective(500px) rotateX(60deg) scale(2)' }} />
                        
-                       <motion.div animate={{ rotateY: 360 }} transition={{ repeat: Infinity, duration: 10, ease: "linear" }} style={{ transformStyle: 'preserve-3d' }} className="relative w-48 h-48">
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" style={{ transform: 'rotateX(90deg)' }} />
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" style={{ transform: 'rotateY(90deg)' }} />
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" />
-                          <div className="absolute inset-0 border-2 border-cyan-400 bg-cyan-400/20" style={{ transform: 'scale(0.5)' }} />
+                       <motion.div animate={{ rotateY: 360, rotateX: 360 }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="relative z-10">
+                          <svg width="300" height="300" viewBox="0 0 300 300" fill="none">
+                             <circle cx="150" cy="150" r="100" stroke="#06b6d4" strokeWidth="1" strokeDasharray="4 4" opacity="0.3" />
+                             <circle cx="150" cy="150" r="70" stroke="#06b6d4" strokeWidth="2" opacity="0.5" />
+                             <path d="M50 150 L250 150 M150 50 L150 250 M79 79 L221 221 M79 221 L221 79" stroke="#06b6d4" strokeWidth="1" opacity="0.2" />
+                             <rect x="110" y="100" width="80" height="100" stroke="#06b6d4" strokeWidth="2" fill="rgba(6,182,212,0.1)" />
+                          </svg>
                        </motion.div>
                        
                        <div className="absolute top-6 left-6 bg-black/80 backdrop-blur border border-zinc-800 p-4 rounded-xl text-cyan-400 font-mono text-[10px]">
@@ -362,52 +364,56 @@ export default function AppPage() {
                 </div>
               </div>
 
-              {/* PANEL 5: DATA SCIENCE */}
+              {/* PANEL 5: HARDWARE DESIGN */}
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
-                    <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Data Science & <br/>Jupyter.</h3>
-                    <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum writes complex Python pandas scripts, cleans enormous datasets, trains ML models, and generates interactive matplotlib visualizations.</p>
+                    <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Hardware & <br/>Circuit Design.</h3>
+                    <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum directly drives Altium and AutoCAD. It optimally routes multi-layer PCBs, places components to minimize interference, and automatically runs signal integrity simulations.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-200 bg-white">
-                       <div className="h-10 bg-zinc-100 border-b border-zinc-200 flex items-center px-4 font-mono text-[10px] text-zinc-500">Jupyter Notebook - data_analysis.ipynb</div>
-                       <div className="p-6 font-mono text-xs flex flex-col gap-4">
-                          <div className="flex gap-2">
-                            <div className="text-blue-500">In [1]:</div>
-                            <div className="bg-zinc-50 p-2 border border-zinc-200 rounded w-full">
-                              <span className="text-green-600">import</span> pandas <span className="text-green-600">as</span> pd<br/>
-                              df = pd.read_csv(<span className="text-red-500">'sales.csv'</span>)<br/>
-                              df.head()
-                            </div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#061c0f]">
+                       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(16,185,129,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)', backgroundSize: '100px 100px' }} />
+                       
+                       <div className="h-8 bg-[#020b06] border-b border-emerald-900/50 flex items-center px-4 font-mono text-[10px] text-emerald-600/70">ALTIUM DESIGNER - Motherboard_V2.PcbDoc</div>
+                       
+                       <div className="relative w-full h-[calc(100%-32px)]">
+                          {/* Fake IC Components */}
+                          <div className="absolute top-1/4 left-1/4 w-24 h-24 bg-[#111] border-2 border-emerald-500/50 rounded flex flex-col items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                             <div className="text-[10px] text-emerald-400 font-mono">CPU_MAIN</div>
+                             <div className="text-[8px] text-zinc-500">U1</div>
                           </div>
                           
-                          <AnimatePresence>
-                             {animationStep >= 1 && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2">
-                                  <div className="text-red-500">Out[1]:</div>
-                                  <div className="bg-white p-2 border border-zinc-200 rounded w-full overflow-hidden text-[10px]">
-                                    <table className="w-full text-left text-zinc-600">
-                                      <thead><tr className="border-b"><th className="pb-1">date</th><th className="pb-1">revenue</th><th className="pb-1">region</th></tr></thead>
-                                      <tbody>
-                                        <tr className="border-b"><td className="py-1">2026-01</td><td>$4,200</td><td>NA</td></tr>
-                                        <tr className="border-b"><td className="py-1">2026-02</td><td>$NaN</td><td>EU</td></tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </motion.div>
-                             )}
-                          </AnimatePresence>
+                          <div className="absolute top-1/2 right-1/4 w-12 h-20 bg-[#111] border border-emerald-500/50 rounded flex flex-col items-center justify-center">
+                             <div className="text-[8px] text-emerald-400 font-mono">RAM_A</div>
+                          </div>
+
+                          {/* Animated Routing Traces */}
+                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 800 600">
+                             <motion.path 
+                                d="M 280 200 L 400 200 L 450 250 L 550 250" 
+                                fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="4 4"
+                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 1.5, ease: "linear" }}
+                             />
+                             <motion.path 
+                                d="M 280 220 L 380 220 L 420 280 L 550 280" 
+                                fill="none" stroke="#34d399" strokeWidth="1"
+                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 1.2, ease: "linear", delay: 0.5 }}
+                             />
+                             <motion.path 
+                                d="M 280 240 L 350 240 L 400 320 L 480 320 L 550 310" 
+                                fill="none" stroke="#059669" strokeWidth="3"
+                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 2 ? 1 : 0 }} transition={{ duration: 1, ease: "linear" }}
+                             />
+                          </svg>
 
                           <AnimatePresence>
                              {animationStep >= 2 && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
-                                  <div className="text-blue-500">In [2]:</div>
-                                  <div className="bg-zinc-50 p-2 border border-zinc-200 rounded w-full relative">
-                                    <span className="text-zinc-400"># Momentum AI auto-fixing NaN values...</span><br/>
-                                    df[<span className="text-red-500">'revenue'</span>] = df[<span className="text-red-500">'revenue'</span>].fillna(df[<span className="text-red-500">'revenue'</span>].mean())
-                                    <div className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                  </div>
+                                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="absolute bottom-6 right-6 bg-black/90 border border-emerald-500/30 p-3 rounded shadow-lg text-[10px] font-mono">
+                                  <div className="text-emerald-400 mb-1">AUTO-ROUTER: SUCCESS</div>
+                                  <div className="text-zinc-400">NETS ROUTED: 100% (4,092)</div>
+                                  <div className="text-zinc-400">IMPEDANCE MATCHED: YES</div>
                                 </motion.div>
                              )}
                           </AnimatePresence>

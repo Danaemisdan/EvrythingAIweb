@@ -37,9 +37,14 @@ export function AgentFace({ state, isShuttered = false, isVoiceMode = false, cla
   const eyeOffsetX = useTransform(smoothX, [-1000, 1000], [-22, 22]);
   const eyeOffsetY = useTransform(smoothY, [-1000, 1000], [-22, 22]);
 
+  const faceRef = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+      if (!faceRef.current) return;
+      const rect = faceRef.current.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
       const dx = e.clientX - cx, dy = e.clientY - cy;
       const dist = Math.hypot(dx, dy);
       mouseX.set(dist < 500 ? dx : 0);
@@ -69,6 +74,7 @@ export function AgentFace({ state, isShuttered = false, isVoiceMode = false, cla
 
   return (
     <div
+      ref={faceRef}
       className={cn(
         "relative rounded-[3rem] overflow-hidden flex items-center justify-center bg-[#070708] border-[3px] border-[#1c1c1e]",
         className
