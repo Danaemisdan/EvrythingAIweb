@@ -21,12 +21,9 @@ const dockIcons = [
   { id: "settings", name: "Settings", icon: "/app-icons/settings.png" }
 ];
 
-const allAppsScroller = [...dockIcons, ...dockIcons, ...dockIcons];
-
 export default function AppPage() {
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
-  const [faceState, setFaceState] = useState<AgentState>("idle");
 
   const introRef = useRef<HTMLDivElement>(null);
   const howRef = useRef<HTMLDivElement>(null);
@@ -95,28 +92,8 @@ export default function AppPage() {
   const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
   const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
 
-  useEffect(() => {
-    if (activeSection === 0) setFaceState("idle");
-    else if (activeSection === 1) setFaceState("speaking"); 
-    else if (activeSection >= 2 && activeSection <= 8) setFaceState("thinking");
-    else if (activeSection === 9) setFaceState("idle");
-  }, [activeSection, animationStep]);
-
   useEffect(() => { setMounted(true); }, []);
   if (!mounted) return null;
-
-  const faceVariants = {
-    0: { x: "0px", y: "-15vh", scale: 1 },
-    1: { x: "0px", y: "0vh", scale: 0.6 },
-    2: { x: "0px", y: "-30vh", scale: 0.5 },
-    3: { x: "0px", y: "-30vh", scale: 0.5 },
-    4: { x: "0px", y: "-30vh", scale: 0.5 },
-    5: { x: "0px", y: "-30vh", scale: 0.5 },
-    6: { x: "0px", y: "-30vh", scale: 0.5 },
-    7: { x: "0px", y: "-30vh", scale: 0.5 },
-    8: { x: "0px", y: "-30vh", scale: 0.5 },
-    9: { x: "0px", y: "-25vh", scale: 0.8 },
-  };
 
   return (
     <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-clip">
@@ -125,20 +102,27 @@ export default function AppPage() {
         <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Back to Home</Link>
       </nav>
 
+      {/* GLOBAL HERO PORTAL & FACE (Only visible when activeSection === 0) */}
       <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-        <motion.div animate={faceVariants[activeSection as keyof typeof faceVariants]} transition={{ type: "spring", stiffness: 90, damping: 20, mass: 0.8 }} className="relative pointer-events-auto">
-          {activeSection === 0 && (
+         {activeSection === 0 && (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
               <motion.div style={{ scale: portalScale, opacity: portalOpacity }} className="w-[54px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]" />
             </div>
-          )}
-          <motion.div style={{ opacity: activeSection === 0 ? faceOpacityIntro as any : 1 }} className={activeSection === 0 ? "" : "transition-opacity duration-1000 ease-in drop-shadow-[0_0_30px_rgba(0,0,0,0.8)]"}>
-            <AgentFace state={faceState} size={180} />
-          </motion.div>
-        </motion.div>
+         )}
+         <AnimatePresence>
+            {activeSection === 0 && (
+              <motion.div 
+                layoutId="agentFace"
+                style={{ opacity: faceOpacityIntro as any }} 
+                className="relative pointer-events-auto -mt-[15vh]"
+              >
+                <AgentFace state="idle" size={180} />
+              </motion.div>
+            )}
+         </AnimatePresence>
       </div>
 
-      {/* 1. HERO */}
+      {/* 1. HERO TEXT */}
       <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
       <motion.div style={{ opacity: heroOpacity, y: heroY }} className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20 mt-[25vh]">
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">Intelligence that <br /><span className="text-zinc-500">does the work.</span></h1>
@@ -178,6 +162,17 @@ export default function AppPage() {
                   </div>
                 </div>
                 
+                {/* LOCAL FACE (Inside the Mac Screen) */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+                  <AnimatePresence>
+                    {activeSection >= 1 && (
+                      <motion.div layoutId="agentFace" className="pointer-events-auto">
+                        <AgentFace state="speaking" size={140} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <div className="absolute bottom-4 z-20 w-full flex justify-center">
                   <MacOSDock apps={dockIcons} onAppClick={() => {}} />
                 </div>
@@ -185,24 +180,10 @@ export default function AppPage() {
            </div>
         </div>
 
-        {/* 3. MARQUEE SCROLLER (APP ICONS) */}
-        <div className="border-y border-zinc-900 bg-zinc-950 py-10 overflow-hidden flex items-center relative z-40">
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
-          <motion.div animate={{ x: [0, -2000] }} transition={{ repeat: Infinity, duration: 40, ease: "linear" }} className="flex gap-16 items-center w-max">
-            {allAppsScroller.map((app, i) => (
-              <div key={i} className="flex items-center gap-4 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-                <img src={app.icon} alt={app.name} className="w-12 h-12 object-contain" onError={(e) => e.currentTarget.style.display='none'} />
-                <span className="font-medium text-xl font-mono tracking-tight text-white">{app.name}</span>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
         {/* 4. APPLICATIONS SCROLL */}
         <div ref={horizontalScrollRef} className="relative h-[700vh] w-full border-t border-zinc-900">
           <div className="sticky top-0 h-screen w-full overflow-hidden bg-black flex items-center">
-            <motion.div style={{ x: `-${hProgress * 85.7}%` }} className="flex w-[700vw] h-full pt-16">
+            <motion.div style={{ x: \`-\${hProgress * 85.7}%\` }} className="flex w-[700vw] h-full pt-16">
               
               {/* PANEL 1: ENGINEERING */}
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
@@ -214,7 +195,6 @@ export default function AppPage() {
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
                     <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] relative border border-zinc-800 bg-[#0d0d0d]">
-                       {/* High-fidelity VS Code Replica */}
                        <div className="h-8 bg-[#1e1e1e] border-b border-[#333] flex items-center px-4 gap-4 text-[10px] text-zinc-400">
                           <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-red-500"/><div className="w-2.5 h-2.5 rounded-full bg-yellow-500"/><div className="w-2.5 h-2.5 rounded-full bg-green-500"/></div>
                           <span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span>
@@ -371,8 +351,8 @@ export default function AppPage() {
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
                     <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#0a0a0a] flex items-center justify-center">
-                       {/* High Quality 3D Car Image */}
-                       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-80 mix-blend-screen" />
+                       {/* High Quality 3D Car Image - Not blurry, high-tech neon */}
+                       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-80 mix-blend-screen" />
                        
                        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(0,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
                        
@@ -398,7 +378,7 @@ export default function AppPage() {
                 </div>
               </div>
 
-              {/* PANEL 5: BIOINFORMATICS */}
+              {/* PANEL 5: BIOINFORMATICS (Proper SVG 3D DNA Helix) */}
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
@@ -411,8 +391,18 @@ export default function AppPage() {
                        <div className="h-8 bg-[#1e293b] border-b border-indigo-900/50 flex items-center px-4 font-mono text-[10px] text-indigo-300">PyMOL - Protein_Folding_Sim_v4.pdb</div>
                        
                        <div className="relative w-full h-[calc(100%-32px)] flex items-center justify-center overflow-hidden">
-                          {/* Real 3D DNA Image */}
-                          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-70 mix-blend-screen" style={{ filter: animationStep >= 1 ? 'hue-rotate(90deg) brightness(1.2)' : 'none', transition: 'filter 1s' }} />
+                          {/* Beautiful Animated SVG DNA Helix */}
+                          <div className="absolute inset-0 flex items-center justify-center scale-[1.5]">
+                            <svg viewBox="0 0 100 100" className="w-64 h-64 opacity-80" strokeLinecap="round">
+                              {Array(15).fill(0).map((_, i) => (
+                                <motion.g key={i} animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 2, delay: i * 0.1, ease: "easeInOut" }}>
+                                  <line x1={20 + (i*4)} y1={20 + Math.sin(i * 0.5) * 20} x2={20 + (i*4)} y2={80 - Math.sin(i * 0.5) * 20} stroke={animationStep >= 2 && i > 5 && i < 10 ? "#22d3ee" : "#4f46e5"} strokeWidth="1" opacity="0.6"/>
+                                  <circle cx={20 + (i*4)} cy={20 + Math.sin(i * 0.5) * 20} r="1.5" fill={animationStep >= 2 && i > 5 && i < 10 ? "#22d3ee" : "#818cf8"} />
+                                  <circle cx={20 + (i*4)} cy={80 - Math.sin(i * 0.5) * 20} r="1.5" fill={animationStep >= 2 && i > 5 && i < 10 ? "#22d3ee" : "#c084fc"} />
+                                </motion.g>
+                              ))}
+                            </svg>
+                          </div>
 
                           <div className="absolute top-4 left-4 bg-black/80 backdrop-blur border border-indigo-500/50 p-3 rounded shadow-lg text-[10px] font-mono">
                             <div className="text-indigo-400 mb-1">SEQUENCE ALIGNMENT</div>
@@ -479,7 +469,7 @@ export default function AppPage() {
                 </div>
               </div>
 
-              {/* PANEL 7: MEETINGS */}
+              {/* PANEL 7: MEETINGS (Proper Zoom UI) */}
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
@@ -488,15 +478,37 @@ export default function AppPage() {
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">It literally attends meetings for you. Momentum joins Zoom calls, extracts action items, and immediately messages your team on WhatsApp with the updates.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-zinc-950 flex flex-col">
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#121212] flex flex-col">
                       
-                      <div className="h-2/3 border-b border-zinc-800 relative bg-[url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center">
-                         <div className="absolute inset-0 bg-black/40" />
-                         <div className="absolute top-4 left-4 bg-black/60 backdrop-blur text-white text-[10px] px-2 py-1 rounded flex items-center gap-2"><div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"/> ZOOM - Marketing Weekly</div>
+                      <div className="h-2/3 border-b border-zinc-800 relative bg-[#1a1a1a] p-4 flex flex-col">
+                         {/* Fake Zoom Toolbar */}
+                         <div className="flex justify-between items-center mb-4 text-[10px] text-zinc-400 border-b border-zinc-800 pb-2">
+                           <div className="flex items-center gap-2"><div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"/> Marketing Weekly Sync</div>
+                           <div className="flex gap-4"><span>Participants (4)</span><span>Chat</span><span>Share Screen</span></div>
+                         </div>
+                         {/* Fake Zoom Grid */}
+                         <div className="flex-1 grid grid-cols-2 gap-2">
+                            <div className="bg-zinc-800 rounded relative flex items-center justify-center overflow-hidden">
+                              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">SM</div>
+                              <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px]">Sarah M.</div>
+                            </div>
+                            <div className="bg-zinc-800 rounded relative flex items-center justify-center overflow-hidden">
+                              <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">JD</div>
+                              <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px]">John D.</div>
+                            </div>
+                            <div className="bg-zinc-800 rounded relative flex items-center justify-center overflow-hidden">
+                              <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold">AK</div>
+                              <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px]">Alex K.</div>
+                            </div>
+                            <div className="bg-zinc-900 border border-zinc-700 rounded relative flex items-center justify-center overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                              <div className="w-10 h-10 bg-zinc-700 rounded-full flex items-center justify-center text-zinc-400 font-bold">AI</div>
+                              <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-cyan-400 flex items-center gap-1"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"/> Momentum AI</div>
+                            </div>
+                         </div>
                          
-                         <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur border border-white/10 rounded-lg p-3">
-                           <div className="text-xs text-zinc-400 mb-1">Live Transcript:</div>
-                           <div className="text-sm text-white">
+                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur border border-white/10 rounded-lg p-3 w-[80%] z-20 shadow-2xl">
+                           <div className="text-[10px] text-zinc-400 mb-1">Live Transcript:</div>
+                           <div className="text-xs text-white">
                              {animationStep === 0 && "Waiting for meeting to start..."}
                              {animationStep === 1 && <><span className="text-blue-400">Sarah:</span> "So we need the Q3 report sent to the investors by EOD Friday."</>}
                              {animationStep === 2 && <><span className="text-blue-400">Sarah:</span> "So we need the Q3 report sent to the investors by EOD Friday."</>}
@@ -504,8 +516,8 @@ export default function AppPage() {
                          </div>
                       </div>
 
-                      <div className="flex-1 bg-[#1c1c1e] p-6 relative flex flex-col justify-center">
-                         <div className="absolute top-0 left-0 right-0 h-6 bg-[#252525] flex items-center px-4 text-[10px] text-zinc-400">WhatsApp - Team Group</div>
+                      <div className="flex-1 bg-[#0a0a0a] p-6 relative flex flex-col justify-center">
+                         <div className="absolute top-0 left-0 right-0 h-6 bg-[#111] flex items-center px-4 text-[10px] text-zinc-500 border-b border-zinc-900">WhatsApp - Team Group</div>
                          <AnimatePresence>
                            {animationStep >= 2 && (
                              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-[#0b84ff] text-white p-3 rounded-2xl rounded-tr-sm text-sm leading-relaxed shadow-lg max-w-[80%] self-end">
