@@ -24,6 +24,7 @@ export default function AppPage() {
   const [currentDevStep, setCurrentDevStep] = useState(0);
   const [currentCreativeStep, setCurrentCreativeStep] = useState(0);
   const [currentOpsStep, setCurrentOpsStep] = useState(0);
+  const [currentUniversalStep, setCurrentUniversalStep] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,6 +58,7 @@ export default function AppPage() {
       setCurrentDevStep(getStep(devRef));
       setCurrentCreativeStep(getStep(creativeRef));
       setCurrentOpsStep(getStep(opsRef));
+      setCurrentUniversalStep(getStep(universalRef));
 
       if (isActive(universalRef)) setActiveSection(4);
       else if (isActive(opsRef)) setActiveSection(3);
@@ -82,8 +84,8 @@ export default function AppPage() {
     else if (activeSection === 1) setFaceState(currentDevStep === 0 ? "thinking" : currentDevStep === 1 ? "error" : "happy");
     else if (activeSection === 2) setFaceState(currentCreativeStep === 2 ? "idle" : "thinking");
     else if (activeSection === 3) setFaceState(currentOpsStep === 0 ? "listening" : "speaking");
-    else if (activeSection === 4) setFaceState("happy");
-  }, [activeSection, currentDevStep, currentCreativeStep, currentOpsStep]);
+    else if (activeSection === 4) setFaceState(currentUniversalStep === 1 ? "thinking" : "happy");
+  }, [activeSection, currentDevStep, currentCreativeStep, currentOpsStep, currentUniversalStep]);
 
   useEffect(() => { setMounted(true); }, []);
   if (!mounted) return null;
@@ -94,7 +96,7 @@ export default function AppPage() {
     1: { x: "clamp(100px, 25vw, 360px)", y: "-22vh", scale: 0.55 }, // Top Right of Dev widget
     2: { x: "clamp(-360px, -25vw, -100px)", y: "-22vh", scale: 0.55 }, // Top Left of Creative widget
     3: { x: "clamp(100px, 25vw, 360px)", y: "-22vh", scale: 0.55 },  // Top Right of Ops widget
-    4: { x: "clamp(-360px, -25vw, -100px)", y: "-22vh", scale: 0.55 }, // Top Left of Universal widget
+    4: { x: "clamp(-360px, -25vw, -100px)", y: "0px", scale: 0.7 }, // Dead center of Universal widget
   };
 
   return (
@@ -297,39 +299,67 @@ export default function AppPage() {
         <div ref={universalRef} className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-32 flex flex-col-reverse md:flex-row gap-20 items-start">
           <div className="w-full md:w-1/2 sticky top-32 h-[calc(100vh-16rem)]">
             <div className="w-full h-full bg-zinc-900/50 backdrop-blur-3xl rounded-[2rem] border border-purple-500/20 p-8 pt-32 shadow-2xl flex flex-col relative overflow-hidden">
-              <h4 className="text-xl font-medium text-white mb-6 text-right">Universal OS Control</h4>
-              <div className="flex-1 bg-black/80 rounded-xl border border-white/5 p-6 flex flex-col justify-center gap-6 relative overflow-hidden">
-                <AnimatePresence mode="popLayout">
-                  {currentUniversalStep === 0 && (
-                    <motion.div key="step0" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, y: -20 }} className="flex flex-col items-center text-center">
-                      <div className="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mb-6">
-                        <ShieldCheck className="w-10 h-10 text-purple-400" />
-                      </div>
-                      <div className="text-green-400 font-medium mb-1">100% Local Execution</div>
-                      <div className="text-zinc-500 text-sm">Your data never leaves your device.</div>
-                    </motion.div>
-                  )}
-                  {currentUniversalStep === 1 && (
-                    <motion.div key="step1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex flex-col items-center text-center w-full">
-                      <div className="w-full bg-zinc-900 rounded-lg p-4 mb-4 border border-zinc-800">
-                        <div className="text-xs text-zinc-500 text-left mb-2">TARGET WINDOW</div>
-                        <div className="font-mono text-sm text-purple-400 text-left">Blender 4.0 - scene_01.blend</div>
-                      </div>
-                      <div className="w-full bg-zinc-900 rounded-lg p-4 border border-zinc-800">
-                        <div className="text-xs text-zinc-500 text-left mb-2">ACTIVE INTENT</div>
-                        <div className="font-mono text-sm text-white text-left">"Select all geometry and apply subdivision surface modifier."</div>
-                        <div className="text-xs text-emerald-400 text-left mt-2 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Executing via OS Accessibility API...</div>
-                      </div>
-                    </motion.div>
-                  )}
-                  {currentUniversalStep === 2 && (
-                    <motion.div key="step2" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center w-full h-full justify-center">
-                      <div className="text-6xl font-bold text-white mb-2">$30</div>
-                      <div className="text-purple-400 font-medium text-xl mb-4">One-Time Fee</div>
-                      <div className="text-zinc-400 text-sm max-w-xs mx-auto">Zero subscriptions. Ever. You only pay after you've used it and seen the value.</div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              <h4 className="text-xl font-medium text-white mb-6 text-right z-10 relative">Universal OS Control</h4>
+              <div className="flex-1 bg-black rounded-xl border border-white/10 p-1 flex flex-col relative overflow-hidden shadow-2xl">
+                {/* Fake macOS Window Header */}
+                <div className="h-6 w-full flex items-center px-3 gap-2 bg-zinc-900/50 rounded-t-lg">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                </div>
+                
+                <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-zinc-950 rounded-b-lg">
+                  <AnimatePresence mode="popLayout">
+                    {currentUniversalStep === 0 && (
+                      <motion.div key="blender" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col p-4">
+                        <div className="text-xs text-zinc-500 mb-4 font-mono">Blender 4.0 - scene_01.blend</div>
+                        <div className="flex-1 border border-zinc-800 rounded-lg flex items-center justify-center bg-zinc-900/50">
+                           <div className="w-48 h-48 border-2 border-dashed border-purple-500/30 rounded-lg animate-pulse flex items-center justify-center relative">
+                             <div className="absolute inset-0 bg-purple-500/5" />
+                           </div>
+                        </div>
+                      </motion.div>
+                    )}
+                    {currentUniversalStep === 1 && (
+                      <motion.div key="vscode" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col p-4">
+                        <div className="text-xs text-zinc-500 mb-4 font-mono">VS Code - main.tsx</div>
+                        <div className="flex-1 border border-zinc-800 rounded-lg p-6 font-mono text-sm text-emerald-400/80 text-left bg-black">
+                          <div>function initAgent() {'{'}</div>
+                          <div className="ml-4">const ctx = getOSContext();</div>
+                          <div className="ml-4 text-purple-400">// Momentum auto-refactoring OS hooks...</div>
+                          <div className="ml-4">ctx.takeControl();</div>
+                          <div>{'}'}</div>
+                        </div>
+                      </motion.div>
+                    )}
+                    {currentUniversalStep === 2 && (
+                      <motion.div key="terminal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 flex flex-col p-4">
+                        <div className="text-xs text-zinc-500 mb-4 font-mono">Terminal</div>
+                        <div className="flex-1 rounded-lg p-6 font-mono text-sm text-white/80 text-left flex flex-col gap-3 bg-black">
+                          <div className="text-green-400">$ momentum system --override</div>
+                          <div className="text-zinc-500">Injecting OS accessibility hooks...</div>
+                          <div className="text-purple-400">Total System Control: GRANTED</div>
+                          <div className="text-blue-400 animate-pulse mt-4">Awaiting intent...</div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                
+                {/* Fake Cursor controlled by Momentum */}
+                <motion.div 
+                   animate={{ 
+                     x: currentUniversalStep === 0 ? "10vw" : currentUniversalStep === 1 ? "-5vw" : "5vw",
+                     y: currentUniversalStep === 0 ? "5vh" : currentUniversalStep === 1 ? "-10vh" : "15vh"
+                   }}
+                   transition={{ type: "spring", stiffness: 40, damping: 25 }}
+                   className="absolute w-5 h-5 z-20 pointer-events-none drop-shadow-2xl"
+                   style={{ left: "50%", top: "50%" }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.5 3.75L18.75 11.25L11.25 12.75L9 20.25L4.5 3.75Z" fill="white" stroke="black" strokeWidth="1.5" strokeLinejoin="round"/>
+                  </svg>
+                </motion.div>
               </div>
             </div>
           </div>
