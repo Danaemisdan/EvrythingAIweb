@@ -1,4 +1,6 @@
-"use client";
+const fs = require('fs');
+
+const code = `"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useTransform, useMotionValue } from "framer-motion";
@@ -213,7 +215,7 @@ export default function AppPage() {
         <div ref={horizontalScrollRef} className="relative h-[500vh] w-full border-t border-zinc-900">
           <div className="sticky top-0 h-screen w-full overflow-hidden bg-black flex items-center">
             <motion.div 
-              style={{ x: `-${hProgress * 80}%` }}
+              style={{ x: \`-\${hProgress * 80}%\` }}
               className="flex w-[500vw] h-full"
             >
               
@@ -544,3 +546,6 @@ export default function AppPage() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/app/app/page.tsx', code);
