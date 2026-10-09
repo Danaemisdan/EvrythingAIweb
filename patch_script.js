@@ -1,156 +1,22 @@
-"use client";
+const fs = require('fs');
+let code = fs.readFileSync('src/app/app/page.tsx', 'utf8');
 
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence, useTransform, useMotionValue } from "framer-motion";
-import Link from "next/link";
-import { AgentFace, AgentState } from "@/components/AgentFace";
-import { Terminal, Cpu, Network, Video, Layers, Wand2, Mail, Calendar, MessageSquare, ShieldCheck, MonitorSmartphone, Code2, Scissors, CalendarDays, Shield } from "lucide-react";
+const startMarker = '{/* --- HORIZONTAL SCROLLING GALLERY --- */}';
+const endMarker = '<div className="min-h-screen flex flex-col items-center justify-center text-center px-6">';
 
-export default function AppPage() {
-  const [mounted, setMounted] = useState(false);
-  const [activeSection, setActiveSection] = useState(0);
-  const [faceState, setFaceState] = useState<AgentState>("idle");
+const startIndex = code.indexOf(startMarker);
+const endIndex = code.indexOf(endMarker);
 
-  // --- Intro Scroll ---
-  const introRef = useRef<HTMLDivElement>(null);
-  const introProgress = useMotionValue(0);
-  
-  // --- Horizontal Scroll ---
-  const horizontalScrollRef = useRef<HTMLDivElement>(null);
-  const [hProgress, setHProgress] = useState(0);
-  const [animationStep, setAnimationStep] = useState(0); // 0, 1, 2 for dynamic widget animations
+if (startIndex === -1 || endIndex === -1) {
+  console.error("Markers not found");
+  process.exit(1);
+}
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const vh = window.innerHeight;
-      
-      // 1. Intro Progress
-      if (introRef.current) {
-        const rect = introRef.current.getBoundingClientRect();
-        let progress = -rect.top / rect.height;
-        progress = Math.max(0, Math.min(1, progress));
-        introProgress.set(progress);
-      }
-
-      // 2. Horizontal Progress
-      if (horizontalScrollRef.current) {
-        const rect = horizontalScrollRef.current.getBoundingClientRect();
-        const totalScrollable = rect.height - vh;
-        let progress = -rect.top / totalScrollable;
-        progress = Math.max(0, Math.min(1, progress));
-        setHProgress(progress);
-
-        // Calculate Active Section (0 to 4)
-        if (rect.top > vh * 0.5) setActiveSection(0);
-        else if (progress < 0.25) setActiveSection(1);
-        else if (progress < 0.50) setActiveSection(2);
-        else if (progress < 0.75) setActiveSection(3);
-        else setActiveSection(4);
-
-        // Calculate a repeating 0,1,2 step for internal card animations based on sub-progress
-        // Each card has 0.25 of the total progress.
-        const segmentProgress = (progress % 0.25) * 4; // 0 to 1 within current card
-        if (segmentProgress > 0.6) setAnimationStep(2);
-        else if (segmentProgress > 0.3) setAnimationStep(1);
-        else setAnimationStep(0);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const portalScale = useTransform(introProgress, [0, 0.1, 0.6, 1], [1, 1, 80, 200]);
-  const portalOpacity = useTransform(introProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
-  const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 1], [1, 0, 0]);
-  const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
-  const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
-
-  // Sync face state
-  useEffect(() => {
-    if (activeSection === 0) setFaceState("idle");
-    else if (activeSection === 1) setFaceState(animationStep === 1 ? "error" : "thinking");
-    else if (activeSection === 2) setFaceState("thinking");
-    else if (activeSection === 3) setFaceState(animationStep === 1 ? "speaking" : "listening");
-    else if (activeSection === 4) setFaceState("happy");
-  }, [activeSection, animationStep]);
-
-  useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return null;
-
-  // Face positions meticulously aligned to the new HTML mockups inside the horizontal flex track
-  const faceVariants = {
-    0: { x: "0px", y: "-15vh", scale: 1 },
-    1: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over IDE mockup on the right
-    2: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over NLE mockup on the right
-    3: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over CRM mockup on the right
-    4: { x: "0px", y: "0px", scale: 0.8 },     // Center screen for Universal Desktop
-  };
-
-  return (
-    <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-clip">
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5 mix-blend-difference">
-        <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">Momentum</Link>
-        <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Back to Home</Link>
-      </nav>
-
-      {/* SINGLE STICKY MOVING FACE */}
-      <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-        <motion.div
-          animate={faceVariants[activeSection as keyof typeof faceVariants]}
-          transition={{ type: "spring", stiffness: 90, damping: 20, mass: 0.8 }}
-          className="relative pointer-events-auto"
-        >
-          {activeSection === 0 && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
-              <motion.div
-                style={{ scale: portalScale, opacity: portalOpacity }}
-                className="w-[54px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]"
-              />
-            </div>
-          )}
-          
-          <motion.div 
-            style={{ opacity: activeSection === 0 ? faceOpacityIntro as any : 1 }}
-            className={activeSection === 0 ? "" : "transition-opacity duration-1000 ease-in drop-shadow-[0_0_30px_rgba(0,0,0,0.8)]"}
-          >
-            <AgentFace state={faceState} size={180} />
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Intro Section */}
-      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
-      <motion.div 
-        style={{ opacity: heroOpacity, y: heroY }}
-        className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20 mt-[25vh]"
-      >
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">
-          Intelligence that <br />
-          <span className="text-zinc-500">does the work.</span>
-        </h1>
-        <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed mx-auto">
-          Scroll down to enter the portal and see Momentum execute complex tasks across applications.
-        </p>
-      </motion.div>
-      <div className="h-[250vh]" />
-
-      <div className="relative z-40 bg-black">
-        <div className="min-h-screen flex flex-col items-center justify-center px-6 md:px-24 text-center">
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.1] max-w-5xl mb-8">
-            Momentum is not a chatbot.
-          </h2>
-          <p className="text-2xl md:text-3xl text-zinc-500 max-w-3xl leading-relaxed">
-            It is a fully autonomous digital workforce capable of reasoning, planning, and executing inside your actual software.
-          </p>
-        </div>
-
-        {/* --- HORIZONTAL SCROLLING GALLERY --- */}
+const newGallery = `{/* --- HORIZONTAL SCROLLING GALLERY --- */}
         <div ref={horizontalScrollRef} className="relative h-[400vh] w-full">
           <div className="sticky top-0 h-screen w-full overflow-hidden bg-black flex items-center">
             <motion.div 
-              style={{ x: `-${hProgress * 75}%` }}
+              style={{ x: \`-\${hProgress * 75}%\` }}
               className="flex w-[400vw] h-full"
             >
               
@@ -389,14 +255,7 @@ export default function AppPage() {
           </div>
         </div>
 
-        
-        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
-          <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-8">Ready to expand your workforce?</h2>
-          <Link href="/newagent" className="inline-flex h-16 items-center justify-center rounded-full bg-white px-10 text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-            Deploy Momentum
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+        `;
+
+const patchedCode = code.slice(0, startIndex) + newGallery + '\n        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">' + code.slice(endIndex + endMarker.length);
+fs.writeFileSync('src/app/app/page.tsx', patchedCode);
