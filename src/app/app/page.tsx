@@ -150,7 +150,7 @@ export default function AppPage() {
         <div ref={horizontalScrollRef} className="relative h-[400vh] w-full">
           <div className="sticky top-0 h-screen w-full overflow-hidden bg-black flex items-center">
             <motion.div 
-              style={{ x: \`-\${hProgress * 75}%\` }}
+              style={{ x: `-${hProgress * 75}%` }}
               className="flex w-[400vw] h-full"
             >
               
