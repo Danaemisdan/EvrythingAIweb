@@ -157,13 +157,11 @@ export default function AppPage() {
       <div className="h-[250vh]" />
 
       <div className="relative z-40 bg-black">
-        <div className="min-h-screen flex flex-col items-center justify-center px-6 md:px-24 text-center">
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.1] max-w-5xl mb-8">
-            Momentum is not a chatbot.
+        <div className="min-h-screen flex items-center justify-center px-6 md:px-24">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.1] max-w-5xl text-center">
+            Momentum is not an assistant. <br/>
+            <span className="text-zinc-600">It is a fully autonomous digital workforce capable of reasoning, planning, and executing across any domain.</span>
           </h2>
-          <p className="text-2xl md:text-3xl text-zinc-500 max-w-3xl leading-relaxed">
-            It is a fully autonomous digital workforce capable of reasoning, planning, and executing inside your actual software.
-          </p>
         </div>
 
         {/* 2. HOW IT LOOKS & HOW TO USE IT */}
