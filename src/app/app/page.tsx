@@ -38,13 +38,13 @@ export default function AppPage() {
         introProgress.set(progress);
       }
 
-      const isActive = (ref: React.RefObject<HTMLDivElement>) => {
+      const isActive = (ref: React.RefObject<HTMLDivElement | null>) => {
         if (!ref.current) return false;
         const rect = ref.current.getBoundingClientRect();
         return rect.top < vh * 0.8 && rect.bottom > vh * 0.2;
       };
 
-      const getStep = (ref: React.RefObject<HTMLDivElement>) => {
+      const getStep = (ref: React.RefObject<HTMLDivElement | null>) => {
         if (!ref.current) return 0;
         const rect = ref.current.getBoundingClientRect();
         const totalDistance = vh + rect.height;
