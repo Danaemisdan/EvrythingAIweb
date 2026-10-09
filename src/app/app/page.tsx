@@ -26,34 +26,20 @@ export default function AppPage() {
   const [activeSection, setActiveSection] = useState(0);
   const [faceState, setFaceState] = useState<AgentState>("idle");
 
-  const introRef = useRef<HTMLDivElement>(null);
-  const howRef = useRef<HTMLDivElement>(null);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
   
-  const introProgress = useMotionValue(0);
   const [hProgress, setHProgress] = useState(0);
   const [animationStep, setAnimationStep] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const vh = window.innerHeight;
-      
-      if (introRef.current) {
-        const rect = introRef.current.getBoundingClientRect();
-        let progress = -rect.top / rect.height;
-        progress = Math.max(0, Math.min(1, progress));
-        introProgress.set(progress);
-      }
-
       let newSection = 0;
       
-      if (howRef.current && horizontalScrollRef.current) {
-         const howRect = howRef.current.getBoundingClientRect();
+      if (horizontalScrollRef.current) {
          const hRect = horizontalScrollRef.current.getBoundingClientRect();
          
-         if (howRect.top > vh * 0.5) {
-            newSection = 0; 
-         } else if (howRect.top <= vh * 0.5 && hRect.top > vh * 0.5) {
+         if (hRect.top > vh * 0.5) {
             newSection = 1; 
          } else {
             const totalScrollable = hRect.height - vh;
@@ -87,15 +73,8 @@ export default function AppPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const portalScale = useTransform(introProgress, [0, 0.1, 0.6, 1], [1, 1, 80, 200]);
-  const portalOpacity = useTransform(introProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
-  const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 1], [1, 0, 0]);
-  const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
-  const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
-
   useEffect(() => {
-    if (activeSection === 0) setFaceState("idle");
-    else if (activeSection === 1) setFaceState("speaking"); 
+    if (activeSection === 0 || activeSection === 1) setFaceState("idle");
     else if (activeSection >= 2 && activeSection <= 8) setFaceState("thinking");
     else if (activeSection === 9) setFaceState("idle");
   }, [activeSection, animationStep]);
@@ -103,53 +82,30 @@ export default function AppPage() {
   useEffect(() => { setMounted(true); }, []);
   if (!mounted) return null;
 
-  const faceVariants = {
-    0: { x: "0px", y: "-15vh", scale: 1 },
-    1: { x: "0px", y: "0vh", scale: 0.6 },
-    2: { x: "0px", y: "-30vh", scale: 0.5 },
-    3: { x: "0px", y: "-30vh", scale: 0.5 },
-    4: { x: "0px", y: "-30vh", scale: 0.5 },
-    5: { x: "0px", y: "-30vh", scale: 0.5 },
-    6: { x: "0px", y: "-30vh", scale: 0.5 },
-    7: { x: "0px", y: "-30vh", scale: 0.5 },
-    8: { x: "0px", y: "-30vh", scale: 0.5 },
-    9: { x: "0px", y: "-25vh", scale: 0.8 },
-  };
-
   return (
     <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-clip">
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5 mix-blend-difference">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5">
         <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">Momentum</Link>
         <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Back to Home</Link>
       </nav>
 
-      <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-        <motion.div animate={faceVariants[activeSection as keyof typeof faceVariants]} transition={{ type: "spring", stiffness: 90, damping: 20, mass: 0.8 }} className="relative pointer-events-auto">
-          {activeSection === 0 && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
-              <motion.div style={{ scale: portalScale, opacity: portalOpacity }} className="w-[54px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]" />
-            </div>
-          )}
-          <motion.div style={{ opacity: activeSection === 0 ? faceOpacityIntro as any : 1 }} className={activeSection === 0 ? "" : "transition-opacity duration-1000 ease-in drop-shadow-[0_0_30px_rgba(0,0,0,0.8)]"}>
-            <AgentFace state={faceState} size={180} />
-          </motion.div>
-        </motion.div>
+      {/* 1. INTRO SECTION */}
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32">
+        <div className="max-w-5xl mx-auto flex flex-col items-center">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.1] max-w-5xl mb-8">
+            Momentum is not a chatbot.
+          </h2>
+          <p className="text-2xl md:text-3xl text-zinc-500 max-w-3xl leading-relaxed">
+            It is a fully autonomous digital workforce capable of reasoning, planning, and executing inside your actual software.
+          </p>
+        </div>
       </div>
 
-      {/* 1. HERO */}
-      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
-      <motion.div style={{ opacity: heroOpacity, y: heroY }} className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20 mt-[25vh]">
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">Intelligence that <br /><span className="text-zinc-500">does the work.</span></h1>
-        <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed mx-auto">Scroll down to enter the portal and see Momentum execute complex tasks across applications.</p>
-      </motion.div>
-      <div className="h-[250vh]" />
-
-      <div className="relative z-40 bg-black border-t border-zinc-900 pt-32">
+      <div className="relative z-40 bg-black border-t border-zinc-900 pt-32 pb-12">
         
         {/* 2. MAC OS SCREEN */}
-        <div ref={howRef} className="min-h-screen flex flex-col items-center justify-center px-6 py-24 relative overflow-hidden">
+        <div className="flex flex-col items-center justify-center px-6 relative overflow-hidden">
            
-           {/* REVERTED TO ORIGINAL SUBHEADING TEXT */}
            <div className="max-w-4xl text-center mb-16 relative z-10">
              <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full text-sm font-medium mb-8 inline-block">Native OS Integration</div>
              <h2 className="text-4xl md:text-6xl font-medium tracking-tight mb-6">Summon it anywhere.</h2>
@@ -158,7 +114,7 @@ export default function AppPage() {
              </p>
            </div>
            
-           {/* REVERTED TO EXACT MAIN WEBSITE MAC LAYOUT */}
+           {/* Exact Main Website Layout, but with AgentFace safely trapped inside */}
            <div className="w-full max-w-6xl aspect-[16/10] bg-black rounded-[2rem] border-[16px] border-zinc-800 shadow-2xl relative overflow-hidden flex flex-col z-10">
               <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('/mac-wallpaper.jpg')" }} />
               
@@ -166,7 +122,6 @@ export default function AppPage() {
                 <MacOSMenuBar appName="Finder" />
               </div>
               
-              {/* Fake Desktop Icons for realism */}
               <div className="absolute top-12 right-6 z-10 flex flex-col gap-6">
                 <div className="flex flex-col items-center gap-1 cursor-pointer hover:bg-white/10 p-2 rounded-lg">
                   <img src="/app-icons/folder.png" className="w-12 h-12 drop-shadow-md" alt="Folder" onError={(e) => e.currentTarget.style.display='none'} />
@@ -177,11 +132,32 @@ export default function AppPage() {
                   <span className="text-white text-xs font-medium drop-shadow-md">Design Assets</span>
                 </div>
               </div>
+
+              {/* AgentFace is explicitly inside the screen, so it cannot overlap the surrounding page text or header */}
+              <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                <div className="pointer-events-auto">
+                  <AgentFace state="idle" size={120} />
+                </div>
+              </div>
               
               <div className="absolute bottom-4 z-20 w-full flex justify-center">
                 <MacOSDock apps={dockIcons} onAppClick={() => {}} />
               </div>
            </div>
+        </div>
+
+        {/* 3. MARQUEE SCROLLER */}
+        <div className="mt-24 mb-12 border-y border-zinc-900 bg-zinc-950/50 py-6 overflow-hidden flex whitespace-nowrap text-zinc-500 font-mono text-sm uppercase items-center">
+          <motion.div animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="flex gap-12 items-center">
+            {Array(10).fill(0).map((_, i) => (
+              <React.Fragment key={i}>
+                <span>Momentum physically drives these apps</span>
+                <span className="w-2 h-2 rounded-full bg-zinc-700" />
+                <span>Zero API limitations</span>
+                <span className="w-2 h-2 rounded-full bg-zinc-700" />
+              </React.Fragment>
+            ))}
+          </motion.div>
         </div>
 
         {/* 4. APPLICATIONS SCROLL */}
@@ -364,59 +340,47 @@ export default function AppPage() {
                 </div>
               </div>
 
-              {/* PANEL 5: HARDWARE DESIGN */}
+              {/* PANEL 5: BIOINFORMATICS */}
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
-                    <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Hardware & <br/>Circuit Design.</h3>
-                    <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum directly drives Altium and AutoCAD. It optimally routes multi-layer PCBs, places components to minimize interference, and automatically runs signal integrity simulations.</p>
+                    <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Bioinformatics & <br/>DNA Analysis.</h3>
+                    <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum natively drives PyMOL, SnapGene, and BLAST. It autonomously aligns massive genome sequences, folds proteins in 3D space, and identifies CRISPR target sites.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#061c0f]">
-                       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(16,185,129,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)', backgroundSize: '100px 100px' }} />
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#0f172a]">
+                       <div className="h-8 bg-[#1e293b] border-b border-indigo-900/50 flex items-center px-4 font-mono text-[10px] text-indigo-300">PyMOL - Protein_Folding_Sim_v4.pdb</div>
                        
-                       <div className="h-8 bg-[#020b06] border-b border-emerald-900/50 flex items-center px-4 font-mono text-[10px] text-emerald-600/70">ALTIUM DESIGNER - Motherboard_V2.PcbDoc</div>
-                       
-                       <div className="relative w-full h-[calc(100%-32px)]">
-                          {/* Fake IC Components */}
-                          <div className="absolute top-1/4 left-1/4 w-24 h-24 bg-[#111] border-2 border-emerald-500/50 rounded flex flex-col items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                             <div className="text-[10px] text-emerald-400 font-mono">CPU_MAIN</div>
-                             <div className="text-[8px] text-zinc-500">U1</div>
-                          </div>
-                          
-                          <div className="absolute top-1/2 right-1/4 w-12 h-20 bg-[#111] border border-emerald-500/50 rounded flex flex-col items-center justify-center">
-                             <div className="text-[8px] text-emerald-400 font-mono">RAM_A</div>
-                          </div>
-
-                          {/* Animated Routing Traces */}
-                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 800 600">
+                       <div className="relative w-full h-[calc(100%-32px)] flex items-center justify-center overflow-hidden">
+                          {/* Fake DNA Helix / Protein Structure */}
+                          <svg className="w-full h-full absolute inset-0 pointer-events-none" viewBox="0 0 400 300">
                              <motion.path 
-                                d="M 280 200 L 400 200 L 450 250 L 550 250" 
-                                fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="4 4"
-                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 1.5, ease: "linear" }}
+                                d="M 50 150 Q 125 50 200 150 T 350 150" 
+                                fill="none" stroke="#6366f1" strokeWidth="4" strokeLinecap="round"
+                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 2, ease: "easeInOut" }}
                              />
                              <motion.path 
-                                d="M 280 220 L 380 220 L 420 280 L 550 280" 
-                                fill="none" stroke="#34d399" strokeWidth="1"
-                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 1.2, ease: "linear", delay: 0.5 }}
+                                d="M 50 150 Q 125 250 200 150 T 350 150" 
+                                fill="none" stroke="#8b5cf6" strokeWidth="4" strokeLinecap="round"
+                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 2, ease: "easeInOut", delay: 0.2 }}
                              />
-                             <motion.path 
-                                d="M 280 240 L 350 240 L 400 320 L 480 320 L 550 310" 
-                                fill="none" stroke="#059669" strokeWidth="3"
-                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 2 ? 1 : 0 }} transition={{ duration: 1, ease: "linear" }}
-                             />
+                             
+                             <AnimatePresence>
+                               {animationStep >= 2 && (
+                                 <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+                                   {Array(8).fill(0).map((_, i) => (
+                                     <line key={i} x1={80 + i * 35} y1={120 + Math.sin(i)*20} x2={80 + i * 35} y2={180 - Math.sin(i)*20} stroke="#4ade80" strokeWidth="2" opacity="0.6" />
+                                   ))}
+                                 </motion.g>
+                               )}
+                             </AnimatePresence>
                           </svg>
 
-                          <AnimatePresence>
-                             {animationStep >= 2 && (
-                                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="absolute bottom-6 right-6 bg-black/90 border border-emerald-500/30 p-3 rounded shadow-lg text-[10px] font-mono">
-                                  <div className="text-emerald-400 mb-1">AUTO-ROUTER: SUCCESS</div>
-                                  <div className="text-zinc-400">NETS ROUTED: 100% (4,092)</div>
-                                  <div className="text-zinc-400">IMPEDANCE MATCHED: YES</div>
-                                </motion.div>
-                             )}
-                          </AnimatePresence>
+                          <div className="absolute top-4 left-4 bg-black/60 border border-indigo-500/30 p-3 rounded shadow-lg text-[10px] font-mono">
+                            <div className="text-indigo-400 mb-1">SEQUENCE ALIGNMENT</div>
+                            <div className="text-zinc-300">Target: CRISPR-Cas9 Locus</div>
+                            <div className="text-zinc-300">Match Accuracy: {animationStep >= 2 ? "99.8%" : "Analyzing..."}</div>
+                          </div>
                        </div>
                     </div>
                   </div>
@@ -489,7 +453,7 @@ export default function AppPage() {
         </div>
 
         {/* 5. CONCLUSION */}
-        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-black relative overflow-hidden pt-32">
+        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-black relative overflow-hidden pt-32 border-t border-zinc-900">
            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.1)_0%,transparent_50%)]" />
            <div className="relative z-10 max-w-4xl flex flex-col items-center">
              <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8">The era of renting software is over.</h2>
