@@ -21,6 +21,8 @@ const dockIcons = [
   { id: "settings", name: "Settings", icon: "/app-icons/settings.png" }
 ];
 
+const allAppsScroller = [...dockIcons, ...dockIcons, ...dockIcons];
+
 export default function AppPage() {
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
@@ -96,7 +98,7 @@ export default function AppPage() {
   useEffect(() => {
     if (activeSection === 0) setFaceState("idle");
     else if (activeSection === 1) setFaceState("speaking"); 
-    else if (activeSection >= 2 && activeSection <= 8) setFaceState(animationStep === 1 ? "error" : "thinking");
+    else if (activeSection >= 2 && activeSection <= 8) setFaceState("thinking");
     else if (activeSection === 9) setFaceState("idle");
   }, [activeSection, animationStep]);
 
@@ -144,12 +146,12 @@ export default function AppPage() {
       </motion.div>
       <div className="h-[250vh]" />
 
-      <div className="relative z-40 bg-black border-t border-zinc-900 pt-32">
+      <div className="relative z-40 bg-black border-t border-zinc-900 pt-12">
         
         {/* 2. MAC OS SCREEN */}
         <div ref={howRef} className="h-[150vh] w-full relative">
            <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center px-6 overflow-hidden bg-black">
-             {/* REVERTED TO ORIGINAL SUBHEADING TEXT */}
+             
              <div className="max-w-4xl text-center mb-12 relative z-10">
                <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full text-sm font-medium mb-8 inline-block">Native OS Integration</div>
                <h2 className="text-4xl md:text-6xl font-medium tracking-tight mb-6">Summon it anywhere.</h2>
@@ -158,7 +160,6 @@ export default function AppPage() {
                </p>
              </div>
              
-             {/* REVERTED TO EXACT MAIN WEBSITE MAC LAYOUT */}
              <div className="w-full max-w-6xl aspect-[16/10] bg-black rounded-[2rem] border-[16px] border-zinc-800 shadow-2xl relative overflow-hidden flex flex-col z-10 mb-8">
                 <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('/mac-wallpaper.jpg')" }} />
                 
@@ -166,7 +167,6 @@ export default function AppPage() {
                   <MacOSMenuBar appName="Finder" />
                 </div>
                 
-                {/* Fake Desktop Icons for realism */}
                 <div className="absolute top-12 right-6 z-10 flex flex-col gap-6">
                   <div className="flex flex-col items-center gap-1 cursor-pointer hover:bg-white/10 p-2 rounded-lg">
                     <img src="/app-icons/folder.png" className="w-12 h-12 drop-shadow-md" alt="Folder" onError={(e) => e.currentTarget.style.display='none'} />
@@ -185,16 +185,16 @@ export default function AppPage() {
            </div>
         </div>
 
-        {/* 3. MARQUEE SCROLLER */}
-        <div className="border-y border-zinc-900 bg-zinc-950/50 py-6 overflow-hidden flex whitespace-nowrap text-zinc-500 font-mono text-sm uppercase items-center relative z-40">
-          <motion.div animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="flex gap-12 items-center">
-            {Array(10).fill(0).map((_, i) => (
-              <React.Fragment key={i}>
-                <span>Momentum physically drives these apps</span>
-                <span className="w-2 h-2 rounded-full bg-zinc-700" />
-                <span>Zero API limitations</span>
-                <span className="w-2 h-2 rounded-full bg-zinc-700" />
-              </React.Fragment>
+        {/* 3. MARQUEE SCROLLER (APP ICONS) */}
+        <div className="border-y border-zinc-900 bg-zinc-950 py-10 overflow-hidden flex items-center relative z-40">
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
+          <motion.div animate={{ x: [0, -2000] }} transition={{ repeat: Infinity, duration: 40, ease: "linear" }} className="flex gap-16 items-center w-max">
+            {allAppsScroller.map((app, i) => (
+              <div key={i} className="flex items-center gap-4 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+                <img src={app.icon} alt={app.name} className="w-12 h-12 object-contain" onError={(e) => e.currentTarget.style.display='none'} />
+                <span className="font-medium text-xl font-mono tracking-tight text-white">{app.name}</span>
+              </div>
             ))}
           </motion.div>
         </div>
@@ -208,6 +208,7 @@ export default function AppPage() {
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
+                    <div className="text-zinc-500 font-mono text-sm tracking-widest uppercase mb-4">VS Code • Cursor • GitHub</div>
                     <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Software <br/>Engineering.</h3>
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum drives your IDE. It reads your entire repository, runs local tests, debugging errors in the terminal, and pushes bug fixes while you sleep.</p>
                   </div>
@@ -232,7 +233,7 @@ export default function AppPage() {
                                 <div className="mt-4"><span className="text-[#569cd6]">export async function</span> <span className="text-[#dcdcaa]">verify</span>(token: <span className="text-[#4ec9b0]">string</span>) {'{'}</div>
                                 <div className="pl-4">
                                   <AnimatePresence mode="wait">
-                                     {animationStep === 0 && <motion.div key="1" className="text-zinc-400">await jwt_decode(token);</motion.div>}
+                                     {animationStep === 0 && <motion.div key="1" className="text-zinc-400 animate-pulse">Scanning file for vulnerabilities...</motion.div>}
                                      {animationStep === 1 && <motion.div key="2" className="bg-red-900/30 border-l-2 border-red-500 px-2 py-1 text-red-400">TypeError: jwt_decode is not a function</motion.div>}
                                      {animationStep === 2 && <motion.div key="3" className="text-emerald-400 bg-emerald-900/20 border-l-2 border-emerald-500 px-2 py-1">return await jwt.verify(token, process.env.SECRET);</motion.div>}
                                   </AnimatePresence>
@@ -241,7 +242,9 @@ export default function AppPage() {
                             </div>
                             <div className="h-32 bg-[#1e1e1e] border-t border-[#333] p-3 font-mono text-[10px]">
                                 <div className="text-zinc-400 mb-1">TERMINAL</div>
-                                {animationStep >= 2 ? <div className="text-emerald-400">✔ Fix applied. Tests passed.</div> : <div className="text-zinc-300">$ running tests...</div>}
+                                {animationStep === 0 && <div className="text-zinc-300">$ npm run test</div>}
+                                {animationStep === 1 && <div className="text-red-400">✖ 1 failing test</div>}
+                                {animationStep === 2 && <div className="text-emerald-400">✔ Fix applied. Tests passed. Pushing to remote.</div>}
                             </div>
                           </div>
                        </div>
@@ -254,13 +257,13 @@ export default function AppPage() {
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
+                    <div className="text-zinc-500 font-mono text-sm tracking-widest uppercase mb-4">Unreal Engine • Unity • Blender</div>
                     <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Game Dev & <br/>Environments.</h3>
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum physically drives Unreal Engine. It visually connects blueprint nodes, bakes complex lighting, and adjusts collision meshes.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
                     <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#161616]">
                        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '100px 100px' }} />
                        
                        <div className="h-8 bg-[#252525] border-b border-black flex items-center px-4 text-[10px] text-zinc-400 z-10 relative">UnrealEditor - ThirdPersonMap - Blueprints</div>
                        
@@ -274,7 +277,7 @@ export default function AppPage() {
                           
                           <motion.path 
                              d="M 230 75 C 300 75, 250 150, 350 150" 
-                             fill="none" stroke="white" strokeWidth="3" 
+                             fill="none" stroke={animationStep >= 1 ? "white" : "transparent"} strokeWidth="3" 
                              className="absolute top-0 left-0 z-10"
                              initial={{ pathLength: 0 }}
                              animate={{ pathLength: animationStep >= 1 ? 1 : 0 }}
@@ -302,7 +305,11 @@ export default function AppPage() {
                                <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" />
                                <span className="text-white font-medium text-xs">Momentum AI</span>
                              </div>
-                             <div className="text-zinc-400 text-[10px]">Wiring Spawn logic to BeginPlay...</div>
+                             <div className="text-zinc-400 text-[10px]">
+                                {animationStep === 0 && "Locating BeginPlay node..."}
+                                {animationStep === 1 && "Spawning BP_Enemy class..."}
+                                {animationStep === 2 && "Connecting Execution pins..."}
+                             </div>
                           </div>
                        </div>
                     </div>
@@ -314,6 +321,7 @@ export default function AppPage() {
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
+                    <div className="text-zinc-500 font-mono text-sm tracking-widest uppercase mb-4">Premiere Pro • DaVinci • After Effects</div>
                     <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Video & <br/>Post-Production.</h3>
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum edits inside Premiere Pro and DaVinci Resolve. It trims silence, automatically grades color, synchronizes multi-cam footage, and renders final exports.</p>
                   </div>
@@ -324,15 +332,15 @@ export default function AppPage() {
                         <div className="flex-1 flex flex-col p-4 gap-4">
                            <div className="flex-1 bg-black rounded-lg border border-[#333] flex items-center justify-center relative overflow-hidden">
                               <div className="absolute inset-0 bg-blue-900/20" />
-                              <div className="text-zinc-600 font-medium text-2xl tracking-widest">MEDIA OFFLINE</div>
-                              {animationStep >= 1 && <motion.div initial={{opacity:0}} animate={{opacity:1}} className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center" />}
+                              {animationStep === 0 && <div className="text-zinc-600 font-medium text-2xl tracking-widest">MEDIA OFFLINE</div>}
+                              {animationStep >= 1 && <motion.div initial={{opacity:0}} animate={{opacity:1}} className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center" style={{ filter: animationStep === 2 ? 'contrast(1.2) saturate(1.5) sepia(0.2)' : 'none' }} />}
                            </div>
                            
                            <div className="h-32 bg-[#111] rounded-lg border border-[#333] p-2 flex flex-col gap-1 relative">
                               <div className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 left-1/3" />
                               <div className="flex gap-2 items-center text-[10px] text-zinc-500 mb-1"><span>V1</span> <div className="flex-1 h-6 bg-blue-600/30 border border-blue-500/50 rounded flex items-center px-2 text-white">Clip_001.mp4</div></div>
                               <div className="flex gap-2 items-center text-[10px] text-zinc-500"><span>V2</span> <div className="flex-1 h-6 bg-purple-600/30 border border-purple-500/50 rounded flex items-center px-2 text-white overflow-hidden relative">
-                                 {animationStep >= 2 && <motion.div initial={{x:-100}} animate={{x:0}} className="w-1/2 h-full bg-purple-500/80 px-2 flex items-center border-r border-white/50">B-Roll_City.mp4</motion.div>}
+                                 {animationStep >= 1 && <motion.div initial={{x:-100}} animate={{x:0}} className="w-1/2 h-full bg-purple-500/80 px-2 flex items-center border-r border-white/50">B-Roll_City.mp4</motion.div>}
                               </div></div>
                            </div>
                         </div>
@@ -342,7 +350,11 @@ export default function AppPage() {
                              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
                              <span className="text-white font-bold text-xs">Momentum AI</span>
                            </div>
-                           <div className="text-zinc-400 text-xs">{animationStep >= 2 ? "B-roll overlaid successfully." : "Analyzing transcript for b-roll insertion..."}</div>
+                           <div className="text-zinc-400 text-xs">
+                             {animationStep === 0 && "Analyzing transcript for b-roll insertion..."}
+                             {animationStep === 1 && "B-roll overlaid successfully."}
+                             {animationStep === 2 && "Applying cinematic color grade..."}
+                           </div>
                         </div>
                      </div>
                   </div>
@@ -353,25 +365,34 @@ export default function AppPage() {
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
+                    <div className="text-zinc-500 font-mono text-sm tracking-widest uppercase mb-4">AutoCAD • SolidWorks • CATIA</div>
                     <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Automobile & <br/>3D Design.</h3>
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum clicks through CAD menus, sets physical constraints, and processes aerodynamic simulations completely autonomously. It's like having a senior industrial designer on staff.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-black flex items-center justify-center">
-                       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(0,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px', transform: 'perspective(500px) rotateX(60deg) scale(2)' }} />
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#0a0a0a] flex items-center justify-center">
+                       {/* High Quality 3D Car Image */}
+                       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-80 mix-blend-screen" />
                        
-                       <motion.div animate={{ rotateY: 360 }} transition={{ repeat: Infinity, duration: 10, ease: "linear" }} style={{ transformStyle: 'preserve-3d' }} className="relative w-48 h-48">
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" style={{ transform: 'rotateX(90deg)' }} />
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" style={{ transform: 'rotateY(90deg)' }} />
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" />
-                          <div className="absolute inset-0 border-2 border-cyan-400 bg-cyan-400/20" style={{ transform: 'scale(0.5)' }} />
-                       </motion.div>
+                       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(0,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
                        
                        <div className="absolute top-6 left-6 bg-black/80 backdrop-blur border border-zinc-800 p-4 rounded-xl text-cyan-400 font-mono text-[10px]">
                           <div>TOLERANCE: 0.001mm</div>
-                          <div>NODES: 42,010</div>
+                          <div>NODES: 1,402,010</div>
                           <div>STRESS: <motion.span animate={{ opacity: [1, 0.5, 1] }} transition={{ repeat: Infinity }}>OPTIMIZING</motion.span></div>
                        </div>
+                       
+                       <div className="absolute bottom-6 right-6 bg-black/90 backdrop-blur border border-cyan-900/50 p-4 rounded-xl shadow-2xl">
+                           <div className="flex items-center gap-3 mb-2">
+                             <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
+                             <span className="text-white font-bold text-xs">Momentum AI</span>
+                           </div>
+                           <div className="text-zinc-400 text-xs">
+                             {animationStep === 0 && "Importing chassis mesh..."}
+                             {animationStep === 1 && "Running wind tunnel simulation..."}
+                             {animationStep === 2 && "Adjusting rear spoiler for 14% less drag."}
+                           </div>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -381,43 +402,35 @@ export default function AppPage() {
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
+                    <div className="text-zinc-500 font-mono text-sm tracking-widest uppercase mb-4">PyMOL • SnapGene • BLAST</div>
                     <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Bioinformatics & <br/>DNA Analysis.</h3>
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum natively drives PyMOL, SnapGene, and BLAST. It autonomously aligns massive genome sequences, folds proteins in 3D space, and identifies CRISPR target sites.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#0f172a]">
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-[#040914]">
                        <div className="h-8 bg-[#1e293b] border-b border-indigo-900/50 flex items-center px-4 font-mono text-[10px] text-indigo-300">PyMOL - Protein_Folding_Sim_v4.pdb</div>
                        
                        <div className="relative w-full h-[calc(100%-32px)] flex items-center justify-center overflow-hidden">
-                          {/* Fake DNA Helix / Protein Structure */}
-                          <svg className="w-full h-full absolute inset-0 pointer-events-none" viewBox="0 0 400 300">
-                             <motion.path 
-                                d="M 50 150 Q 125 50 200 150 T 350 150" 
-                                fill="none" stroke="#6366f1" strokeWidth="4" strokeLinecap="round"
-                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 2, ease: "easeInOut" }}
-                             />
-                             <motion.path 
-                                d="M 50 150 Q 125 250 200 150 T 350 150" 
-                                fill="none" stroke="#8b5cf6" strokeWidth="4" strokeLinecap="round"
-                                initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0 }} transition={{ duration: 2, ease: "easeInOut", delay: 0.2 }}
-                             />
-                             
-                             <AnimatePresence>
-                               {animationStep >= 2 && (
-                                 <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-                                   {Array(8).fill(0).map((_, i) => (
-                                     <line key={i} x1={80 + i * 35} y1={120 + Math.sin(i)*20} x2={80 + i * 35} y2={180 - Math.sin(i)*20} stroke="#4ade80" strokeWidth="2" opacity="0.6" />
-                                   ))}
-                                 </motion.g>
-                               )}
-                             </AnimatePresence>
-                          </svg>
+                          {/* Real 3D DNA Image */}
+                          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center opacity-70 mix-blend-screen" style={{ filter: animationStep >= 1 ? 'hue-rotate(90deg) brightness(1.2)' : 'none', transition: 'filter 1s' }} />
 
-                          <div className="absolute top-4 left-4 bg-black/60 border border-indigo-500/30 p-3 rounded shadow-lg text-[10px] font-mono">
+                          <div className="absolute top-4 left-4 bg-black/80 backdrop-blur border border-indigo-500/50 p-3 rounded shadow-lg text-[10px] font-mono">
                             <div className="text-indigo-400 mb-1">SEQUENCE ALIGNMENT</div>
                             <div className="text-zinc-300">Target: CRISPR-Cas9 Locus</div>
                             <div className="text-zinc-300">Match Accuracy: {animationStep >= 2 ? "99.8%" : "Analyzing..."}</div>
                           </div>
+                          
+                          <div className="absolute bottom-6 right-6 bg-black/90 backdrop-blur border border-indigo-900/50 p-4 rounded-xl shadow-2xl">
+                           <div className="flex items-center gap-3 mb-2">
+                             <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
+                             <span className="text-white font-bold text-xs">Momentum AI</span>
+                           </div>
+                           <div className="text-zinc-400 text-xs">
+                             {animationStep === 0 && "Parsing genome sequence..."}
+                             {animationStep === 1 && "Identifying target locus..."}
+                             {animationStep === 2 && "CRISPR binding site verified."}
+                           </div>
+                        </div>
                        </div>
                     </div>
                   </div>
@@ -428,6 +441,7 @@ export default function AppPage() {
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
+                    <div className="text-zinc-500 font-mono text-sm tracking-widest uppercase mb-4">Meta Ads • Google Analytics • HubSpot</div>
                     <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Marketing & <br/>Analytics.</h3>
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum physically logs into your Ads Manager, duplicates underperforming campaigns, adjusts A/B testing budgets, and generates daily ROI reports for you.</p>
                   </div>
@@ -443,11 +457,23 @@ export default function AppPage() {
                          <path d="M0 200 L0 150 Q 100 120 200 140 T 400 80 T 600 20 L600 200 Z" fill="url(#chartGrad)" />
                          <motion.path d="M0 150 Q 100 120 200 140 T 400 80 T 600 20" fill="none" stroke="#60a5fa" strokeWidth="4" initial={{ pathLength: 0 }} animate={{ pathLength: animationStep >= 1 ? 1 : 0.2 }} transition={{ duration: 1.5, ease: "easeOut" }} />
                        </svg>
-                       <div className="relative z-10 bg-slate-900/80 backdrop-blur p-6 rounded-xl border border-slate-700 self-end w-64 shadow-2xl">
+                       <div className="relative z-10 bg-slate-900/80 backdrop-blur p-6 rounded-xl border border-slate-700 self-end w-64 shadow-2xl mb-12">
                           <div className="text-slate-400 text-xs uppercase tracking-wider mb-2">Campaign ROAS</div>
-                          <div className="text-4xl font-light text-white mb-2">{animationStep >= 1 ? "4.2x" : "1.8x"}</div>
-                          <div className="text-emerald-400 text-xs flex items-center gap-1">↑ Budget optimized by AI</div>
+                          <div className="text-4xl font-light text-white mb-2">{animationStep >= 2 ? "4.2x" : "1.8x"}</div>
+                          <div className="text-emerald-400 text-xs flex items-center gap-1">{animationStep >= 2 ? "↑ Budget optimized by AI" : "Status: Underperforming"}</div>
                        </div>
+                       
+                       <div className="absolute bottom-6 left-6 bg-black/90 backdrop-blur border border-blue-900/50 p-4 rounded-xl shadow-2xl">
+                           <div className="flex items-center gap-3 mb-2">
+                             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                             <span className="text-white font-bold text-xs">Momentum AI</span>
+                           </div>
+                           <div className="text-zinc-400 text-xs">
+                             {animationStep === 0 && "Analyzing Facebook Ads Manager..."}
+                             {animationStep === 1 && "Pausing ad set 'Retargeting_B'..."}
+                             {animationStep === 2 && "Reallocating $500/day to best performer."}
+                           </div>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -457,29 +483,50 @@ export default function AppPage() {
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
                 <div className="max-w-[1400px] w-full flex flex-col md:flex-row items-center gap-16">
                   <div className="flex-1">
+                    <div className="text-zinc-500 font-mono text-sm tracking-widest uppercase mb-4">Zoom • Slack • WhatsApp</div>
                     <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 leading-tight">Meetings & <br/>Comms.</h3>
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">It literally attends meetings for you. Momentum joins Zoom calls, extracts action items, and immediately messages your team on WhatsApp with the updates.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-zinc-950 flex">
-                      <div className="flex-1 border-r border-zinc-800 p-6 flex flex-col gap-4">
-                         <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest"><div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" /> Live Call</div>
-                         <div className="flex-1 bg-zinc-900 rounded-xl flex items-center justify-center relative overflow-hidden border border-zinc-800">
-                           <div className="text-4xl font-light text-zinc-700">Client Sync</div>
-                           <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur rounded-lg p-3 text-xs text-zinc-300">
-                             <span className="text-blue-400 font-medium">Sarah:</span> "We need the API integrated by Friday."
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-zinc-950 flex flex-col">
+                      
+                      <div className="h-2/3 border-b border-zinc-800 relative bg-[url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=1200')] bg-cover bg-center">
+                         <div className="absolute inset-0 bg-black/40" />
+                         <div className="absolute top-4 left-4 bg-black/60 backdrop-blur text-white text-[10px] px-2 py-1 rounded flex items-center gap-2"><div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"/> ZOOM - Marketing Weekly</div>
+                         
+                         <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur border border-white/10 rounded-lg p-3">
+                           <div className="text-xs text-zinc-400 mb-1">Live Transcript:</div>
+                           <div className="text-sm text-white">
+                             {animationStep === 0 && "Waiting for meeting to start..."}
+                             {animationStep === 1 && <><span className="text-blue-400">Sarah:</span> "So we need the Q3 report sent to the investors by EOD Friday."</>}
+                             {animationStep === 2 && <><span className="text-blue-400">Sarah:</span> "So we need the Q3 report sent to the investors by EOD Friday."</>}
                            </div>
                          </div>
                       </div>
-                      <div className="flex-1 bg-[#1c1c1e] p-6 flex flex-col justify-end">
+
+                      <div className="flex-1 bg-[#1c1c1e] p-6 relative flex flex-col justify-center">
+                         <div className="absolute top-0 left-0 right-0 h-6 bg-[#252525] flex items-center px-4 text-[10px] text-zinc-400">WhatsApp - Team Group</div>
                          <AnimatePresence>
-                           {animationStep >= 1 && (
-                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#0b84ff] text-white p-4 rounded-2xl rounded-tr-sm text-sm leading-relaxed shadow-lg">
-                               Hey team, just got off the client call. Sarah approved the V2 mockups. Let's get the API integration done by Friday.
+                           {animationStep >= 2 && (
+                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-[#0b84ff] text-white p-3 rounded-2xl rounded-tr-sm text-sm leading-relaxed shadow-lg max-w-[80%] self-end">
+                               Hey team, just attended the sync. Sarah needs the Q3 report for investors by EOD Friday. I've already drafted a template in Google Docs.
                              </motion.div>
                            )}
                          </AnimatePresence>
+                         
+                         <div className="absolute bottom-4 left-4 right-4 bg-transparent p-0 rounded-xl">
+                           <div className="flex items-center gap-3 mb-1">
+                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                             <span className="text-white font-bold text-[10px]">Momentum AI</span>
+                           </div>
+                           <div className="text-zinc-500 text-[10px]">
+                             {animationStep === 0 && "Idling in Zoom call..."}
+                             {animationStep === 1 && "Extracting action item..."}
+                             {animationStep === 2 && "Relaying task to team via WhatsApp."}
+                           </div>
+                        </div>
                       </div>
+
                     </div>
                   </div>
                 </div>
@@ -490,7 +537,7 @@ export default function AppPage() {
         </div>
 
         {/* 5. CONCLUSION */}
-        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-black relative overflow-hidden pt-32">
+        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-black relative overflow-hidden pt-32 border-t border-zinc-900">
            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.1)_0%,transparent_50%)]" />
            <div className="relative z-10 max-w-4xl flex flex-col items-center">
              <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8">The era of renting software is over.</h2>
