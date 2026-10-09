@@ -1,4 +1,6 @@
-"use client";
+const fs = require('fs');
+
+const code = `"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useTransform, useMotionValue } from "framer-motion";
@@ -225,7 +227,7 @@ export default function AppPage() {
             {/* The global face moves to y: -40vh here and Stays locked at the top! */}
 
             <motion.div 
-              style={{ x: `-${hProgress * 80}%` }}
+              style={{ x: \`-\${hProgress * 80}%\` }}
               className="flex w-[500vw] h-full pt-20" /* Added pt-20 to push content down below the locked face */
             >
               
@@ -597,3 +599,6 @@ export default function AppPage() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/app/app/page.tsx', code);
