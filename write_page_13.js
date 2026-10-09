@@ -1,4 +1,6 @@
-"use client";
+const fs = require('fs');
+
+const code = `"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useTransform, useMotionValue } from "framer-motion";
@@ -26,34 +28,20 @@ export default function AppPage() {
   const [activeSection, setActiveSection] = useState(0);
   const [faceState, setFaceState] = useState<AgentState>("idle");
 
-  const introRef = useRef<HTMLDivElement>(null);
-  const howRef = useRef<HTMLDivElement>(null);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
   
-  const introProgress = useMotionValue(0);
   const [hProgress, setHProgress] = useState(0);
   const [animationStep, setAnimationStep] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const vh = window.innerHeight;
-      
-      if (introRef.current) {
-        const rect = introRef.current.getBoundingClientRect();
-        let progress = -rect.top / rect.height;
-        progress = Math.max(0, Math.min(1, progress));
-        introProgress.set(progress);
-      }
-
       let newSection = 0;
       
-      if (howRef.current && horizontalScrollRef.current) {
-         const howRect = howRef.current.getBoundingClientRect();
+      if (horizontalScrollRef.current) {
          const hRect = horizontalScrollRef.current.getBoundingClientRect();
          
-         if (howRect.top > vh * 0.5) {
-            newSection = 0; 
-         } else if (howRect.top <= vh * 0.5 && hRect.top > vh * 0.5) {
+         if (hRect.top > vh * 0.5) {
             newSection = 1; 
          } else {
             const totalScrollable = hRect.height - vh;
@@ -87,106 +75,81 @@ export default function AppPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const portalScale = useTransform(introProgress, [0, 0.1, 0.6, 1], [1, 1, 80, 200]);
-  const portalOpacity = useTransform(introProgress, [0, 0.05, 0.9, 1], [0, 1, 1, 0]);
-  const faceOpacityIntro = useTransform(introProgress, [0, 0.02, 1], [1, 0, 0]);
-  const heroOpacity = useTransform(introProgress, [0, 0.15], [1, 0]);
-  const heroY = useTransform(introProgress, [0, 0.15], [0, -50]);
-
   useEffect(() => {
-    if (activeSection === 0) setFaceState("idle");
-    else if (activeSection === 1) setFaceState("speaking"); 
-    else if (activeSection >= 2 && activeSection <= 8) setFaceState(animationStep === 1 ? "error" : "thinking");
+    if (activeSection === 0 || activeSection === 1) setFaceState("idle");
+    else if (activeSection >= 2 && activeSection <= 8) setFaceState("thinking");
     else if (activeSection === 9) setFaceState("idle");
   }, [activeSection, animationStep]);
 
   useEffect(() => { setMounted(true); }, []);
   if (!mounted) return null;
 
-  const faceVariants = {
-    0: { x: "0px", y: "-15vh", scale: 1 },
-    1: { x: "0px", y: "0vh", scale: 0.6 },
-    2: { x: "0px", y: "-30vh", scale: 0.5 },
-    3: { x: "0px", y: "-30vh", scale: 0.5 },
-    4: { x: "0px", y: "-30vh", scale: 0.5 },
-    5: { x: "0px", y: "-30vh", scale: 0.5 },
-    6: { x: "0px", y: "-30vh", scale: 0.5 },
-    7: { x: "0px", y: "-30vh", scale: 0.5 },
-    8: { x: "0px", y: "-30vh", scale: 0.5 },
-    9: { x: "0px", y: "-25vh", scale: 0.8 },
-  };
-
   return (
     <div className="bg-black text-white selection:bg-white/20 font-sans min-h-screen relative overflow-x-clip">
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5 mix-blend-difference">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-transparent backdrop-blur-md border-b border-white/5">
         <Link href="/" className="text-xl font-bold tracking-tighter hover:opacity-80 transition-opacity">Momentum</Link>
         <Link href="/" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Back to Home</Link>
       </nav>
 
-      <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-        <motion.div animate={faceVariants[activeSection as keyof typeof faceVariants]} transition={{ type: "spring", stiffness: 90, damping: 20, mass: 0.8 }} className="relative pointer-events-auto">
-          {activeSection === 0 && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center">
-              <motion.div style={{ scale: portalScale, opacity: portalOpacity }} className="w-[54px] h-[56px] bg-white rounded-[12px] origin-center shadow-[0_0_80px_rgba(255,255,255,1)]" />
-            </div>
-          )}
-          <motion.div style={{ opacity: activeSection === 0 ? faceOpacityIntro as any : 1 }} className={activeSection === 0 ? "" : "transition-opacity duration-1000 ease-in drop-shadow-[0_0_30px_rgba(0,0,0,0.8)]"}>
-            <AgentFace state={faceState} size={180} />
-          </motion.div>
-        </motion.div>
+      {/* 1. INTRO SECTION */}
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-32">
+        <div className="max-w-5xl mx-auto flex flex-col items-center">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[1.1] max-w-5xl mb-8">
+            Momentum is not a chatbot.
+          </h2>
+          <p className="text-2xl md:text-3xl text-zinc-500 max-w-3xl leading-relaxed">
+            It is a fully autonomous digital workforce capable of reasoning, planning, and executing inside your actual software.
+          </p>
+        </div>
       </div>
 
-      {/* 1. HERO */}
-      <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
-      <motion.div style={{ opacity: heroOpacity, y: heroY }} className="fixed inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20 mt-[25vh]">
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8 leading-[1.05]">Intelligence that <br /><span className="text-zinc-500">does the work.</span></h1>
-        <p className="text-xl md:text-2xl text-zinc-400 max-w-2xl leading-relaxed mx-auto">Scroll down to enter the portal and see Momentum execute complex tasks across applications.</p>
-      </motion.div>
-      <div className="h-[250vh]" />
-
-      <div className="relative z-40 bg-black border-t border-zinc-900 pt-32">
+      <div className="relative z-40 bg-black border-t border-zinc-900 pt-32 pb-12">
         
         {/* 2. MAC OS SCREEN */}
-        <div ref={howRef} className="h-[150vh] w-full relative">
-           <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center px-6 overflow-hidden bg-black">
-             {/* REVERTED TO ORIGINAL SUBHEADING TEXT */}
-             <div className="max-w-4xl text-center mb-12 relative z-10">
-               <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full text-sm font-medium mb-8 inline-block">Native OS Integration</div>
-               <h2 className="text-4xl md:text-6xl font-medium tracking-tight mb-6">Summon it anywhere.</h2>
-               <p className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-                 Give it a directive. Momentum floats above your workspace and takes full control of your mouse and keyboard, right before your eyes.
-               </p>
-             </div>
-             
-             {/* REVERTED TO EXACT MAIN WEBSITE MAC LAYOUT */}
-             <div className="w-full max-w-6xl aspect-[16/10] bg-black rounded-[2rem] border-[16px] border-zinc-800 shadow-2xl relative overflow-hidden flex flex-col z-10 mb-8">
-                <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('/mac-wallpaper.jpg')" }} />
-                
-                <div className="absolute top-0 left-0 right-0 z-20">
-                  <MacOSMenuBar appName="Finder" />
+        <div className="flex flex-col items-center justify-center px-6 relative overflow-hidden">
+           
+           <div className="max-w-4xl text-center mb-16 relative z-10">
+             <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full text-sm font-medium mb-8 inline-block">Native OS Integration</div>
+             <h2 className="text-4xl md:text-6xl font-medium tracking-tight mb-6">Summon it anywhere.</h2>
+             <p className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+               Give it a directive. Momentum floats above your workspace and takes full control of your mouse and keyboard, right before your eyes.
+             </p>
+           </div>
+           
+           {/* Exact Main Website Layout, but with AgentFace safely trapped inside */}
+           <div className="w-full max-w-6xl aspect-[16/10] bg-black rounded-[2rem] border-[16px] border-zinc-800 shadow-2xl relative overflow-hidden flex flex-col z-10">
+              <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('/mac-wallpaper.jpg')" }} />
+              
+              <div className="absolute top-0 left-0 right-0 z-20">
+                <MacOSMenuBar appName="Finder" />
+              </div>
+              
+              <div className="absolute top-12 right-6 z-10 flex flex-col gap-6">
+                <div className="flex flex-col items-center gap-1 cursor-pointer hover:bg-white/10 p-2 rounded-lg">
+                  <img src="/app-icons/folder.png" className="w-12 h-12 drop-shadow-md" alt="Folder" onError={(e) => e.currentTarget.style.display='none'} />
+                  <span className="text-white text-xs font-medium drop-shadow-md">Projects</span>
                 </div>
-                
-                {/* Fake Desktop Icons for realism */}
-                <div className="absolute top-12 right-6 z-10 flex flex-col gap-6">
-                  <div className="flex flex-col items-center gap-1 cursor-pointer hover:bg-white/10 p-2 rounded-lg">
-                    <img src="/app-icons/folder.png" className="w-12 h-12 drop-shadow-md" alt="Folder" onError={(e) => e.currentTarget.style.display='none'} />
-                    <span className="text-white text-xs font-medium drop-shadow-md">Projects</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1 cursor-pointer hover:bg-white/10 p-2 rounded-lg">
-                    <img src="/app-icons/folder.png" className="w-12 h-12 drop-shadow-md" alt="Folder" onError={(e) => e.currentTarget.style.display='none'} />
-                    <span className="text-white text-xs font-medium drop-shadow-md">Design Assets</span>
-                  </div>
+                <div className="flex flex-col items-center gap-1 cursor-pointer hover:bg-white/10 p-2 rounded-lg">
+                  <img src="/app-icons/folder.png" className="w-12 h-12 drop-shadow-md" alt="Folder" onError={(e) => e.currentTarget.style.display='none'} />
+                  <span className="text-white text-xs font-medium drop-shadow-md">Design Assets</span>
                 </div>
-                
-                <div className="absolute bottom-4 z-20 w-full flex justify-center">
-                  <MacOSDock apps={dockIcons} onAppClick={() => {}} />
+              </div>
+
+              {/* AgentFace is explicitly inside the screen, so it cannot overlap the surrounding page text or header */}
+              <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                <div className="pointer-events-auto">
+                  <AgentFace state="idle" size={120} />
                 </div>
-             </div>
+              </div>
+              
+              <div className="absolute bottom-4 z-20 w-full flex justify-center">
+                <MacOSDock apps={dockIcons} onAppClick={() => {}} />
+              </div>
            </div>
         </div>
 
         {/* 3. MARQUEE SCROLLER */}
-        <div className="border-y border-zinc-900 bg-zinc-950/50 py-6 overflow-hidden flex whitespace-nowrap text-zinc-500 font-mono text-sm uppercase items-center relative z-40">
+        <div className="mt-24 mb-12 border-y border-zinc-900 bg-zinc-950/50 py-6 overflow-hidden flex whitespace-nowrap text-zinc-500 font-mono text-sm uppercase items-center">
           <motion.div animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="flex gap-12 items-center">
             {Array(10).fill(0).map((_, i) => (
               <React.Fragment key={i}>
@@ -202,7 +165,7 @@ export default function AppPage() {
         {/* 4. APPLICATIONS SCROLL */}
         <div ref={horizontalScrollRef} className="relative h-[700vh] w-full border-t border-zinc-900">
           <div className="sticky top-0 h-screen w-full overflow-hidden bg-black flex items-center">
-            <motion.div style={{ x: `-${hProgress * 85.7}%` }} className="flex w-[700vw] h-full pt-16">
+            <motion.div style={{ x: \`-\${hProgress * 85.7}%\` }} className="flex w-[700vw] h-full pt-16">
               
               {/* PANEL 1: ENGINEERING */}
               <div className="w-[100vw] h-full flex items-center justify-center p-6 md:p-12">
@@ -360,11 +323,13 @@ export default function AppPage() {
                     <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative border border-zinc-800 bg-black flex items-center justify-center">
                        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(0,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px)', backgroundSize: '30px 30px', transform: 'perspective(500px) rotateX(60deg) scale(2)' }} />
                        
-                       <motion.div animate={{ rotateY: 360 }} transition={{ repeat: Infinity, duration: 10, ease: "linear" }} style={{ transformStyle: 'preserve-3d' }} className="relative w-48 h-48">
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" style={{ transform: 'rotateX(90deg)' }} />
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" style={{ transform: 'rotateY(90deg)' }} />
-                          <div className="absolute inset-0 border border-cyan-500/50 bg-cyan-500/10 rounded-full" />
-                          <div className="absolute inset-0 border-2 border-cyan-400 bg-cyan-400/20" style={{ transform: 'scale(0.5)' }} />
+                       <motion.div animate={{ rotateY: 360, rotateX: 360 }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="relative z-10">
+                          <svg width="300" height="300" viewBox="0 0 300 300" fill="none">
+                             <circle cx="150" cy="150" r="100" stroke="#06b6d4" strokeWidth="1" strokeDasharray="4 4" opacity="0.3" />
+                             <circle cx="150" cy="150" r="70" stroke="#06b6d4" strokeWidth="2" opacity="0.5" />
+                             <path d="M50 150 L250 150 M150 50 L150 250 M79 79 L221 221 M79 221 L221 79" stroke="#06b6d4" strokeWidth="1" opacity="0.2" />
+                             <rect x="110" y="100" width="80" height="100" stroke="#06b6d4" strokeWidth="2" fill="rgba(6,182,212,0.1)" />
+                          </svg>
                        </motion.div>
                        
                        <div className="absolute top-6 left-6 bg-black/80 backdrop-blur border border-zinc-800 p-4 rounded-xl text-cyan-400 font-mono text-[10px]">
@@ -490,7 +455,7 @@ export default function AppPage() {
         </div>
 
         {/* 5. CONCLUSION */}
-        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-black relative overflow-hidden pt-32">
+        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-black relative overflow-hidden pt-32 border-t border-zinc-900">
            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.1)_0%,transparent_50%)]" />
            <div className="relative z-10 max-w-4xl flex flex-col items-center">
              <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8">The era of renting software is over.</h2>
@@ -505,3 +470,6 @@ export default function AppPage() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/app/app/page.tsx', code);
