@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useTransform, useMotionValue } from "framer-motion";
 import Link from "next/link";
 import { AgentFace, AgentState } from "@/components/AgentFace";
-import { Terminal, Cpu, Network, Video, Layers, Wand2, Mail, Calendar, MessageSquare, ShieldCheck, MonitorSmartphone, Code2, Scissors, CalendarDays, Shield } from "lucide-react";
+import { Code2, Scissors, CalendarDays } from "lucide-react";
 
 export default function AppPage() {
   const [mounted, setMounted] = useState(false);
@@ -15,10 +15,13 @@ export default function AppPage() {
   const introRef = useRef<HTMLDivElement>(null);
   const introProgress = useMotionValue(0);
   
+  // --- How It Looks Scroll ---
+  const howRef = useRef<HTMLDivElement>(null);
+
   // --- Horizontal Scroll ---
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
   const [hProgress, setHProgress] = useState(0);
-  const [animationStep, setAnimationStep] = useState(0); // 0, 1, 2 for dynamic widget animations
+  const [animationStep, setAnimationStep] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,28 +35,40 @@ export default function AppPage() {
         introProgress.set(progress);
       }
 
-      // 2. Horizontal Progress
-      if (horizontalScrollRef.current) {
-        const rect = horizontalScrollRef.current.getBoundingClientRect();
-        const totalScrollable = rect.height - vh;
-        let progress = -rect.top / totalScrollable;
-        progress = Math.max(0, Math.min(1, progress));
-        setHProgress(progress);
-
-        // Calculate Active Section (0 to 4)
-        if (rect.top > vh * 0.5) setActiveSection(0);
-        else if (progress < 0.25) setActiveSection(1);
-        else if (progress < 0.50) setActiveSection(2);
-        else if (progress < 0.75) setActiveSection(3);
-        else setActiveSection(4);
-
-        // Calculate a repeating 0,1,2 step for internal card animations based on sub-progress
-        // Each card has 0.25 of the total progress.
-        const segmentProgress = (progress % 0.25) * 4; // 0 to 1 within current card
-        if (segmentProgress > 0.6) setAnimationStep(2);
-        else if (segmentProgress > 0.3) setAnimationStep(1);
-        else setAnimationStep(0);
+      // 2. Determine global active section
+      let newSection = 0;
+      
+      if (howRef.current && horizontalScrollRef.current) {
+         const howRect = howRef.current.getBoundingClientRect();
+         const hRect = horizontalScrollRef.current.getBoundingClientRect();
+         
+         if (howRect.top > vh * 0.5) {
+            newSection = 0; // Intro
+         } else if (howRect.top <= vh * 0.5 && hRect.top > vh * 0.5) {
+            newSection = 1; // How it looks
+         } else {
+            // Inside Horizontal or Conclusion
+            const totalScrollable = hRect.height - vh;
+            let progress = -hRect.top / totalScrollable;
+            progress = Math.max(0, Math.min(1, progress));
+            setHProgress(progress);
+            
+            if (hRect.bottom < vh * 0.5) {
+               newSection = 5; // Conclusion
+            } else {
+               if (progress < 0.33) newSection = 2; // Panel 1
+               else if (progress < 0.66) newSection = 3; // Panel 2
+               else newSection = 4; // Panel 3
+               
+               const segmentProgress = (progress % 0.33) * 3;
+               if (segmentProgress > 0.6) setAnimationStep(2);
+               else if (segmentProgress > 0.3) setAnimationStep(1);
+               else setAnimationStep(0);
+            }
+         }
       }
+      
+      setActiveSection(newSection);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -70,22 +85,24 @@ export default function AppPage() {
   // Sync face state
   useEffect(() => {
     if (activeSection === 0) setFaceState("idle");
-    else if (activeSection === 1) setFaceState(animationStep === 1 ? "error" : "thinking");
-    else if (activeSection === 2) setFaceState("thinking");
-    else if (activeSection === 3) setFaceState(animationStep === 1 ? "speaking" : "listening");
-    else if (activeSection === 4) setFaceState("happy");
+    else if (activeSection === 1) setFaceState("listening"); // Mac screen
+    else if (activeSection === 2) setFaceState(animationStep === 1 ? "error" : "thinking");
+    else if (activeSection === 3) setFaceState("thinking");
+    else if (activeSection === 4) setFaceState(animationStep === 1 ? "speaking" : "listening");
+    else if (activeSection === 5) setFaceState("happy");
   }, [activeSection, animationStep]);
 
   useEffect(() => { setMounted(true); }, []);
   if (!mounted) return null;
 
-  // Face positions meticulously aligned to the new HTML mockups inside the horizontal flex track
+  // Global Face Coordinates
   const faceVariants = {
     0: { x: "0px", y: "-15vh", scale: 1 },
-    1: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over IDE mockup on the right
-    2: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over NLE mockup on the right
-    3: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over CRM mockup on the right
-    4: { x: "0px", y: "0px", scale: 0.8 },     // Center screen for Universal Desktop
+    1: { x: "0px", y: "0px", scale: 0.35 },     // Shrinks perfectly into the Mac Mockup widget circle!
+    2: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over IDE mockup
+    3: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over CAD mockup
+    4: { x: "20vw", y: "-5vh", scale: 0.65 },  // Over CRM mockup
+    5: { x: "0px", y: "-20vh", scale: 1.2 },   // Massive in conclusion
   };
 
   return (
@@ -120,7 +137,7 @@ export default function AppPage() {
         </motion.div>
       </div>
 
-      {/* Intro Section */}
+      {/* 1. WHAT IS MOMENTUM */}
       <div ref={introRef} className="h-[250vh] w-full absolute top-0 left-0 z-0" />
       <motion.div 
         style={{ opacity: heroOpacity, y: heroY }}
@@ -146,12 +163,54 @@ export default function AppPage() {
           </p>
         </div>
 
-        {/* --- HORIZONTAL SCROLLING GALLERY --- */}
-        <div ref={horizontalScrollRef} className="relative h-[400vh] w-full">
+        {/* 2. HOW IT LOOKS & HOW TO USE IT */}
+        <div ref={howRef} className="min-h-screen flex flex-col items-center justify-center px-6 py-24 bg-zinc-950 relative border-t border-zinc-900">
+           <div className="max-w-4xl text-center mb-16 relative z-10">
+             <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full text-sm font-medium mb-8 inline-block">Native OS Integration</div>
+             <h2 className="text-4xl md:text-6xl font-medium tracking-tight mb-6">Summon it anywhere.</h2>
+             <p className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+               Hit <kbd className="bg-zinc-800 px-3 py-1 rounded-md font-mono text-sm border border-zinc-700 text-white mx-1">Cmd + M</kbd>. Give it a directive. Momentum floats above your workspace and takes full control of your mouse and keyboard, right before your eyes.
+             </p>
+           </div>
+           
+           {/* Huge Mac Mockup */}
+           <div className="w-full max-w-6xl aspect-[16/10] bg-black rounded-[2rem] border-[16px] border-zinc-800 shadow-2xl relative overflow-hidden flex flex-col">
+              {/* Fake Mac Header */}
+              <div className="h-7 bg-black/40 backdrop-blur-md border-b border-white/10 w-full flex items-center px-4 text-[11px] font-medium text-white/80 justify-between absolute top-0 z-20">
+                 <div className="flex gap-4 items-center">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2Z"/></svg>
+                    <span>File</span><span>Edit</span><span>View</span><span>Window</span>
+                 </div>
+                 <div className="flex gap-4 items-center">
+                    <span>100%</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    <span>Mon 9:41 AM</span>
+                 </div>
+              </div>
+              <div className="flex-1 bg-[url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center relative flex items-center justify-center mt-7">
+                 {/* The Momentum Widget Floating Platform */}
+                 {/* The global face will shrink and perfectly position itself exactly over this circle! */}
+                 <div className="w-80 bg-black/50 backdrop-blur-2xl border border-white/20 rounded-[2rem] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col items-center text-center">
+                    <div className="w-24 h-24 rounded-full mb-6 relative flex items-center justify-center">
+                       <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl animate-pulse" />
+                       {/* The face flies right here globally */}
+                    </div>
+                    <div className="text-white font-medium mb-2 text-lg">Momentum Active</div>
+                    <div className="text-sm text-zinc-300 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+                      Designing UI in Figma...
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* 3. APPLICATIONS (HORIZONTAL SCROLL) */}
+        <div ref={horizontalScrollRef} className="relative h-[300vh] w-full border-t border-zinc-900">
           <div className="sticky top-0 h-screen w-full overflow-hidden bg-black flex items-center">
             <motion.div 
-              style={{ x: `-${hProgress * 75}%` }}
-              className="flex w-[400vw] h-full"
+              style={{ x: `-${hProgress * 66.666}%` }}
+              className="flex w-[300vw] h-full"
             >
               
               {/* PANEL 1: ENGINEERING */}
@@ -167,7 +226,6 @@ export default function AppPage() {
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Momentum doesn't just write snippets. It physically drives your IDE, reads your entire repository, runs local tests, and pushes bug fixes while you sleep.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    {/* Realistic IDE HTML Mockup */}
                     <div className="w-full bg-[#1e1e1e] rounded-xl overflow-hidden border border-zinc-800 shadow-2xl flex flex-col h-[500px] text-sm">
                       <div className="flex bg-[#2d2d2d] items-center px-4 py-2 border-b border-[#3c3c3c]">
                          <div className="flex gap-1.5 mr-4"><div className="w-3 h-3 rounded-full bg-[#ff5f56]" /><div className="w-3 h-3 rounded-full bg-[#ffbd2e]" /><div className="w-3 h-3 rounded-full bg-[#27c93f]" /></div>
@@ -183,13 +241,13 @@ export default function AppPage() {
                            <div className="mt-2"><span className="text-[#569cd6]">export async function</span> <span className="text-[#dcdcaa]">verifyToken</span>(token: <span className="text-[#4ec9b0]">string</span>) {'{'}</div>
                            <div className="ml-4"><span className="text-[#569cd6]">const</span> decoded = <span className="text-[#569cd6]">await</span> <span className="text-[#dcdcaa]">jwt_decode</span>(token);</div>
                            <AnimatePresence>
-                             {animationStep === 1 && (
+                             {animationStep >= 1 && (
                                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="ml-4 text-[#f14c4c] bg-[#f14c4c]/10 px-1 inline-block">
                                  // TypeError: jwt_decode is not a function
                                </motion.div>
                              )}
                              {animationStep === 2 && (
-                               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="ml-4 text-[#4fc1ff] bg-[#4fc1ff]/10 px-1 inline-block">
+                               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="ml-4 text-[#4fc1ff] bg-[#4fc1ff]/10 px-1 inline-block mt-2">
                                  <span className="text-[#569cd6]">const</span> decoded = <span className="text-[#569cd6]">await</span> <span className="text-[#4ec9b0]">jwt</span>.<span className="text-[#dcdcaa]">verify</span>(token, <span className="text-[#4fc1ff]">process.env.SECRET</span>);
                                </motion.div>
                              )}
@@ -220,14 +278,12 @@ export default function AppPage() {
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">From simple meshes to complete automobile designing. Momentum physically clicks through complex CAD menus, adjusting dimensions, constraints, and rendering physics simulations completely autonomously.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    {/* Realistic CAD HTML Mockup */}
                     <div className="w-full bg-[#2a2a2a] rounded-xl overflow-hidden border border-zinc-700 shadow-2xl flex flex-col h-[500px] text-xs text-zinc-300">
                        <div className="h-8 bg-[#333] border-b border-zinc-700 flex items-center px-4 gap-4">
                           <div className="font-medium text-white">SolidDesign Pro 2026</div>
                           <div className="flex gap-3 text-zinc-400"><span>File</span><span>Edit</span><span>Sketch</span><span>Features</span><span>Evaluate</span></div>
                        </div>
                        <div className="flex-1 flex overflow-hidden">
-                          {/* Sidebar */}
                           <div className="w-48 bg-[#333] border-r border-zinc-700 p-2 flex flex-col gap-2 overflow-y-auto">
                              <div className="font-medium text-zinc-200 mb-2">FeatureManager</div>
                              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-zinc-500 rounded-sm" /> Chassis_Assembly</div>
@@ -235,9 +291,7 @@ export default function AppPage() {
                              <div className="flex items-center gap-2 ml-4"><div className="w-3 h-3 bg-zinc-500 rounded-sm" /> Suspension_Front</div>
                              <div className="flex items-center gap-2 ml-4"><div className="w-3 h-3 bg-zinc-500 rounded-sm" /> Axle_Rear</div>
                           </div>
-                          {/* Canvas */}
                           <div className="flex-1 bg-[#1c1c1c] relative flex items-center justify-center overflow-hidden" style={{ backgroundImage: 'radial-gradient(#333 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
-                             {/* Fake 3D Car Wireframe */}
                              <motion.div animate={{ rotateY: animationStep === 2 ? 180 : 0, scale: animationStep === 1 ? 1.1 : 1 }} transition={{ duration: 4, ease: "easeInOut" }} className="w-64 h-32 border border-blue-500/50 rounded-3xl flex items-center justify-center relative shadow-[0_0_50px_rgba(59,130,246,0.2)]">
                                 <div className="absolute inset-x-8 -bottom-4 h-8 flex justify-between">
                                   <div className="w-8 h-8 rounded-full border-2 border-emerald-400 bg-[#1c1c1c]" />
@@ -246,7 +300,6 @@ export default function AppPage() {
                                 <div className="absolute top-0 left-1/4 right-1/4 h-1/2 border-t border-x border-blue-500/50 rounded-t-xl" />
                              </motion.div>
                              
-                             {/* Floating Context Menu applied by Momentum */}
                              <AnimatePresence>
                                {animationStep >= 1 && (
                                   <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="absolute top-1/4 right-10 bg-[#333] border border-blue-500 rounded shadow-xl p-3 w-40 z-10">
@@ -257,7 +310,6 @@ export default function AppPage() {
                                )}
                              </AnimatePresence>
                              
-                             {/* Cursor */}
                              <motion.div 
                                 animate={{ x: animationStep === 0 ? -100 : animationStep === 1 ? 80 : -50, y: animationStep === 0 ? 50 : -60 }}
                                 transition={{ type: "spring" }}
@@ -285,9 +337,7 @@ export default function AppPage() {
                     <p className="text-xl text-zinc-400 leading-relaxed max-w-lg mb-8">Messaging people everyday, completely handled. Momentum reads context across platforms and physically drafts nuanced replies to your team in Slack, or negotiates deals in your email.</p>
                   </div>
                   <div className="flex-1 w-full max-w-2xl">
-                    {/* Realistic Slack/iMessage Split Mockup */}
                     <div className="w-full bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 shadow-2xl flex h-[500px] text-sm text-zinc-200">
-                      {/* Slack Side */}
                       <div className="flex-1 border-r border-zinc-800 flex flex-col bg-[#1a1d21]">
                          <div className="h-12 border-b border-zinc-800 flex items-center px-4 font-bold text-white"># product-updates</div>
                          <div className="flex-1 p-4 flex flex-col gap-4 overflow-hidden relative">
@@ -311,7 +361,6 @@ export default function AppPage() {
                             </AnimatePresence>
                          </div>
                       </div>
-                      {/* iMessage Side */}
                       <div className="w-[40%] flex flex-col bg-black">
                          <div className="h-12 border-b border-zinc-800 flex items-center justify-center font-bold text-white text-xs">Mike (Co-founder)</div>
                          <div className="flex-1 p-4 flex flex-col gap-3 justify-end overflow-hidden">
@@ -333,68 +382,25 @@ export default function AppPage() {
                 </div>
               </div>
 
-              {/* PANEL 4: UNIVERSAL */}
-              <div className="w-[100vw] h-full flex flex-col items-center justify-center p-6 md:p-12 relative overflow-hidden">
-                <div className="relative z-10 max-w-4xl flex flex-col items-center text-center mt-[10vh]">
-                  <div className="flex gap-2 mb-6">
-                    <span className="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs font-mono text-zinc-400">macOS</span>
-                    <span className="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs font-mono text-zinc-400">Windows</span>
-                    <span className="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs font-mono text-zinc-400">Linux</span>
-                  </div>
-                  <h3 className="text-5xl md:text-6xl lg:text-7xl font-medium mb-6 text-white drop-shadow-xl">Total privacy.<br/>Zero APIs.</h3>
-                  <p className="text-xl md:text-2xl text-zinc-300 leading-relaxed drop-shadow-md mb-8">How does it do all this? Momentum hooks into native OS accessibility layers to control literally any application on your screen. Blisteringly fast. 100% local execution. Best of all? It's a one-time fee of $30. We despise subscriptions.</p>
-                </div>
-                {/* Fake Desktop HTML Mockup directly below the text */}
-                <div className="w-full max-w-4xl h-[400px] mt-8 bg-black rounded-t-2xl border-t border-x border-zinc-800 shadow-[0_0_100px_rgba(168,85,247,0.15)] flex flex-col overflow-hidden relative">
-                   <div className="h-6 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 justify-between text-zinc-500 text-xs">
-                     <div>Apple</div>
-                     <div className="flex gap-4"><span>File</span><span>Edit</span><span>View</span></div>
-                     <div>Mon 9:41 AM</div>
-                   </div>
-                   <div className="flex-1 relative overflow-hidden bg-zinc-950">
-                      {/* Fake Windows */}
-                      <motion.div animate={{ scale: animationStep === 2 ? 1.05 : 1 }} className="absolute top-10 left-10 w-[60%] h-[200px] bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden flex flex-col">
-                         <div className="h-6 bg-zinc-800 border-b border-zinc-700 px-2 flex items-center text-[10px] text-zinc-400">Blender - engine.blend</div>
-                         <div className="flex-1 flex items-center justify-center border-2 border-dashed border-purple-500/30 m-4 rounded relative">
-                            {animationStep > 0 && <div className="absolute inset-0 bg-purple-500/10" />}
-                         </div>
-                      </motion.div>
-                      <motion.div animate={{ scale: animationStep === 1 ? 1.05 : 1 }} className="absolute bottom-10 right-10 w-[50%] h-[180px] bg-black border border-zinc-800 rounded-lg shadow-2xl overflow-hidden flex flex-col text-xs font-mono">
-                         <div className="h-6 bg-zinc-900 border-b border-zinc-800 px-2 flex items-center text-[10px] text-zinc-400">Terminal</div>
-                         <div className="p-3 text-emerald-400">
-                           $ momentum system inject<br/>
-                           <span className="text-zinc-500">Hooking OS accessibility APIs...</span><br/>
-                           <span className="text-purple-400">Control granted.</span>
-                         </div>
-                      </motion.div>
-                   </div>
-                   {/* Fake Cursor controlled by Momentum */}
-                   <motion.div 
-                      animate={{ 
-                        x: animationStep === 0 ? "35vw" : animationStep === 1 ? "10vw" : "20vw",
-                        y: animationStep === 0 ? "5vh" : animationStep === 1 ? "-10vh" : "-15vh"
-                      }}
-                      transition={{ type: "spring", stiffness: 40, damping: 25 }}
-                      className="absolute w-5 h-5 z-20 pointer-events-none drop-shadow-2xl"
-                      style={{ left: "50%", top: "50%" }}
-                   >
-                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                       <path d="M4.5 3.75L18.75 11.25L11.25 12.75L9 20.25L4.5 3.75Z" fill="white" stroke="black" strokeWidth="1.5" strokeLinejoin="round"/>
-                     </svg>
-                   </motion.div>
-                </div>
-              </div>
-
             </motion.div>
           </div>
         </div>
 
-        
-        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
-          <h2 className="text-5xl md:text-7xl font-medium tracking-tight mb-8">Ready to expand your workforce?</h2>
-          <Link href="/newagent" className="inline-flex h-16 items-center justify-center rounded-full bg-white px-10 text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-            Deploy Momentum
-          </Link>
+        {/* 4. CONCLUSION: NO SUBSCRIPTIONS */}
+        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-zinc-950 border-t border-zinc-900 relative overflow-hidden">
+           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.15)_0%,transparent_70%)]" />
+           <div className="relative z-10 max-w-4xl flex flex-col items-center">
+             <div className="px-4 py-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full text-sm font-medium mb-8">The Final Argument</div>
+             <h2 className="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight mb-8">Own your workforce. <br/>Don't rent it.</h2>
+             <p className="text-2xl text-zinc-300 max-w-3xl leading-relaxed mb-12">
+               We completely despise the subscription model. SaaS companies are milking you dry for simple API wrappers. Momentum uses ZERO APIs. It hooks natively into your OS accessibility layer and runs 100% locally.
+               <br/><br/>
+               You buy it once for <span className="text-white font-bold">$30</span>, and it works for you forever.
+             </p>
+             <Link href="/newagent" className="inline-flex h-16 items-center justify-center rounded-full bg-white px-10 text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+               Deploy Momentum for $30
+             </Link>
+           </div>
         </div>
       </div>
     </div>
